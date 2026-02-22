@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html ng-app="FitEvolve" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1A2744">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FitEvolve — Evolua no seu ritmo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body ng-controller="AppCtrl">
+
+    <!-- Splash Screen -->
+    <div id="splash" ng-if="view === 'splash'" class="screen splash-screen" ng-click="goTo('login')">
+        <div class="splash-content">
+            <div class="splash-icon">🏔️</div>
+            <h1 class="splash-title">FitEvolve</h1>
+            <p class="splash-tagline">Evolua no seu ritmo.</p>
+            <p class="splash-hint">Toque para começar</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login" ng-if="view === 'login'" class="screen login-screen">
+        <div class="login-content">
+            <div class="login-header">
+                <div class="login-icon">🏔️</div>
+                <h1>FitEvolve</h1>
+                <p>Seu coach de nutrição e treino com IA</p>
+            </div>
+
+            <form ng-submit="login()" class="login-form">
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" ng-model="credentials.username" placeholder="Seu nome de usuário" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" ng-model="credentials.password" placeholder="Sua senha" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading">
+                    <span ng-if="!loading">Entrar</span>
+                    <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Entrando...</span>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>Não tem conta? <a href="#" ng-click="goTo('register')">Criar conta</a></p>
+            </div>
+
+            <div class="alert alert-error" ng-if="error">{{error}}</div>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="register" ng-if="view === 'register'" class="screen register-screen">
+        <div class="register-content">
+            <div class="register-header">
+                <h1>Criar Conta</h1>
+                <p>Comece sua jornada de evolução</p>
+            </div>
+
+            <form ng-submit="register()" class="register-form">
+                <div class="form-group">
+                    <label>Nome completo</label>
+                    <input type="text" ng-model="reg.name" placeholder="Seu nome" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" ng-model="reg.email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" ng-model="reg.username" placeholder="Escolha um nome de usuário" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" ng-model="reg.password" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#">termos de uso</a></label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
+                    <span ng-if="!loading">Criar conta</span>
+                    <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Criando...</span>
+                </button>
+            </form>
+
+            <div class="register-footer">
+                <p>Já tem conta? <a href="#" ng-click="goTo('login')">Entrar</a></p>
+            </div>
+
+            <div class="alert alert-error" ng-if="error">{{error}}</div>
+            <div class="alert alert-success" ng-if="success">{{success}}</div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard" ng-if="view === 'dashboard'" class="screen dashboard-screen">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <span class="greeting">Olá, {{player.name.split(' ')[0]}}!</span>
+            </div>
+            <div class="top-bar-right">
+                <span class="level-badge">{{playerLevel.level || 'Iniciante'}}</span>
+            </div>
+        </div>
+
+        <!-- XP Progress -->
+        <div class="xp-card">
+            <div class="xp-header">
+                <span class="xp-label">▲ {{playerPoints.xp || 0}} XP</span>
+                <span class="xp-next" ng-if="nextLevel">Próximo: {{nextLevel.level}} ({{nextLevel.minPoints}} XP)</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" ng-style="{'width': levelProgress + '%'}"></div>
+            </div>
+            <div class="xp-footer">
+                <span>⚡ {{playerPoints.energy || 0}} Energia</span>
+                <span ng-if="streak.days > 0">🔥 {{streak.days}} dias</span>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <h2 class="section-title">Hoje</h2>
+            <div class="action-grid">
+                <div class="action-card" ng-click="goTo('meal')">
+                    <div class="action-icon">🍽️</div>
+                    <span>Refeição</span>
+                </div>
+                <div class="action-card" ng-click="goTo('workout')">
+                    <div class="action-icon">💪</div>
+                    <span>Treino</span>
+                </div>
+                <div class="action-card" ng-click="registerWater()">
+                    <div class="action-icon">💧</div>
+                    <span>Água</span>
+                    <small>{{todayWater || 0}}/8</small>
+                </div>
+                <div class="action-card" ng-click="goTo('coach')">
+                    <div class="action-icon">🤖</div>
+                    <span>Coach IA</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Challenges -->
+        <div class="section">
+            <h2 class="section-title">Desafios Ativos</h2>
+            <div class="challenge-list">
+                <div class="challenge-card" ng-repeat="ch in activeChallenges">
+                    <div class="challenge-info">
+                        <span class="challenge-name">{{ch.challenge}}</span>
+                        <span class="challenge-reward">+{{ch.points[0].total}} XP</span>
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-bar small">
+                            <div class="progress-fill" ng-style="{'width': (ch.progress || 0) + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
+                <p ng-if="!activeChallenges.length" class="empty-state">Nenhum desafio ativo. Complete ações para progredir!</p>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" ng-click="goTo('dashboard')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" ng-click="goTo('meal-plan')">
+                <i class="fas fa-utensils"></i>
+                <span>Nutrição</span>
+            </div>
+            <div class="nav-item" ng-click="goTo('workout-plan')">
+                <i class="fas fa-dumbbell"></i>
+                <span>Treino</span>
+            </div>
+            <div class="nav-item" ng-click="goTo('progress')">
+                <i class="fas fa-chart-line"></i>
+                <span>Evolução</span>
+            </div>
+            <div class="nav-item" ng-click="goTo('profile')">
+                <i class="fas fa-user"></i>
+                <span>Perfil</span>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Meal Photo Screen -->
+    <div id="meal" ng-if="view === 'meal'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>Registrar Refeição</h2>
+        </div>
+        <div class="screen-body">
+            <div class="meal-type-selector">
+                <button ng-repeat="type in ['Café da manhã','Almoço','Lanche','Jantar']"
+                        class="chip" ng-class="{'active': mealType === type}"
+                        ng-click="mealType = type">{{type}}</button>
+            </div>
+            <div class="photo-upload-area" ng-click="triggerPhotoUpload()">
+                <img ng-if="mealPhoto" ng-src="{{mealPhoto}}" class="meal-preview">
+                <div ng-if="!mealPhoto" class="photo-placeholder">
+                    <i class="fas fa-camera fa-3x"></i>
+                    <p>Tire uma foto do seu prato</p>
+                </div>
+                <input type="file" id="mealPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onMealPhoto(this)">
+            </div>
+            <div ng-if="mealAnalysis" class="meal-analysis">
+                <h3>Análise do Coach IA</h3>
+                <div class="analysis-content" ng-bind-html="mealAnalysis"></div>
+            </div>
+            <button class="btn btn-primary btn-block" ng-click="submitMeal()" ng-disabled="!mealType || loading">
+                <span ng-if="!loading">{{mealPhoto ? 'Registrar com foto' : 'Registrar sem foto'}}</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Analisando...</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Coach IA Screen -->
+    <div id="coach" ng-if="view === 'coach'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>Coach IA</h2>
+        </div>
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div ng-repeat="msg in chatMessages" class="chat-msg" ng-class="msg.role">
+                    <div class="msg-bubble">{{msg.content}}</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" ng-model="chatInput" placeholder="Pergunte ao seu coach..." ng-keypress="$event.keyCode === 13 && sendChat()">
+                <button ng-click="sendChat()" ng-disabled="!chatInput || chatLoading"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="profile" ng-if="view === 'profile'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>Meu Perfil</h2>
+        </div>
+        <div class="screen-body">
+            <div class="profile-card">
+                <div class="profile-avatar">{{player.name ? player.name[0].toUpperCase() : '?'}}</div>
+                <h3>{{player.name}}</h3>
+                <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
+                <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
+            </div>
+            <div class="profile-actions">
+                <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
+                <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
+                <button class="btn btn-danger btn-block" ng-click="logout()">Sair</button>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item active" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
+        </nav>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.8.2/angular-sanitize.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
