@@ -14,13 +14,273 @@
 </head>
 <body ng-controller="AppCtrl">
 
-    <!-- Splash Screen -->
-    <div id="splash" ng-if="view === 'splash'" class="screen splash-screen" ng-click="goTo('login')">
-        <div class="splash-content">
-            <div class="splash-icon">🏔️</div>
-            <h1 class="splash-title">FitEvolve</h1>
-            <p class="splash-tagline">Evolua no seu ritmo.</p>
-            <p class="splash-hint">Toque para começar</p>
+    <!-- Terms Modal -->
+    <div class="modal-overlay" ng-if="showTerms" ng-click="closeTerms()">
+        <div class="modal-content" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Termos de Uso</h2>
+                <button class="btn-close" ng-click="closeTerms()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body terms-body">
+                <h3>1. Aceitação dos Termos</h3>
+                <p>Ao utilizar o FitEvolve, você concorda com estes termos de uso. O aplicativo é destinado a maiores de 14 anos.</p>
+                <h3>2. Descrição do Serviço</h3>
+                <p>O FitEvolve é um aplicativo de acompanhamento nutricional e de treino que utiliza inteligência artificial para gerar planos personalizados. O serviço NÃO substitui acompanhamento médico ou nutricional profissional.</p>
+                <h3>3. Dados Pessoais</h3>
+                <p>Coletamos informações como peso, altura, idade, fotos corporais e hábitos alimentares para personalizar sua experiência. Seus dados são armazenados de forma segura e não são compartilhados com terceiros sem seu consentimento, conforme a LGPD.</p>
+                <h3>4. Fotos Corporais</h3>
+                <p>As fotos corporais enviadas são processadas por inteligência artificial para análise visual. As imagens são armazenadas localmente no seu dispositivo.</p>
+                <h3>5. Limitação de Responsabilidade</h3>
+                <p>Os planos alimentares e de treino gerados pelo FitEvolve são sugestões baseadas em IA e não constituem prescrição médica ou nutricional. Consulte um profissional de saúde antes de iniciar qualquer programa.</p>
+                <h3>6. Uso Adequado</h3>
+                <p>Você se compromete a fornecer informações verdadeiras e a utilizar o aplicativo de forma responsável.</p>
+                <h3>7. Alterações nos Termos</h3>
+                <p>Reservamo-nos o direito de alterar estes termos a qualquer momento.</p>
+                <p style="margin-top:20px;color:var(--text-muted);font-size:12px;">Última atualização: Fevereiro de 2026</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-block" ng-click="closeTerms()">Entendi ✅</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube Modal -->
+    <div class="modal-overlay" ng-if="showYoutube" ng-click="closeYoutube()">
+        <div class="modal-content modal-youtube" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>{{youtubeExercise}} ▶️</h2>
+                <button class="btn-close" ng-click="closeYoutube()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body youtube-body">
+                <iframe ng-src="{{youtubeUrl}}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" class="youtube-iframe"></iframe>
+                <p class="youtube-hint">Pesquisa no YouTube: "como fazer {{youtubeExercise}}"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body Analysis Modal -->
+    <div class="modal-overlay" ng-if="showBodyAnalysis" ng-click="showBodyAnalysis = false">
+        <div class="modal-content modal-large" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>📊 Análise Corporal</h2>
+                <button class="btn-close" ng-click="showBodyAnalysis = false"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div ng-if="bodyAnalysisLoading" class="loading-box">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Analisando com IA...</p>
+                </div>
+                <div ng-if="bodyAnalysisResult && !bodyAnalysisLoading" class="body-analysis-result">
+                    <div ng-bind-html="formatAnalysis(bodyAnalysisResult)" class="analysis-formatted"></div>
+                </div>
+                <div ng-if="bodyAnalysisError && !bodyAnalysisLoading" class="alert alert-error">{{bodyAnalysisError}}</div>
+
+                <!-- Bio Report Section -->
+                <div class="body-analysis-extras" ng-if="!bodyAnalysisLoading">
+                    <div class="section-divider"><span>Dados adicionais</span></div>
+
+                    <h3 class="extras-title">📄 Laudo de bioimpedância</h3>
+                    <div class="photo-upload-area small" ng-click="triggerBioReport()">
+                        <div class="photo-placeholder" ng-if="!bioReportPhoto">
+                            <i class="fas fa-file-medical fa-2x"></i>
+                            <p>Foto do laudo</p>
+                        </div>
+                        <img ng-if="bioReportPhoto" ng-src="{{bioReportPhoto}}" class="meal-preview">
+                    </div>
+                    <input type="file" id="bioReportInput" accept="image/*" style="display:none" onchange="angular.element(this).scope().onBioReport(this)">
+                    <button class="btn btn-outline btn-block btn-sm" ng-if="bioReportPhoto" ng-click="analyzeBioReport()" ng-disabled="bodyAnalysisLoading">Analisar laudo 📋</button>
+
+                    <!-- Manual Measurements -->
+                    <h3 class="extras-title" style="margin-top:20px">📏 Medidas corporais</h3>
+
+                    <!-- Basic fields always visible -->
+                    <div class="measures-grid">
+                        <div class="measure-field">
+                            <label>Peso (kg)</label>
+                            <input type="number" ng-model="manualMeasures.peso" placeholder="80" step="0.1">
+                        </div>
+                        <div class="measure-field">
+                            <label>Altura (m)</label>
+                            <input type="number" ng-model="manualMeasures.altura" placeholder="1.75" step="0.01">
+                        </div>
+                    </div>
+
+                    <!-- Expandable categories -->
+                    <button class="btn btn-outline btn-block btn-sm" ng-click="showExtraMeasures = !showExtraMeasures" style="margin-top:12px">
+                        {{showExtraMeasures ? 'Ocultar medidas' : 'Adicionar mais medidas'}} ({{countMeasures()}} de 21) {{showExtraMeasures ? '▲' : '▼'}}
+                    </button>
+
+                    <div ng-if="showExtraMeasures" class="extra-measures">
+                        <!-- Category chips -->
+                        <div class="chip-group" style="margin:12px 0">
+                            <span class="chip" ng-class="{'active': measureCat.composicao}" ng-click="measureCat.composicao = !measureCat.composicao">📊 Composição</span>
+                            <span class="chip" ng-class="{'active': measureCat.medidas}" ng-click="measureCat.medidas = !measureCat.medidas">📏 Medidas (cm)</span>
+                            <span class="chip" ng-class="{'active': measureCat.dobras}" ng-click="measureCat.dobras = !measureCat.dobras">📐 Dobras cutâneas</span>
+                        </div>
+
+                        <!-- Composição -->
+                        <div ng-if="measureCat.composicao" class="measure-category">
+                            <h4>Composição Corporal</h4>
+                            <div class="measures-grid">
+                                <div class="measure-field"><label>% Gordura</label><input type="number" ng-model="manualMeasures.gordura_pct" placeholder="22" step="0.1"></div>
+                                <div class="measure-field"><label>Peso gordo (kg)</label><input type="number" ng-model="manualMeasures.peso_gordo" step="0.1"></div>
+                                <div class="measure-field"><label>Peso magro (kg)</label><input type="number" ng-model="manualMeasures.peso_magro" step="0.1"></div>
+                                <div class="measure-field"><label>Massa musc. esq. (kg)</label><input type="number" ng-model="manualMeasures.massa_muscular" step="0.1"></div>
+                            </div>
+                        </div>
+
+                        <!-- Medidas -->
+                        <div ng-if="measureCat.medidas" class="measure-category">
+                            <h4>Medidas Corporais (cm)</h4>
+                            <div class="measures-grid">
+                                <div class="measure-field"><label>Cintura</label><input type="number" ng-model="manualMeasures.cintura" placeholder="85"></div>
+                                <div class="measure-field"><label>Quadril</label><input type="number" ng-model="manualMeasures.quadril" placeholder="100"></div>
+                                <div class="measure-field"><label>Deltoides</label><input type="number" ng-model="manualMeasures.deltoides"></div>
+                                <div class="measure-field"><label>Tórax</label><input type="number" ng-model="manualMeasures.torax"></div>
+                                <div class="measure-field"><label>Abdômen</label><input type="number" ng-model="manualMeasures.abdomen"></div>
+                                <div class="measure-field"><label>Coxas</label><input type="number" ng-model="manualMeasures.coxas"></div>
+                                <div class="measure-field"><label>Panturrilhas</label><input type="number" ng-model="manualMeasures.panturrilhas"></div>
+                                <div class="measure-field"><label>Braço relaxado</label><input type="number" ng-model="manualMeasures.braco_relaxado"></div>
+                                <div class="measure-field"><label>Braço contraído</label><input type="number" ng-model="manualMeasures.braco_contraido"></div>
+                            </div>
+                        </div>
+
+                        <!-- Dobras -->
+                        <div ng-if="measureCat.dobras" class="measure-category">
+                            <h4>Dobras Cutâneas (mm)</h4>
+                            <div class="measures-grid">
+                                <div class="measure-field"><label>Subescapular</label><input type="number" ng-model="manualMeasures.dobra_subescapular" step="0.1"></div>
+                                <div class="measure-field"><label>Tricipital</label><input type="number" ng-model="manualMeasures.dobra_tricipital" step="0.1"></div>
+                                <div class="measure-field"><label>Torácica</label><input type="number" ng-model="manualMeasures.dobra_toracica" step="0.1"></div>
+                                <div class="measure-field"><label>Axilar</label><input type="number" ng-model="manualMeasures.dobra_axilar" step="0.1"></div>
+                                <div class="measure-field"><label>Supra-ilíaca</label><input type="number" ng-model="manualMeasures.dobra_suprailiaca" step="0.1"></div>
+                                <div class="measure-field"><label>Abdominal</label><input type="number" ng-model="manualMeasures.dobra_abdominal" step="0.1"></div>
+                                <div class="measure-field"><label>Coxas</label><input type="number" ng-model="manualMeasures.dobra_coxas" step="0.1"></div>
+                                <div class="measure-field"><label>Panturrilhas</label><input type="number" ng-model="manualMeasures.dobra_panturrilhas" step="0.1"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-block" ng-click="saveManualMeasures()" style="margin-top:16px">Salvar medidas 💾</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 90-Day Challenge Modal -->
+    <div class="modal-overlay" ng-if="showChallengeOffer" ng-click="showChallengeOffer = false">
+        <div class="modal-content" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🏆 Desafio 90 Dias</h2>
+                <button class="btn-close" ng-click="showChallengeOffer = false"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body challenge-offer-body">
+                <div class="challenge-hero-icon">🏆</div>
+                <h3>Transforme seu corpo em 90 dias!</h3>
+                <p>Comprometa-se com sua evolução. Fotos de progresso nos dias 0, 30, 60 e 90.</p>
+                <div class="challenge-benefits-list">
+                    <div class="challenge-benefit"><i class="fas fa-camera"></i> Fotos antes/depois para acompanhar</div>
+                    <div class="challenge-benefit"><i class="fas fa-chart-line"></i> Acompanhamento de peso e medidas</div>
+                    <div class="challenge-benefit"><i class="fas fa-users"></i> Convide amigos para o desafio</div>
+                    <div class="challenge-benefit"><i class="fas fa-trophy"></i> Conquista especial ao completar</div>
+                </div>
+                <button class="btn btn-primary btn-block btn-lg" ng-click="joinChallenge90()">Aceitar o Desafio! 💪</button>
+                <button class="btn btn-outline btn-block btn-sm" ng-click="showChallengeOffer = false" style="margin-top:8px">Agora não</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landing / Sales Page -->
+    <div id="splash" ng-if="view === 'splash'" class="screen landing-screen">
+        <div class="landing-hero">
+            <div class="landing-hero-bg"></div>
+            <div class="landing-hero-content">
+                <div class="landing-logo-row">
+                    <span class="landing-logo-icon">🏔️</span>
+                    <span class="landing-logo-text">FitEvolve</span>
+                </div>
+                <h1 class="landing-headline">Seu plano de nutrição e treino <span class="text-accent">personalizado com IA</span></h1>
+                <p class="landing-subtitle">Planos alimentares e de treino adaptados ao seu corpo, objetivo e orçamento. Tudo em português, com comida de verdade. 🇧🇷</p>
+                <div class="landing-cta-row">
+                    <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Começar Grátis 🚀</button>
+                    <button class="btn btn-glass btn-lg" ng-click="goTo('login')">Entrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-section">
+            <h2 class="landing-section-title">Por que o FitEvolve?</h2>
+            <div class="benefit-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon-circle"><i class="fas fa-utensils"></i></div>
+                    <h3>Plano Alimentar Inteligente</h3>
+                    <p>Cardápio personalizado com arroz, feijão e os alimentos que você já come. Adaptado ao seu orçamento.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon-circle"><i class="fas fa-dumbbell"></i></div>
+                    <h3>Treino Sob Medida</h3>
+                    <p>Em casa, no parque ou na academia — o plano se adapta ao seu espaço e equipamento.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon-circle"><i class="fas fa-camera"></i></div>
+                    <h3>Análise por Foto</h3>
+                    <p>Fotografe seu prato e receba feedback nutricional instantâneo da IA.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon-circle"><i class="fas fa-trophy"></i></div>
+                    <h3>Gamificação</h3>
+                    <p>XP, níveis e desafios para te manter motivado. Evolua no seu ritmo!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-section landing-how-section">
+            <h2 class="landing-section-title">Como funciona?</h2>
+            <div class="how-steps-row">
+                <div class="how-step-card">
+                    <div class="how-step-number">1</div>
+                    <h3>Conte sobre você</h3>
+                    <p>Responda perguntas sobre seu corpo, rotina e objetivos em 2 minutos.</p>
+                </div>
+                <div class="how-step-card">
+                    <div class="how-step-number">2</div>
+                    <h3>IA gera seus planos</h3>
+                    <p>Em segundos, receba plano alimentar e de treino 100% personalizado.</p>
+                </div>
+                <div class="how-step-card">
+                    <div class="how-step-number">3</div>
+                    <h3>Evolua e conquiste</h3>
+                    <p>Registre refeições, complete treinos e acompanhe sua evolução diariamente.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-section landing-testimonials-section">
+            <h2 class="landing-section-title">Quem usa, aprova</h2>
+            <div class="testimonials-row">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Perdi 8kg em 3 meses seguindo o plano. O melhor é que não precisei parar de comer arroz e feijão!"</p>
+                    <span class="testimonial-author">— Marcos, 32 anos</span>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"Finalmente um app que entende comida brasileira. O treino em casa é perfeito pra minha rotina."</p>
+                    <span class="testimonial-author">— Ana, 28 anos</span>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+                    <p>"A análise de foto do prato me ajudou demais a entender porções. Super prático!"</p>
+                    <span class="testimonial-author">— Lucas, 25 anos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="landing-section landing-final-cta">
+            <h2>Pronto pra evoluir?</h2>
+            <p>Junte-se a milhares de brasileiros que já estão transformando seu corpo com inteligência artificial.</p>
+            <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Criar conta grátis 💪</button>
+            <p class="landing-disclaimer">Gratuito. Não substitui acompanhamento profissional de saúde.</p>
         </div>
     </div>
 
@@ -32,7 +292,6 @@
                 <h1>FitEvolve</h1>
                 <p>Seu coach de nutrição e treino com IA</p>
             </div>
-
             <form ng-submit="login()" class="login-form">
                 <div class="form-group">
                     <label>Usuário</label>
@@ -43,15 +302,14 @@
                     <input type="password" ng-model="credentials.password" placeholder="Sua senha" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading">
-                    <span ng-if="!loading">Entrar</span>
+                    <span ng-if="!loading">Entrar 🔓</span>
                     <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Entrando...</span>
                 </button>
             </form>
-
             <div class="login-footer">
                 <p>Não tem conta? <a href="#" ng-click="goTo('register')">Criar conta</a></p>
+                <p style="margin-top:8px"><a href="#" ng-click="goTo('splash')" style="color:var(--text-muted);font-size:13px">← Voltar</a></p>
             </div>
-
             <div class="alert alert-error" ng-if="error">{{error}}</div>
         </div>
     </div>
@@ -60,10 +318,9 @@
     <div id="register" ng-if="view === 'register'" class="screen register-screen">
         <div class="register-content">
             <div class="register-header">
-                <h1>Criar Conta</h1>
+                <h1>Criar Conta 🎉</h1>
                 <p>Comece sua jornada de evolução</p>
             </div>
-
             <form ng-submit="register()" class="register-form">
                 <div class="form-group">
                     <label>Nome completo</label>
@@ -82,36 +339,324 @@
                     <input type="password" ng-model="reg.password" placeholder="Mínimo 6 caracteres" required>
                 </div>
                 <div class="form-group checkbox-group">
-                    <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#">termos de uso</a></label>
+                    <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#" ng-click="openTerms($event)">termos de uso</a></label>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
-                    <span ng-if="!loading">Criar conta</span>
+                    <span ng-if="!loading">Criar conta 🚀</span>
                     <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Criando...</span>
                 </button>
             </form>
-
             <div class="register-footer">
                 <p>Já tem conta? <a href="#" ng-click="goTo('login')">Entrar</a></p>
+                <p style="margin-top:8px"><a href="#" ng-click="goTo('splash')" style="color:var(--text-muted);font-size:13px">← Voltar</a></p>
             </div>
-
             <div class="alert alert-error" ng-if="error">{{error}}</div>
             <div class="alert alert-success" ng-if="success">{{success}}</div>
         </div>
     </div>
 
+    <!-- Onboarding Screen -->
+    <div id="onboarding" ng-if="view === 'onboarding'" class="screen onboarding-screen">
+        <div class="onboarding-content">
+            <div class="onboarding-progress">
+                <div class="onboarding-progress-bar">
+                    <div class="progress-fill" ng-style="{'width': ((onboardingStep / onboardingTotalSteps) * 100) + '%'}"></div>
+                </div>
+                <span class="onboarding-step-label">Passo {{onboardingStep}} de {{onboardingTotalSteps}}</span>
+            </div>
+
+            <!-- Step 1: Basic Data -->
+            <div ng-if="onboardingStep === 1" class="onboarding-step">
+                <h2>Sobre você 🧑</h2>
+                <p class="step-desc">Bora se conhecer? Conta um pouco sobre você</p>
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <div class="option-list horizontal">
+                        <div class="option-card small" ng-class="{'active': onboarding.sex === 'M'}" ng-click="onboarding.sex = 'M'">
+                            <span>👨</span><span>Masculino</span>
+                        </div>
+                        <div class="option-card small" ng-class="{'active': onboarding.sex === 'F'}" ng-click="onboarding.sex = 'F'">
+                            <span>👩</span><span>Feminino</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Idade</label>
+                    <input type="number" ng-model="onboarding.age" placeholder="Ex: 30" min="14" max="99">
+                </div>
+                <div class="form-group">
+                    <label>Altura (cm)</label>
+                    <input type="number" ng-model="onboarding.height" placeholder="Ex: 175" min="100" max="250">
+                </div>
+                <div class="form-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" ng-model="onboarding.weight" placeholder="Ex: 80" min="30" max="300" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Qual seu objetivo?</label>
+                    <div class="option-list">
+                        <div class="option-card" ng-class="{'active': onboarding.goal === 'perder_peso'}" ng-click="onboarding.goal = 'perder_peso'">
+                            <span class="option-icon">🔥</span><span>Perder peso</span>
+                        </div>
+                        <div class="option-card" ng-class="{'active': onboarding.goal === 'ganhar_massa'}" ng-click="onboarding.goal = 'ganhar_massa'">
+                            <span class="option-icon">💪</span><span>Ganhar massa</span>
+                        </div>
+                        <div class="option-card" ng-class="{'active': onboarding.goal === 'saude'}" ng-click="onboarding.goal = 'saude'">
+                            <span class="option-icon">❤️</span><span>Saúde geral</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Meal Routine -->
+            <div ng-if="onboardingStep === 2" class="onboarding-step">
+                <h2>Rotina Alimentar 🍽️</h2>
+                <p class="step-desc">Em quais horários você costuma comer?</p>
+                <div class="meal-routine-list">
+                    <div class="meal-routine-item" ng-repeat="meal in onboarding.meal_routine">
+                        <div class="meal-routine-header">
+                            <label class="toggle-label">
+                                <input type="checkbox" ng-model="meal.enabled">
+                                <span>{{meal.label}}</span>
+                            </label>
+                            <input type="time" ng-model="meal.time" ng-if="meal.enabled" class="time-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Diet Preferences & Budget -->
+            <div ng-if="onboardingStep === 3" class="onboarding-step">
+                <h2>Alimentação 🥗</h2>
+                <p class="step-desc">Suas preferências e orçamento</p>
+                <div class="form-group">
+                    <label>Restrições alimentares</label>
+                    <div class="chip-group">
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('nenhuma') > -1}" ng-click="toggleRestriction('nenhuma')">Nenhuma</span>
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('vegetariano') > -1}" ng-click="toggleRestriction('vegetariano')">Vegetariano</span>
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('vegano') > -1}" ng-click="toggleRestriction('vegano')">Vegano</span>
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('sem_lactose') > -1}" ng-click="toggleRestriction('sem_lactose')">Sem lactose</span>
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('sem_gluten') > -1}" ng-click="toggleRestriction('sem_gluten')">Sem glúten</span>
+                        <span class="chip" ng-class="{'active': onboarding.restrictions.indexOf('low_carb') > -1}" ng-click="toggleRestriction('low_carb')">Low carb</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Orçamento mensal pra alimentação</label>
+                    <div class="option-list horizontal">
+                        <div class="option-card small" ng-class="{'active': onboarding.budget === 'low'}" ng-click="onboarding.budget = 'low'">
+                            <span>💰</span><span>Econômico</span>
+                        </div>
+                        <div class="option-card small" ng-class="{'active': onboarding.budget === 'medium'}" ng-click="onboarding.budget = 'medium'">
+                            <span>💰💰</span><span>Moderado</span>
+                        </div>
+                        <div class="option-card small" ng-class="{'active': onboarding.budget === 'high'}" ng-click="onboarding.budget = 'high'">
+                            <span>💰💰💰</span><span>Sem limite</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Training Days & Time -->
+            <div ng-if="onboardingStep === 4" class="onboarding-step">
+                <h2>Dias de Treino 🗓️</h2>
+                <p class="step-desc">Quais dias da semana você vai treinar?</p>
+                <div class="training-days-grid">
+                    <div class="day-toggle" ng-repeat="day in weekDays" ng-class="{'active': onboarding.training_days.indexOf(day.id) > -1}" ng-click="toggleTrainingDay(day.id)">
+                        {{day.short}}
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:20px">
+                    <label>Horário do treino</label>
+                    <input type="time" ng-model="onboarding.training_time" class="time-input full-width">
+                </div>
+            </div>
+
+            <!-- Step 5: Training Space & Equipment -->
+            <div ng-if="onboardingStep === 5" class="onboarding-step">
+                <h2>Local de Treino 🏋️</h2>
+                <p class="step-desc">Onde e com o que você treina?</p>
+                <div class="option-list">
+                    <div class="option-card" ng-class="{'active': onboarding.equipment === 'none'}" ng-click="onboarding.equipment = 'none'">
+                        <span class="option-icon">🏠</span><span>Nenhum (peso corporal)</span>
+                    </div>
+                    <div class="option-card" ng-class="{'active': onboarding.equipment === 'basic'}" ng-click="onboarding.equipment = 'basic'">
+                        <span class="option-icon">🔧</span><span>Básico (halteres, elásticos)</span>
+                    </div>
+                    <div class="option-card" ng-class="{'active': onboarding.equipment === 'gym'}" ng-click="onboarding.equipment = 'gym'">
+                        <span class="option-icon">🏋️</span><span>Academia completa</span>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:20px">
+                    <label>Foto do seu espaço de treino (opcional)</label>
+                    <div class="photo-upload-area small" ng-click="triggerSpacePhoto()">
+                        <img ng-if="onboarding.space_photo" ng-src="{{onboarding.space_photo}}" class="meal-preview">
+                        <div ng-if="!onboarding.space_photo" class="photo-placeholder">
+                            <i class="fas fa-camera fa-2x"></i>
+                            <p>Tirar foto do espaço</p>
+                        </div>
+                        <input type="file" id="spacePhotoInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onSpacePhoto(this)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Body Photos -->
+            <div ng-if="onboardingStep === 6" class="onboarding-step">
+                <h2>Fotos Corporais 📸</h2>
+                <p class="step-desc">Tire fotos de frente e de lado para acompanhar sua evolução (opcional)</p>
+                <div class="body-photos-grid">
+                    <div class="body-photo-box">
+                        <label>Frente</label>
+                        <div class="photo-upload-area small" ng-click="triggerBodyPhoto('front')">
+                            <img ng-if="onboarding.body_photo_front" ng-src="{{onboarding.body_photo_front}}" class="meal-preview">
+                            <div ng-if="!onboarding.body_photo_front" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Frente</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="body-photo-box">
+                        <label>Lateral</label>
+                        <div class="photo-upload-area small" ng-click="triggerBodyPhoto('side')">
+                            <img ng-if="onboarding.body_photo_side" ng-src="{{onboarding.body_photo_side}}" class="meal-preview">
+                            <div ng-if="!onboarding.body_photo_side" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Lateral</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="bodyPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onBodyPhoto('front', this)">
+                <input type="file" id="bodyPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onBodyPhoto('side', this)">
+                <button class="btn btn-outline btn-block btn-sm" ng-if="onboarding.body_photo_front || onboarding.body_photo_side" ng-click="analyzeBodyPhotos(onboarding.body_photo_front, onboarding.body_photo_side)" style="margin-top:12px">
+                    🔬 Analisar composição corporal
+                </button>
+                <p class="step-hint">Você pode pular e adicionar depois no perfil</p>
+            </div>
+
+            <!-- Step 7: AI Goal Setting -->
+            <div ng-if="onboardingStep === 7" class="onboarding-step">
+                <h2>Sua Meta Personalizada 🎯</h2>
+                <p class="step-desc">Com base nos seus dados, aqui está uma meta profissional:</p>
+                <div ng-if="goalLoading" class="loading-box">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p>Calculando sua meta ideal...</p>
+                </div>
+                <div ng-if="aiGoal && !goalLoading" class="goal-card">
+                    <div class="goal-icon">🎯</div>
+                    <div class="goal-main" ng-bind-html="formatAnalysis(aiGoal.summary)"></div>
+                    <div class="goal-details" ng-if="aiGoal.target_weight || aiGoal.target_bf">
+                        <div class="goal-detail-item" ng-if="aiGoal.target_weight">
+                            <span class="goal-detail-label">Peso meta</span>
+                            <span class="goal-detail-value">{{aiGoal.target_weight}} kg</span>
+                        </div>
+                        <div class="goal-detail-item" ng-if="aiGoal.target_bf">
+                            <span class="goal-detail-label">% gordura meta</span>
+                            <span class="goal-detail-value">{{aiGoal.target_bf}}%</span>
+                        </div>
+                        <div class="goal-detail-item" ng-if="aiGoal.timeline">
+                            <span class="goal-detail-label">Prazo estimado</span>
+                            <span class="goal-detail-value">{{aiGoal.timeline}}</span>
+                        </div>
+                    </div>
+                    <div class="goal-tip" ng-if="aiGoal.tip">
+                        <i class="fas fa-lightbulb"></i> {{aiGoal.tip}}
+                    </div>
+                </div>
+                <div class="goal-adjust" ng-if="aiGoal && !goalLoading">
+                    <p class="step-hint">Quer ajustar? Diga o que gostaria de mudar:</p>
+                    <textarea ng-model="goalForm.feedback" placeholder="Ex: meu objetivo é longevidade e quero reduzir gordura, não aumentar..." rows="3" class="adjust-input"></textarea>
+                    <button class="btn btn-outline btn-block btn-sm" ng-click="adjustGoal()" ng-disabled="!goalForm.feedback || goalLoading" style="margin-top:8px">
+                        <span ng-if="!goalLoading">Ajustar meta 🔄</span>
+                        <span ng-if="goalLoading"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 8: Generating Plans -->
+            <div ng-if="onboardingStep === 8" class="onboarding-step generating-step">
+                <div class="generating-animation">
+                    <div class="generating-icon">
+                        <i class="fas fa-spinner fa-spin fa-3x"></i>
+                    </div>
+                    <h2>Gerando seus planos...</h2>
+                    <p class="motivational-msg">{{generatingMessage}}</p>
+                    <div class="generating-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill generating-fill" ng-style="{'width': generatingProgress + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 9: Plans Preview -->
+            <div ng-if="onboardingStep === 9" class="onboarding-step">
+                <h2>Seus Planos Estão Prontos! 🎉</h2>
+                <p class="step-desc">Olha só o que preparamos pra você</p>
+                <div class="plan-preview-card">
+                    <h3>🍽️ Plano Alimentar Diário</h3>
+                    <div class="plan-preview-list">
+                        <div class="plan-preview-item" ng-repeat="meal in mealPlan.meals">
+                            <span class="plan-time">{{meal.time}}</span>
+                            <span class="plan-meal-name">{{meal.name}}</span>
+                        </div>
+                    </div>
+                    <div class="plan-total" ng-if="mealPlan.total_calories">
+                        Total: ~{{mealPlan.total_calories}} kcal/dia
+                    </div>
+                </div>
+                <div class="plan-preview-card" style="margin-top:16px">
+                    <h3>💪 Plano de Treino</h3>
+                    <div class="plan-preview-list">
+                        <div class="plan-preview-item" ng-repeat="day in workoutPlan.days">
+                            <span class="plan-time">{{day.day_name}}</span>
+                            <span class="plan-meal-name">{{day.muscle_group || 'Descanso 🧘'}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 10: 90-Day Challenge Offer -->
+            <div ng-if="onboardingStep === 10" class="onboarding-step">
+                <div class="challenge-onboard-offer">
+                    <div class="challenge-hero-icon">🏆</div>
+                    <h2>Desafio 90 Dias</h2>
+                    <p class="step-desc">Quer acelerar sua transformação? Comprometa-se com o desafio de 90 dias!</p>
+                    <div class="challenge-benefits-list">
+                        <div class="challenge-benefit"><i class="fas fa-camera"></i> Fotos de progresso (dia 0, 30, 60, 90)</div>
+                        <div class="challenge-benefit"><i class="fas fa-chart-line"></i> Acompanhamento de peso e medidas</div>
+                        <div class="challenge-benefit"><i class="fas fa-share-alt"></i> Convide amigos para o desafio</div>
+                        <div class="challenge-benefit"><i class="fas fa-medal"></i> Conquista especial ao completar</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="onboarding-actions" ng-if="onboardingStep !== 8">
+                <button class="btn btn-outline" ng-if="onboardingStep > 1 && onboardingStep < 9" ng-click="prevOnboardingStep()">Voltar</button>
+                <button class="btn btn-primary" ng-if="onboardingStep < 6" ng-click="nextOnboardingStep()" ng-disabled="!canAdvanceOnboarding()">Próximo</button>
+                <button class="btn btn-primary" ng-if="onboardingStep === 6" ng-click="generateAIGoal()">
+                    <span ng-if="!loading">Definir minha meta 🎯</span>
+                    <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                </button>
+                <button class="btn btn-primary" ng-if="onboardingStep === 7 && aiGoal && !goalLoading" ng-click="startGeneratingPlans()">
+                    Gerar meus planos! 🚀
+                </button>
+                <button class="btn btn-primary btn-block" ng-if="onboardingStep === 9" ng-click="completeOnboarding()">
+                    Bora começar! 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Dashboard Screen -->
     <div id="dashboard" ng-if="view === 'dashboard'" class="screen dashboard-screen">
-        <!-- Top Bar -->
         <div class="top-bar">
             <div class="top-bar-left">
-                <span class="greeting">Olá, {{player.name.split(' ')[0]}}!</span>
+                <span class="greeting">Olá, {{player.name.split(' ')[0]}}! 👋</span>
             </div>
             <div class="top-bar-right">
                 <span class="level-badge">{{playerLevel.level || 'Iniciante'}}</span>
             </div>
         </div>
-
-        <!-- XP Progress -->
         <div class="xp-card">
             <div class="xp-header">
                 <span class="xp-label">▲ {{playerPoints.xp || 0}} XP</span>
@@ -126,22 +671,53 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
+        <!-- 90-Day Challenge Card -->
+        <div class="section" ng-if="challenge90.active">
+            <div class="challenge90-dashboard-card" ng-click="goTo('challenge90')">
+                <div class="challenge90-header">
+                    <span class="challenge90-title">🏆 Desafio 90 Dias</span>
+                    <span class="challenge90-day">Dia {{challenge90.currentDay}}/90</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill challenge90-fill" ng-style="{'width': (challenge90.currentDay / 90 * 100) + '%'}"></div>
+                </div>
+                <div class="challenge90-footer">
+                    <span>Próximo check-in: Dia {{challenge90.nextCheckpoint}}</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Actions Card -->
+        <div class="section" ng-if="nextActions.length">
+            <h2 class="section-title">📋 Próximo</h2>
+            <div class="next-actions-list">
+                <div class="next-action-card" ng-repeat="action in nextActions" ng-click="action.onClick()">
+                    <span class="next-action-icon">{{action.icon}}</span>
+                    <div class="next-action-info">
+                        <span class="next-action-title">{{action.title}}</span>
+                        <span class="next-action-desc">{{action.desc}}</span>
+                    </div>
+                    <i class="fas fa-chevron-right next-action-arrow"></i>
+                </div>
+            </div>
+        </div>
+
         <div class="section">
             <h2 class="section-title">Hoje</h2>
             <div class="action-grid">
-                <div class="action-card" ng-click="goTo('meal')">
+                <div class="action-card" ng-click="goTo('meal-plan')">
                     <div class="action-icon">🍽️</div>
-                    <span>Refeição</span>
+                    <span>Nutrição</span>
                 </div>
-                <div class="action-card" ng-click="goTo('workout')">
+                <div class="action-card" ng-click="goTo('workout-plan')">
                     <div class="action-icon">💪</div>
                     <span>Treino</span>
                 </div>
-                <div class="action-card" ng-click="registerWater()">
+                <div class="action-card" ng-click="goTo('water')">
                     <div class="action-icon">💧</div>
                     <span>Água</span>
-                    <small>{{todayWater || 0}}/8</small>
+                    <small>{{waterMl || 0}}ml</small>
                 </div>
                 <div class="action-card" ng-click="goTo('coach')">
                     <div class="action-icon">🤖</div>
@@ -150,10 +726,28 @@
             </div>
         </div>
 
-        <!-- Active Challenges -->
         <div class="section">
             <h2 class="section-title">Desafios Ativos</h2>
             <div class="challenge-list">
+                <!-- 90-Day Challenge Highlight -->
+                <div class="challenge-card challenge-90" ng-if="!challenge90 || !challenge90.active" ng-click="showChallengeOffer = true" style="border-left:3px solid var(--energy);cursor:pointer">
+                    <div class="challenge-info">
+                        <span class="challenge-name">🏆 Desafio 90 Dias — Transformação</span>
+                        <span class="challenge-reward" style="color:var(--energy)">Especial</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Comprometa-se com 90 dias de evolução. Toque para saber mais!</div>
+                </div>
+                <div class="challenge-card challenge-90 active" ng-if="challenge90 && challenge90.active" style="border-left:3px solid var(--accent)">
+                    <div class="challenge-info">
+                        <span class="challenge-name">🏆 Desafio 90 Dias</span>
+                        <span class="challenge-reward">Dia {{challenge90.day || 0}}/90</span>
+                    </div>
+                    <div class="challenge-progress">
+                        <div class="progress-bar small">
+                            <div class="progress-fill" ng-style="{'width': ((challenge90.day || 0) / 90 * 100) + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="challenge-card" ng-repeat="ch in activeChallenges">
                     <div class="challenge-info">
                         <span class="challenge-name">{{ch.challenge}}</span>
@@ -165,63 +759,186 @@
                         </div>
                     </div>
                 </div>
-                <p ng-if="!activeChallenges.length" class="empty-state">Nenhum desafio ativo. Complete ações para progredir!</p>
+                <p ng-if="!activeChallenges.length" class="empty-state">Nenhum desafio ativo. Bora completar ações! 💪</p>
             </div>
         </div>
 
-        <!-- Bottom Navigation -->
         <nav class="bottom-nav">
-            <div class="nav-item active" ng-click="goTo('dashboard')">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
+            <div class="nav-item active" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
+        </nav>
+    </div>
+
+    <!-- 90-Day Challenge Screen -->
+    <div id="challenge90" ng-if="view === 'challenge90'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>🏆 Desafio 90 Dias</h2>
+        </div>
+        <div class="screen-body">
+            <div class="challenge90-status-card">
+                <div class="challenge90-big-day">Dia {{challenge90.currentDay}}<span>/90</span></div>
+                <div class="progress-bar" style="margin:16px 0">
+                    <div class="progress-fill challenge90-fill" ng-style="{'width': (challenge90.currentDay / 90 * 100) + '%'}"></div>
+                </div>
+                <div class="challenge90-dates">
+                    <span>Início: {{challenge90.startDate}}</span>
+                    <span>Fim: {{challenge90.endDate}}</span>
+                </div>
             </div>
-            <div class="nav-item" ng-click="goTo('meal-plan')">
-                <i class="fas fa-utensils"></i>
-                <span>Nutrição</span>
+
+            <h3 class="section-title" style="margin-top:20px">📸 Checkpoints de Fotos</h3>
+            <div class="checkpoint-timeline">
+                <div class="checkpoint-item" ng-repeat="cp in challenge90.checkpoints" ng-class="{'done': cp.done, 'current': cp.current}">
+                    <div class="checkpoint-marker">
+                        <i class="fas" ng-class="cp.done ? 'fa-check-circle' : 'fa-circle'"></i>
+                    </div>
+                    <div class="checkpoint-info">
+                        <span class="checkpoint-day">Dia {{cp.day}}</span>
+                        <span class="checkpoint-status" ng-if="cp.done">✅ Registrado</span>
+                        <span class="checkpoint-status" ng-if="cp.current && !cp.done">📸 Hora de tirar foto!</span>
+                        <span class="checkpoint-status" ng-if="!cp.done && !cp.current">Pendente</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" ng-if="cp.current && !cp.done" ng-click="goTo('body-checkin')">Registrar</button>
+                </div>
             </div>
-            <div class="nav-item" ng-click="goTo('workout-plan')">
-                <i class="fas fa-dumbbell"></i>
-                <span>Treino</span>
+
+            <h3 class="section-title" style="margin-top:20px">⚖️ Progresso de Peso</h3>
+            <div class="weight-list" ng-if="weightHistory.length">
+                <div class="weight-entry" ng-repeat="w in weightHistory | limitTo:5">
+                    <span class="weight-date">{{w.date}}</span>
+                    <span class="weight-value">{{w.weight}} kg</span>
+                </div>
             </div>
-            <div class="nav-item" ng-click="goTo('progress')">
-                <i class="fas fa-chart-line"></i>
-                <span>Evolução</span>
+            <p ng-if="!weightHistory.length" class="empty-state">Nenhum registro de peso ainda.</p>
+
+            <div class="challenge90-share" style="margin-top:24px">
+                <h3 class="section-title">👥 Convidar Amigos</h3>
+                <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px">Compartilhe o desafio e evolua junto!</p>
+                <button class="btn btn-outline btn-block" ng-click="shareChallenge()">
+                    <i class="fas fa-share-alt"></i> Compartilhar Desafio
+                </button>
             </div>
-            <div class="nav-item" ng-click="goTo('profile')">
-                <i class="fas fa-user"></i>
-                <span>Perfil</span>
+
+            <button class="btn btn-danger btn-block btn-sm" ng-click="quitChallenge90()" style="margin-top:24px">Desistir do desafio</button>
+        </div>
+    </div>
+
+    <!-- Water Tracking Screen -->
+    <div id="water" ng-if="view === 'water'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>💧 Hidratação</h2>
+        </div>
+        <div class="screen-body water-screen-body">
+            <div class="water-goal-card">
+                <div class="water-progress-ring">
+                    <div class="water-progress-fill" ng-style="{'height': waterPercent + '%'}"></div>
+                    <div class="water-progress-text">
+                        <span class="water-current">{{waterMl || 0}}</span>
+                        <span class="water-unit">ml</span>
+                    </div>
+                </div>
+                <div class="water-goal-info">
+                    <span class="water-cups-text">{{waterCupsToday || 0}} de {{waterCupsGoal}} copos</span>
+                    <span class="water-ml-text">{{waterMl || 0}}ml / {{waterGoalMl}}ml</span>
+                </div>
+                <div class="progress-bar" style="margin:12px 0">
+                    <div class="progress-fill water-fill" ng-style="{'width': waterPercent + '%'}"></div>
+                </div>
             </div>
+            <div class="water-cup-selector">
+                <label>Tamanho do copo:</label>
+                <div class="chip-group">
+                    <span class="chip" ng-class="{'active': waterCupSize === 200}" ng-click="setWaterCupSize(200)">200ml</span>
+                    <span class="chip" ng-class="{'active': waterCupSize === 250}" ng-click="setWaterCupSize(250)">250ml</span>
+                    <span class="chip" ng-class="{'active': waterCupSize === 300}" ng-click="setWaterCupSize(300)">300ml</span>
+                    <span class="chip" ng-class="{'active': waterCupSize === 500}" ng-click="setWaterCupSize(500)">500ml</span>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg water-register-btn" ng-click="registerWaterCup()">
+                💧 Registrar copo
+            </button>
+            <div class="water-history" ng-if="waterCupsToday > 0">
+                <div class="water-visual-big">
+                    <span ng-repeat="i in waterCupsArray track by $index" class="water-drop" ng-class="{'filled': $index < waterCupsToday}">💧</span>
+                </div>
+            </div>
+        </div>
+        <nav class="bottom-nav">
+            <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
         </nav>
     </div>
 
     <!-- Meal Photo Screen -->
     <div id="meal" ng-if="view === 'meal'" class="screen">
         <div class="screen-header">
-            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <button class="btn-back" ng-click="goTo('meal-plan')"><i class="fas fa-arrow-left"></i></button>
             <h2>Registrar Refeição</h2>
         </div>
         <div class="screen-body">
-            <div class="meal-type-selector">
-                <button ng-repeat="type in ['Café da manhã','Almoço','Lanche','Jantar']"
-                        class="chip" ng-class="{'active': mealType === type}"
-                        ng-click="mealType = type">{{type}}</button>
+            <div class="registering-meal-info" ng-if="registeringMeal">
+                <span class="reg-meal-time">{{registeringMeal.time}}</span>
+                <span class="reg-meal-name">{{registeringMeal.name}}</span>
             </div>
             <div class="photo-upload-area" ng-click="triggerPhotoUpload()">
                 <img ng-if="mealPhoto" ng-src="{{mealPhoto}}" class="meal-preview">
                 <div ng-if="!mealPhoto" class="photo-placeholder">
                     <i class="fas fa-camera fa-3x"></i>
-                    <p>Tire uma foto do seu prato</p>
+                    <p>Tire uma foto do seu prato 📸</p>
                 </div>
                 <input type="file" id="mealPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onMealPhoto(this)">
             </div>
             <div ng-if="mealAnalysis" class="meal-analysis">
-                <h3>Análise do Coach IA</h3>
-                <div class="analysis-content" ng-bind-html="mealAnalysis"></div>
+                <h3>Análise do Coach IA 🤖</h3>
+                <div class="analysis-content" ng-bind-html="formatAnalysis(mealAnalysis)"></div>
             </div>
-            <button class="btn btn-primary btn-block" ng-click="submitMeal()" ng-disabled="!mealType || loading">
-                <span ng-if="!loading">{{mealPhoto ? 'Registrar com foto' : 'Registrar sem foto'}}</span>
+            <button class="btn btn-primary btn-block" ng-click="submitMeal()" ng-disabled="loading">
+                <span ng-if="!loading">{{mealPhoto ? 'Registrar com foto 📸' : 'Registrar sem foto'}}</span>
                 <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Analisando...</span>
             </button>
+            <div class="alert alert-success" ng-if="success">{{success}}</div>
+        </div>
+    </div>
+
+    <!-- Workout Quick Log Screen -->
+    <div id="workout" ng-if="view === 'workout'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>Registrar Treino</h2>
+        </div>
+        <div class="screen-body">
+            <div class="form-group">
+                <label>Tipo de treino</label>
+                <div class="option-list">
+                    <div class="option-card" ng-class="{'active': workoutLog.type === t.id}" ng-click="workoutLog.type = t.id" ng-repeat="t in workoutTypes">
+                        <span class="option-icon">{{t.icon}}</span>
+                        <span>{{t.name}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Duração (minutos)</label>
+                <div class="duration-selector">
+                    <button class="chip" ng-class="{'active': workoutLog.duration === d}" ng-click="workoutLog.duration = d" ng-repeat="d in [15,30,45,60,90]">{{d}} min</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Observações (opcional)</label>
+                <textarea ng-model="workoutLog.notes" placeholder="Como foi o treino?" rows="3" class="form-textarea"></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" ng-click="submitWorkout()" ng-disabled="!workoutLog.type || !workoutLog.duration || loading">
+                <span ng-if="!loading">Registrar Treino 💪</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Registrando...</span>
+            </button>
+            <div class="alert alert-success" ng-if="success">{{success}}</div>
         </div>
     </div>
 
@@ -229,25 +946,304 @@
     <div id="coach" ng-if="view === 'coach'" class="screen">
         <div class="screen-header">
             <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
-            <h2>Coach IA</h2>
+            <h2>Coach IA 🤖</h2>
         </div>
         <div class="chat-container">
             <div class="chat-messages" id="chatMessages">
                 <div ng-repeat="msg in chatMessages" class="chat-msg" ng-class="msg.role">
                     <div class="msg-bubble">{{msg.content}}</div>
                 </div>
+                <div ng-if="chatLoading" class="chat-msg assistant">
+                    <div class="msg-bubble"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>
+                </div>
             </div>
             <div class="chat-input">
-                <input type="text" ng-model="chatInput" placeholder="Pergunte ao seu coach..." ng-keypress="$event.keyCode === 13 && sendChat()">
-                <button ng-click="sendChat()" ng-disabled="!chatInput || chatLoading"><i class="fas fa-paper-plane"></i></button>
+                <input type="text" ng-model="chat.input" placeholder="Pergunte ao seu coach..." ng-keydown="$event.keyCode === 13 && sendChat()">
+                <button ng-click="sendChat()" ng-disabled="!chat.input || chatLoading"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meal Plan Screen -->
+    <div id="meal-plan" ng-if="view === 'meal-plan'" class="screen has-nav">
+        <div class="screen-header">
+            <h2>🍽️ Plano Alimentar</h2>
+        </div>
+        <div class="screen-body">
+            <div ng-if="!mealPlan && !loading" class="empty-state-box">
+                <p>Seu plano alimentar ainda não foi gerado.</p>
+                <button class="btn btn-primary" ng-click="regenerateMealPlan()">Gerar Plano 🍽️</button>
+            </div>
+            <div ng-if="loading" class="loading-box">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Gerando plano com IA...</p>
+            </div>
+            <div ng-if="mealPlan && !loading">
+                <div class="plan-header">
+                    <span class="plan-date">Gerado em {{mealPlan.date}}</span>
+                    <button class="btn btn-outline btn-sm" ng-click="regenerateMealPlan()"><i class="fas fa-refresh"></i> Regenerar</button>
+                </div>
+                <div class="daily-plan-title">PLANEJAMENTO ALIMENTAR</div>
+                <div class="daily-meal-list">
+                    <div class="daily-meal-item" ng-repeat="meal in mealPlan.meals" ng-class="{'is-next': isNextMeal(meal)}">
+                        <div class="daily-meal-header">
+                            <span class="daily-meal-time">{{meal.time}}</span>
+                            <span class="daily-meal-name">{{meal.name}}</span>
+                            <span class="daily-meal-cals" ng-if="meal.total_calories">{{meal.total_calories}} kcal</span>
+                        </div>
+                        <div class="daily-meal-foods">
+                            <div class="daily-food-item" ng-repeat="food in meal.foods">
+                                <span class="food-name">{{food.food}}</span>
+                                <span class="food-qty">{{food.quantity}}</span>
+                            </div>
+                        </div>
+                        <div class="daily-meal-actions">
+                            <button class="btn btn-sm" ng-class="{'btn-outline': !isMealRegistered(meal), 'btn-registered': isMealRegistered(meal)}" ng-click="registerMealPhoto(meal)" ng-disabled="isMealRegistered(meal)">
+                                <span ng-if="!isMealRegistered(meal)">📷 Registrar</span>
+                                <span ng-if="isMealRegistered(meal)">✅ Registrada</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="daily-total" ng-if="mealPlan.total_calories">
+                    <strong>Valor calórico total: {{mealPlan.total_calories}} kcal</strong>
+                </div>
+
+                <!-- Adjust Meal Plan -->
+                <div class="adjust-section" style="margin-top:20px">
+                    <button class="btn btn-outline btn-block" ng-click="toggleMealAdjust()" ng-if="!showMealAdjust">
+                        🔄 Ajustar plano
+                    </button>
+                    <div ng-if="showMealAdjust" class="adjust-form">
+                        <h3>O que você quer mudar? 🍽️</h3>
+                        <textarea ng-model="mealForm.adjustText" placeholder="Ex: não gosto de ovo, troca por outra coisa..." rows="3" class="form-textarea"></textarea>
+                        <div class="adjust-actions">
+                            <button class="btn btn-outline btn-sm" ng-click="toggleMealAdjust()">Cancelar</button>
+                            <button class="btn btn-primary btn-sm" ng-click="adjustMealPlan()" ng-disabled="!mealForm.adjustText || loading">
+                                <span ng-if="!loading">Ajustar 🔄</span>
+                                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div ng-if="mealAdjustFeedback" class="adjust-feedback">
+                            <p ng-bind-html="formatAnalysis(mealAdjustFeedback)"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="bottom-nav">
+            <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item active" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
+        </nav>
+    </div>
+
+    <!-- Workout Plan Screen -->
+    <div id="workout-plan" ng-if="view === 'workout-plan'" class="screen has-nav">
+        <div class="screen-header">
+            <h2>🏋️ Plano de Treino</h2>
+        </div>
+        <div class="screen-body">
+            <div ng-if="!workoutPlan && !loading" class="empty-state-box">
+                <p>Seu plano de treino ainda não foi gerado.</p>
+                <button class="btn btn-primary" ng-click="regenerateWorkoutPlan()">Gerar Plano 💪</button>
+            </div>
+            <div ng-if="loading" class="loading-box">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>Gerando plano com IA...</p>
+            </div>
+            <div ng-if="workoutPlan && !loading">
+                <div class="plan-header">
+                    <span class="plan-date">Gerado em {{workoutPlan.date}}</span>
+                    <button class="btn btn-outline btn-sm" ng-click="regenerateWorkoutPlan()"><i class="fas fa-refresh"></i> Regenerar</button>
+                </div>
+                <div class="workout-day-card" ng-repeat="day in workoutPlan.days" ng-class="{'rest-day': !day.muscle_group}">
+                    <h3 class="day-title" ng-click="day.open = !day.open">
+                        {{day.day_name}} — {{day.muscle_group || 'Descanso 🧘'}}
+                        <i class="fas" ng-class="day.open ? 'fa-chevron-up' : 'fa-chevron-down'" ng-if="day.muscle_group"></i>
+                    </h3>
+                    <div ng-show="day.open && day.exercises" class="exercises-list">
+                        <div class="exercise-item" ng-repeat="ex in day.exercises">
+                            <div class="exercise-main">
+                                <span class="exercise-name">{{ex.name}}</span>
+                                <span class="exercise-detail">{{ex.sets}}x{{ex.reps}} <span ng-if="ex.weight_suggestion" class="exercise-weight">{{ex.weight_suggestion}}</span></span>
+                            </div>
+                            <button class="btn btn-sm btn-youtube" ng-click="openYoutube(ex.name)">Ver exercício ▶️</button>
+                        </div>
+                        <div class="workout-meta" ng-if="day.duration_minutes">
+                            <span>⏱️ ~{{day.duration_minutes}} min</span>
+                            <span ng-if="day.warmup">🔥 {{day.warmup}}</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm btn-block" ng-click="markWorkoutDone(day)" ng-if="!day.done" style="margin-top:10px">
+                            Bora! Concluir treino ✅
+                        </button>
+                        <div class="alert alert-success" ng-if="day.done" style="margin-top:10px">✅ Treino concluído! Mandou bem! 💪</div>
+                    </div>
+                </div>
+
+                <!-- Adjust Workout Plan -->
+                <div class="adjust-section" style="margin-top:20px">
+                    <button class="btn btn-outline btn-block" ng-click="toggleWorkoutAdjust()" ng-if="!showWorkoutAdjust">
+                        🔄 Ajustar treino
+                    </button>
+                    <div ng-if="showWorkoutAdjust" class="adjust-form">
+                        <h3>O que quer mudar no treino? 💪</h3>
+                        <textarea ng-model="workoutForm.adjustText" placeholder="Ex: hoje estou na academia, não em casa..." rows="3" class="form-textarea"></textarea>
+                        <div class="form-group" style="margin-top:8px">
+                            <label>Foto do espaço (opcional)</label>
+                            <div class="photo-upload-area small" ng-click="triggerAdjustSpacePhoto()">
+                                <img ng-if="workoutAdjustPhoto" ng-src="{{workoutAdjustPhoto}}" class="meal-preview">
+                                <div ng-if="!workoutAdjustPhoto" class="photo-placeholder">
+                                    <i class="fas fa-camera fa-2x"></i>
+                                    <p>📸 Foto do espaço</p>
+                                </div>
+                            </div>
+                            <input type="file" id="adjustSpacePhotoInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onAdjustSpacePhoto(this)">
+                        </div>
+                        <div class="adjust-actions">
+                            <button class="btn btn-outline btn-sm" ng-click="toggleWorkoutAdjust()">Cancelar</button>
+                            <button class="btn btn-primary btn-sm" ng-click="adjustWorkoutPlan()" ng-disabled="!workoutForm.adjustText || loading">
+                                <span ng-if="!loading">Ajustar 🔄</span>
+                                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div ng-if="workoutAdjustFeedback" class="adjust-feedback">
+                            <p ng-bind-html="formatAnalysis(workoutAdjustFeedback)"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="bottom-nav">
+            <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item active" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
+        </nav>
+    </div>
+
+    <!-- Progress Screen -->
+    <div id="progress" ng-if="view === 'progress'" class="screen has-nav">
+        <div class="screen-header">
+            <h2>📊 Evolução</h2>
+        </div>
+        <div class="screen-body">
+            <div class="progress-section">
+                <h3 class="section-title">Nível Atual</h3>
+                <div class="level-timeline">
+                    <div class="level-node" ng-repeat="lv in allLevels" ng-class="{'reached': lv.reached, 'current': lv.current}">
+                        <div class="level-dot"></div>
+                        <span class="level-name">{{lv.level}}</span>
+                        <span class="level-pts">{{lv.minPoints}} XP</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-section">
+                <h3 class="section-title">XP por Semana</h3>
+                <div class="bar-chart">
+                    <div class="bar-item" ng-repeat="bar in xpBars">
+                        <div class="bar-fill" ng-style="{'height': bar.pct + '%'}"></div>
+                        <span class="bar-label">{{bar.label}}</span>
+                        <span class="bar-value">{{bar.value}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-section">
+                <h3 class="section-title">Desafios</h3>
+                <div class="stat-row">
+                    <div class="stat-box">
+                        <span class="stat-number">{{completedChallenges}}</span>
+                        <span class="stat-label">Concluídos</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">{{activeChallengesCount}}</span>
+                        <span class="stat-label">Ativos</span>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-section" ng-if="weightHistory.length">
+                <h3 class="section-title">Peso ao Longo do Tempo</h3>
+                <div class="weight-list">
+                    <div class="weight-entry" ng-repeat="w in weightHistory">
+                        <span class="weight-date">{{w.date}}</span>
+                        <span class="weight-value">{{w.weight}} kg</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="bottom-nav">
+            <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
+            <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
+            <div class="nav-item" ng-click="goTo('workout-plan')"><i class="fas fa-dumbbell"></i><span>Treino</span></div>
+            <div class="nav-item active" ng-click="goTo('progress')"><i class="fas fa-chart-line"></i><span>Evolução</span></div>
+            <div class="nav-item" ng-click="goTo('profile')"><i class="fas fa-user"></i><span>Perfil</span></div>
+        </nav>
+    </div>
+
+    <!-- Body Check-in Screen -->
+    <div id="body-checkin" ng-if="view === 'body-checkin'" class="screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('profile')"><i class="fas fa-arrow-left"></i></button>
+            <h2>📸 Check-in Corporal</h2>
+        </div>
+        <div class="screen-body">
+            <div class="form-group">
+                <label>Peso atual (kg)</label>
+                <input type="number" ng-model="checkin.weight" placeholder="Ex: 78.5" step="0.1" min="30" max="300">
+            </div>
+            <div class="form-group">
+                <label>Fotos corporais (opcional)</label>
+                <div class="body-photos-grid">
+                    <div class="body-photo-box">
+                        <label>Frente</label>
+                        <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('front')">
+                            <img ng-if="checkin.photo_front" ng-src="{{checkin.photo_front}}" class="meal-preview">
+                            <div ng-if="!checkin.photo_front" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Frente</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="body-photo-box">
+                        <label>Lateral</label>
+                        <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('side')">
+                            <img ng-if="checkin.photo_side" ng-src="{{checkin.photo_side}}" class="meal-preview">
+                            <div ng-if="!checkin.photo_side" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Lateral</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="checkinPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('front', this)">
+                <input type="file" id="checkinPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('side', this)">
+            </div>
+            <button class="btn btn-primary btn-block" ng-click="submitCheckin()" ng-disabled="!checkin.weight || loading">
+                <span ng-if="!loading">Salvar Check-in 📸</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Salvando...</span>
+            </button>
+            <button class="btn btn-outline btn-block" ng-if="checkin.photo_front || checkin.photo_side" ng-click="analyzeBodyPhotos(checkin.photo_front, checkin.photo_side)" ng-disabled="bodyAnalysisLoading" style="margin-top:8px">
+                🔬 Analisar composição corporal
+            </button>
+            <div class="alert alert-success" ng-if="success">{{success}}</div>
+            <div class="progress-section" ng-if="weightHistory.length" style="margin-top:24px">
+                <h3 class="section-title">Histórico</h3>
+                <div class="weight-list">
+                    <div class="weight-entry" ng-repeat="w in weightHistory">
+                        <span class="weight-date">{{w.date}}</span>
+                        <span class="weight-value">{{w.weight}} kg</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Profile Screen -->
-    <div id="profile" ng-if="view === 'profile'" class="screen">
+    <div id="profile" ng-if="view === 'profile'" class="screen has-nav">
         <div class="screen-header">
-            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
             <h2>Meu Perfil</h2>
         </div>
         <div class="screen-body">
@@ -257,13 +1253,33 @@
                 <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
                 <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
             </div>
+            <div class="profile-data" ng-if="profileData">
+                <div class="data-row"><span>Sexo:</span><span>{{profileData.sex === 'M' ? 'Masculino' : 'Feminino'}}</span></div>
+                <div class="data-row"><span>Idade:</span><span>{{profileData.age}} anos</span></div>
+                <div class="data-row"><span>Altura:</span><span>{{profileData.height}} cm</span></div>
+                <div class="data-row"><span>Peso:</span><span>{{profileData.weight}} kg</span></div>
+                <div class="data-row"><span>Objetivo:</span><span>{{goalLabel(profileData.goal)}}</span></div>
+                <div class="data-row"><span>Equipamento:</span><span>{{equipLabel(profileData.equipment)}}</span></div>
+                <div class="data-row" ng-if="profileData.training_days"><span>Dias de treino:</span><span>{{profileData.training_days.join(', ')}}</span></div>
+                <div class="data-row" ng-if="profileData.training_time"><span>Horário:</span><span>{{profileData.training_time}}</span></div>
+            </div>
+            <!-- Body Analysis Summary -->
+            <div class="profile-data" ng-if="latestBodyAnalysis" style="margin-top:12px">
+                <h3 style="margin-bottom:8px;font-size:15px">📊 Última Análise Corporal</h3>
+                <div class="analysis-formatted" ng-bind-html="formatAnalysis(latestBodyAnalysis)"></div>
+            </div>
             <div class="profile-actions">
                 <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
+                <button class="btn btn-outline btn-block" ng-click="openBodyAnalysisModal()">📊 Análise Corporal / Medidas</button>
+                <button class="btn btn-outline btn-block" ng-if="!challenge90.active" ng-click="showChallengeOffer = true">🏆 Desafio 90 Dias</button>
+                <button class="btn btn-outline btn-block" ng-if="challenge90.active" ng-click="goTo('challenge90')">🏆 Ver Desafio 90 Dias</button>
                 <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
+                <button class="btn btn-outline btn-block" ng-click="goTo('onboarding')">⚙️ Refazer Perfil</button>
+                <button class="btn btn-outline btn-block" ng-click="openTerms()">📋 Termos de Uso</button>
                 <button class="btn btn-danger btn-block" ng-click="logout()">Sair</button>
+                <button class="btn btn-outline btn-block btn-sm" ng-click="confirmDeleteAccount()" style="margin-top:16px;color:var(--danger);border-color:var(--danger)">Excluir minha conta</button>
             </div>
         </div>
-
         <nav class="bottom-nav">
             <div class="nav-item" ng-click="goTo('dashboard')"><i class="fas fa-home"></i><span>Home</span></div>
             <div class="nav-item" ng-click="goTo('meal-plan')"><i class="fas fa-utensils"></i><span>Nutrição</span></div>
