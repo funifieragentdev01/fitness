@@ -1,0 +1,61 @@
+<div id="workout-plan" class="screen has-nav">
+    <div class="screen-header"><h2>🏋️ Plano de Treino</h2></div>
+    <div class="screen-body">
+        <div ng-if="!workoutPlan && !loading" class="empty-state-box">
+            <p>Seu plano de treino ainda não foi gerado.</p>
+            <button class="btn btn-primary" ng-click="regenerateWorkoutPlan()">Gerar Plano 💪</button>
+        </div>
+        <div ng-if="loading" class="loading-box"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Gerando plano com IA...</p></div>
+        <div ng-if="workoutPlan && !loading">
+            <div class="plan-header">
+                <span class="plan-date">Gerado em {{workoutPlan.date}}</span>
+                <button class="btn btn-outline btn-sm" ng-click="regenerateWorkoutPlan()"><i class="fas fa-refresh"></i> Regenerar</button>
+            </div>
+            <div class="workout-day-card" ng-repeat="day in workoutPlan.days" ng-class="{'rest-day': !day.muscle_group}">
+                <h3 class="day-title" ng-click="day.open = !day.open">
+                    {{day.day_name}} — {{day.muscle_group || 'Descanso 🧘'}}
+                    <i class="fas" ng-class="day.open ? 'fa-chevron-up' : 'fa-chevron-down'" ng-if="day.muscle_group"></i>
+                </h3>
+                <div ng-show="day.open && day.exercises" class="exercises-list">
+                    <div class="exercise-item" ng-repeat="ex in day.exercises">
+                        <div class="exercise-main">
+                            <span class="exercise-name">{{ex.name}}</span>
+                            <span class="exercise-detail">{{ex.sets}}x{{ex.reps}} <span ng-if="ex.weight_suggestion" class="exercise-weight">{{ex.weight_suggestion}}</span></span>
+                        </div>
+                        <button class="btn btn-sm btn-youtube" ng-click="openYoutube(ex.name)">Ver exercício ▶️</button>
+                    </div>
+                    <div class="workout-meta" ng-if="day.duration_minutes">
+                        <span>⏱️ ~{{day.duration_minutes}} min</span>
+                        <span ng-if="day.warmup">🔥 {{day.warmup}}</span>
+                    </div>
+                    <button class="btn btn-primary btn-sm btn-block" ng-click="markWorkoutDone(day)" ng-if="!day.done" style="margin-top:10px">Bora! Concluir treino ✅</button>
+                    <div class="alert alert-success" ng-if="day.done" style="margin-top:10px">✅ Treino concluído! Mandou bem! 💪</div>
+                </div>
+            </div>
+
+            <div class="adjust-section" style="margin-top:20px">
+                <button class="btn btn-outline btn-block" ng-click="toggleWorkoutAdjust()" ng-if="!showWorkoutAdjust">🔄 Ajustar treino</button>
+                <div ng-if="showWorkoutAdjust" class="adjust-form">
+                    <h3>O que quer mudar no treino? 💪</h3>
+                    <textarea ng-model="workoutForm.adjustText" placeholder="Ex: hoje estou na academia, não em casa..." rows="3" class="form-textarea"></textarea>
+                    <div class="form-group" style="margin-top:8px">
+                        <label>Foto do espaço (opcional)</label>
+                        <div class="photo-upload-area small" ng-click="triggerAdjustSpacePhoto()">
+                            <img ng-if="workoutAdjustPhoto" ng-src="{{workoutAdjustPhoto}}" class="meal-preview">
+                            <div ng-if="!workoutAdjustPhoto" class="photo-placeholder"><i class="fas fa-camera fa-2x"></i><p>📸 Foto do espaço</p></div>
+                        </div>
+                        <input type="file" id="adjustSpacePhotoInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onAdjustSpacePhoto(this)">
+                    </div>
+                    <div class="adjust-actions">
+                        <button class="btn btn-outline btn-sm" ng-click="toggleWorkoutAdjust()">Cancelar</button>
+                        <button class="btn btn-primary btn-sm" ng-click="adjustWorkoutPlan()" ng-disabled="!workoutForm.adjustText || loading">
+                            <span ng-if="!loading">Ajustar 🔄</span><span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                        </button>
+                    </div>
+                    <div ng-if="workoutAdjustFeedback" class="adjust-feedback"><p ng-bind-html="formatAnalysis(workoutAdjustFeedback)"></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <bottom-nav active="'workout-plan'"></bottom-nav>
+</div>

@@ -1,0 +1,39 @@
+<div id="profile" class="screen has-nav">
+    <div class="screen-header">
+        <h2>Meu Perfil</h2>
+    </div>
+    <div class="screen-body">
+        <div class="profile-card">
+            <div class="profile-avatar">{{player.name ? player.name[0].toUpperCase() : '?'}}</div>
+            <h3>{{player.name}}</h3>
+            <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
+            <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
+        </div>
+        <div class="profile-data" ng-if="profileData">
+            <div class="data-row"><span>Sexo:</span><span>{{profileData.sex === 'M' ? 'Masculino' : 'Feminino'}}</span></div>
+            <div class="data-row"><span>Idade:</span><span>{{profileData.age}} anos</span></div>
+            <div class="data-row"><span>Altura:</span><span>{{profileData.height}} cm</span></div>
+            <div class="data-row"><span>Peso:</span><span>{{profileData.weight}} kg</span></div>
+            <div class="data-row"><span>Objetivo:</span><span>{{goalLabel(profileData.goal)}}</span></div>
+            <div class="data-row"><span>Equipamento:</span><span>{{equipLabel(profileData.equipment)}}</span></div>
+            <div class="data-row" ng-if="profileData.training_days"><span>Dias de treino:</span><span>{{profileData.training_days.join(', ')}}</span></div>
+            <div class="data-row" ng-if="profileData.training_time"><span>Horário:</span><span>{{profileData.training_time}}</span></div>
+        </div>
+        <div class="profile-data" ng-if="latestBodyAnalysis" style="margin-top:12px">
+            <h3 style="margin-bottom:8px;font-size:15px">📊 Última Análise Corporal</h3>
+            <div class="analysis-formatted" ng-bind-html="formatAnalysis(latestBodyAnalysis)"></div>
+        </div>
+        <div class="profile-actions">
+            <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
+            <button class="btn btn-outline btn-block" ng-click="openBodyAnalysisModal()">📊 Análise Corporal / Medidas</button>
+            <button class="btn btn-outline btn-block" ng-if="!challenge90 || !challenge90.active" ng-click="showChallengeOffer = true">🏆 Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')">🏆 Ver Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
+            <button class="btn btn-outline btn-block" ng-click="goTo('onboarding')">⚙️ Refazer Perfil</button>
+            <button class="btn btn-outline btn-block" ng-click="openTerms()">📋 Termos de Uso</button>
+            <button class="btn btn-danger btn-block" ng-click="logout()">Sair</button>
+            <button class="btn btn-outline btn-block btn-sm" ng-click="confirmDeleteAccount()" style="margin-top:16px;color:var(--danger);border-color:var(--danger)">Excluir minha conta</button>
+        </div>
+    </div>
+    <bottom-nav active="'profile'"></bottom-nav>
+</div>

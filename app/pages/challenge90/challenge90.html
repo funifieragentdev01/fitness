@@ -1,0 +1,53 @@
+<div id="challenge90" class="screen">
+    <div class="screen-header">
+        <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+        <h2>🏆 Desafio 90 Dias</h2>
+    </div>
+    <div class="screen-body">
+        <div class="challenge90-status-card">
+            <div class="challenge90-big-day">Dia {{challenge90.currentDay}}<span>/90</span></div>
+            <div class="progress-bar" style="margin:16px 0">
+                <div class="progress-fill challenge90-fill" ng-style="{'width': (challenge90.currentDay / 90 * 100) + '%'}"></div>
+            </div>
+            <div class="challenge90-dates">
+                <span>Início: {{challenge90.startDate}}</span>
+                <span>Fim: {{challenge90.endDate}}</span>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top:20px">📸 Checkpoints de Fotos</h3>
+        <div class="checkpoint-timeline">
+            <div class="checkpoint-item" ng-repeat="cp in challenge90.checkpoints" ng-class="{'done': cp.done, 'current': cp.current}">
+                <div class="checkpoint-marker">
+                    <i class="fas" ng-class="cp.done ? 'fa-check-circle' : 'fa-circle'"></i>
+                </div>
+                <div class="checkpoint-info">
+                    <span class="checkpoint-day">Dia {{cp.day}}</span>
+                    <span class="checkpoint-status" ng-if="cp.done">✅ Registrado</span>
+                    <span class="checkpoint-status" ng-if="cp.current && !cp.done">📸 Hora de tirar foto!</span>
+                    <span class="checkpoint-status" ng-if="!cp.done && !cp.current">Pendente</span>
+                </div>
+                <button class="btn btn-sm btn-primary" ng-if="cp.current && !cp.done" ng-click="goTo('body-checkin')">Registrar</button>
+            </div>
+        </div>
+
+        <h3 class="section-title" style="margin-top:20px">⚖️ Progresso de Peso</h3>
+        <div class="weight-list" ng-if="weightHistory.length">
+            <div class="weight-entry" ng-repeat="w in weightHistory | limitTo:5">
+                <span class="weight-date">{{w.date}}</span>
+                <span class="weight-value">{{w.weight}} kg</span>
+            </div>
+        </div>
+        <p ng-if="!weightHistory.length" class="empty-state">Nenhum registro de peso ainda.</p>
+
+        <div class="challenge90-share" style="margin-top:24px">
+            <h3 class="section-title">👥 Convidar Amigos</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px">Compartilhe o desafio e evolua junto!</p>
+            <button class="btn btn-outline btn-block" ng-click="shareChallenge()">
+                <i class="fas fa-share-alt"></i> Compartilhar Desafio
+            </button>
+        </div>
+
+        <button class="btn btn-danger btn-block btn-sm" ng-click="quitChallenge90()" style="margin-top:24px">Desistir do desafio</button>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+<div id="meal-plan" class="screen has-nav">
+    <div class="screen-header"><h2>🍽️ Plano Alimentar</h2></div>
+    <div class="screen-body">
+        <div ng-if="!mealPlan && !loading" class="empty-state-box">
+            <p>Seu plano alimentar ainda não foi gerado.</p>
+            <button class="btn btn-primary" ng-click="regenerateMealPlan()">Gerar Plano 🍽️</button>
+        </div>
+        <div ng-if="loading" class="loading-box"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Gerando plano com IA...</p></div>
+        <div ng-if="mealPlan && !loading">
+            <div class="plan-header">
+                <span class="plan-date">Gerado em {{mealPlan.date}}</span>
+                <button class="btn btn-outline btn-sm" ng-click="regenerateMealPlan()"><i class="fas fa-refresh"></i> Regenerar</button>
+            </div>
+            <div class="daily-plan-title">PLANEJAMENTO ALIMENTAR</div>
+            <div class="daily-meal-list">
+                <div class="daily-meal-item" ng-repeat="meal in mealPlan.meals" ng-class="{'is-next': isNextMeal(meal)}">
+                    <div class="daily-meal-header">
+                        <span class="daily-meal-time">{{meal.time}}</span>
+                        <span class="daily-meal-name">{{meal.name}}</span>
+                        <span class="daily-meal-cals" ng-if="meal.total_calories">{{meal.total_calories}} kcal</span>
+                    </div>
+                    <div class="daily-meal-foods">
+                        <div class="daily-food-item" ng-repeat="food in meal.foods"><span class="food-name">{{food.food}}</span><span class="food-qty">{{food.quantity}}</span></div>
+                    </div>
+                    <div class="daily-meal-actions">
+                        <button class="btn btn-sm" ng-class="{'btn-outline': !isMealRegistered(meal), 'btn-registered': isMealRegistered(meal)}" ng-click="registerMealPhoto(meal)" ng-disabled="isMealRegistered(meal)">
+                            <span ng-if="!isMealRegistered(meal)">📷 Registrar</span><span ng-if="isMealRegistered(meal)">✅ Registrada</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="daily-total" ng-if="mealPlan.total_calories"><strong>Valor calórico total: {{mealPlan.total_calories}} kcal</strong></div>
+
+            <div class="adjust-section" style="margin-top:20px">
+                <button class="btn btn-outline btn-block" ng-click="toggleMealAdjust()" ng-if="!showMealAdjust">🔄 Ajustar plano</button>
+                <div ng-if="showMealAdjust" class="adjust-form">
+                    <h3>O que você quer mudar? 🍽️</h3>
+                    <textarea ng-model="mealForm.adjustText" placeholder="Ex: não gosto de ovo, troca por outra coisa..." rows="3" class="form-textarea"></textarea>
+                    <div class="adjust-actions">
+                        <button class="btn btn-outline btn-sm" ng-click="toggleMealAdjust()">Cancelar</button>
+                        <button class="btn btn-primary btn-sm" ng-click="adjustMealPlan()" ng-disabled="!mealForm.adjustText || loading">
+                            <span ng-if="!loading">Ajustar 🔄</span><span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
+                        </button>
+                    </div>
+                    <div ng-if="mealAdjustFeedback" class="adjust-feedback"><p ng-bind-html="formatAnalysis(mealAdjustFeedback)"></p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <bottom-nav active="'meal-plan'"></bottom-nav>
+</div>

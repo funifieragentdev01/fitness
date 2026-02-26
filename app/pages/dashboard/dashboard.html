@@ -1,0 +1,72 @@
+<div id="dashboard" class="screen dashboard-screen">
+    <div class="top-bar">
+        <div class="top-bar-left"><span class="greeting">Olá, {{player.name.split(' ')[0]}}! 👋</span></div>
+        <div class="top-bar-right"><span class="level-badge">{{playerLevel.level || 'Iniciante'}}</span></div>
+    </div>
+    <div class="xp-card">
+        <div class="xp-header">
+            <span class="xp-label">▲ {{playerPoints.xp || 0}} XP</span>
+            <span class="xp-next" ng-if="nextLevel">Próximo: {{nextLevel.level}} ({{nextLevel.minPoints}} XP)</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" ng-style="{'width': levelProgress + '%'}"></div></div>
+        <div class="xp-footer">
+            <span>⚡ {{playerPoints.energy || 0}} Energia</span>
+            <span ng-if="streak.days > 0">🔥 {{streak.days}} dias</span>
+        </div>
+    </div>
+
+    <!-- 90-Day Challenge Card -->
+    <div class="section" ng-if="challenge90.active">
+        <div class="challenge90-dashboard-card" ng-click="goTo('challenge90')">
+            <div class="challenge90-header">
+                <span class="challenge90-title">🏆 Desafio 90 Dias</span>
+                <span class="challenge90-day">Dia {{challenge90.currentDay}}/90</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill challenge90-fill" ng-style="{'width': (challenge90.currentDay / 90 * 100) + '%'}"></div></div>
+            <div class="challenge90-footer"><span>Próximo check-in: Dia {{challenge90.nextCheckpoint}}</span><i class="fas fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <!-- Next Actions -->
+    <div class="section" ng-if="nextActions.length">
+        <h2 class="section-title">📋 Próximo</h2>
+        <div class="next-actions-list">
+            <div class="next-action-card" ng-repeat="action in nextActions" ng-click="action.onClick()">
+                <span class="next-action-icon">{{action.icon}}</span>
+                <div class="next-action-info"><span class="next-action-title">{{action.title}}</span><span class="next-action-desc">{{action.desc}}</span></div>
+                <i class="fas fa-chevron-right next-action-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Hoje</h2>
+        <div class="action-grid">
+            <div class="action-card" ng-click="goTo('meal-plan')"><div class="action-icon">🍽️</div><span>Nutrição</span></div>
+            <div class="action-card" ng-click="goTo('workout-plan')"><div class="action-icon">💪</div><span>Treino</span></div>
+            <div class="action-card" ng-click="goTo('water')"><div class="action-icon">💧</div><span>Água</span><small>{{waterMl || 0}}ml</small></div>
+            <div class="action-card" ng-click="goTo('coach')"><div class="action-icon">🤖</div><span>Coach IA</span></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Desafios Ativos</h2>
+        <div class="challenge-list">
+            <div class="challenge-card challenge-90" ng-if="!challenge90 || !challenge90.active" ng-click="showChallengeOffer = true" style="border-left:3px solid var(--energy);cursor:pointer">
+                <div class="challenge-info"><span class="challenge-name">🏆 Desafio 90 Dias — Transformação</span><span class="challenge-reward" style="color:var(--energy)">Especial</span></div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Comprometa-se com 90 dias de evolução. Toque para saber mais!</div>
+            </div>
+            <div class="challenge-card challenge-90 active" ng-if="challenge90 && challenge90.active" style="border-left:3px solid var(--accent)">
+                <div class="challenge-info"><span class="challenge-name">🏆 Desafio 90 Dias</span><span class="challenge-reward">Dia {{challenge90.day || 0}}/90</span></div>
+                <div class="challenge-progress"><div class="progress-bar small"><div class="progress-fill" ng-style="{'width': ((challenge90.day || 0) / 90 * 100) + '%'}"></div></div></div>
+            </div>
+            <div class="challenge-card" ng-repeat="ch in activeChallenges">
+                <div class="challenge-info"><span class="challenge-name">{{ch.challenge}}</span><span class="challenge-reward">+{{ch.points[0].total}} XP</span></div>
+                <div class="challenge-progress"><div class="progress-bar small"><div class="progress-fill" ng-style="{'width': (ch.progress || 0) + '%'}"></div></div></div>
+            </div>
+            <p ng-if="!activeChallenges.length" class="empty-state">Nenhum desafio ativo. Bora completar ações! 💪</p>
+        </div>
+    </div>
+
+    <bottom-nav active="'dashboard'"></bottom-nav>
+</div>

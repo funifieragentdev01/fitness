@@ -1,0 +1,42 @@
+<div id="water" class="screen">
+    <div class="screen-header">
+        <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+        <h2>💧 Hidratação</h2>
+    </div>
+    <div class="screen-body water-screen-body">
+        <div class="water-goal-card">
+            <div class="water-progress-ring">
+                <div class="water-progress-fill" ng-style="{'height': waterPercent + '%'}"></div>
+                <div class="water-progress-text">
+                    <span class="water-current">{{waterMl || 0}}</span>
+                    <span class="water-unit">ml</span>
+                </div>
+            </div>
+            <div class="water-goal-info">
+                <span class="water-cups-text">{{waterCupsToday || 0}} de {{waterCupsGoal}} copos</span>
+                <span class="water-ml-text">{{waterMl || 0}}ml / {{waterGoalMl}}ml</span>
+            </div>
+            <div class="progress-bar" style="margin:12px 0">
+                <div class="progress-fill water-fill" ng-style="{'width': waterPercent + '%'}"></div>
+            </div>
+        </div>
+        <div class="water-cup-selector">
+            <label>Tamanho do copo:</label>
+            <div class="chip-group">
+                <span class="chip" ng-class="{'active': waterCupSize === 200}" ng-click="setWaterCupSize(200)">200ml</span>
+                <span class="chip" ng-class="{'active': waterCupSize === 250}" ng-click="setWaterCupSize(250)">250ml</span>
+                <span class="chip" ng-class="{'active': waterCupSize === 300}" ng-click="setWaterCupSize(300)">300ml</span>
+                <span class="chip" ng-class="{'active': waterCupSize === 500}" ng-click="setWaterCupSize(500)">500ml</span>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg water-register-btn" ng-click="registerWaterCup()">
+            💧 Registrar copo
+        </button>
+        <div class="water-history" ng-if="waterCupsToday > 0">
+            <div class="water-visual-big">
+                <span ng-repeat="i in waterCupsArray track by $index" class="water-drop" ng-class="{'filled': $index < waterCupsToday}">💧</span>
+            </div>
+        </div>
+    </div>
+    <bottom-nav active="'water'"></bottom-nav>
+</div>

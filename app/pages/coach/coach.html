@@ -1,0 +1,20 @@
+<div id="coach" class="screen">
+    <div class="screen-header">
+        <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+        <h2>Coach IA 🤖</h2>
+    </div>
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div ng-repeat="msg in chatMessages" class="chat-msg" ng-class="msg.role">
+                <div class="msg-bubble">{{msg.content}}</div>
+            </div>
+            <div ng-if="chatLoading" class="chat-msg assistant">
+                <div class="msg-bubble"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" ng-model="chat.input" placeholder="Pergunte ao seu coach..." ng-keydown="$event.keyCode === 13 && sendChat()">
+            <button ng-click="sendChat()" ng-disabled="!chat.input || chatLoading"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>

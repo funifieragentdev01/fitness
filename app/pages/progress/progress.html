@@ -1,0 +1,50 @@
+<div id="progress" class="screen has-nav">
+    <div class="screen-header">
+        <h2>📊 Evolução</h2>
+    </div>
+    <div class="screen-body">
+        <div class="progress-section">
+            <h3 class="section-title">Nível Atual</h3>
+            <div class="level-timeline">
+                <div class="level-node" ng-repeat="lv in allLevels" ng-class="{'reached': lv.reached, 'current': lv.current}">
+                    <div class="level-dot"></div>
+                    <span class="level-name">{{lv.level}}</span>
+                    <span class="level-pts">{{lv.minPoints}} XP</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-section">
+            <h3 class="section-title">XP por Semana</h3>
+            <div class="bar-chart">
+                <div class="bar-item" ng-repeat="bar in xpBars">
+                    <div class="bar-fill" ng-style="{'height': bar.pct + '%'}"></div>
+                    <span class="bar-label">{{bar.label}}</span>
+                    <span class="bar-value">{{bar.value}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-section">
+            <h3 class="section-title">Desafios</h3>
+            <div class="stat-row">
+                <div class="stat-box">
+                    <span class="stat-number">{{completedChallenges}}</span>
+                    <span class="stat-label">Concluídos</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">{{activeChallengesCount}}</span>
+                    <span class="stat-label">Ativos</span>
+                </div>
+            </div>
+        </div>
+        <div class="progress-section" ng-if="weightHistory.length">
+            <h3 class="section-title">Peso ao Longo do Tempo</h3>
+            <div class="weight-list">
+                <div class="weight-entry" ng-repeat="w in weightHistory">
+                    <span class="weight-date">{{w.date}}</span>
+                    <span class="weight-value">{{w.weight}} kg</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <bottom-nav active="'progress'"></bottom-nav>
+</div>
