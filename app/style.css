@@ -771,12 +771,30 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 
 @media (max-width: 480px) {
-    .landing-hero { min-height: 90vh; padding: 80px 20px 40px; align-items: flex-end; }
-    .landing-hero-overlay {
-        background: linear-gradient(180deg, rgba(17,17,17,0.3) 0%, rgba(17,17,17,0.85) 50%, rgba(17,17,17,0.98) 80%);
+    .landing-hero {
+        min-height: 100vh;
+        padding: 0;
+        align-items: stretch;
+        flex-direction: column;
     }
-    .landing-hero-content { text-align: center; max-width: 100%; }
-    .landing-headline { font-size: 28px; }
+    .landing-hero-bg {
+        position: relative;
+        flex: 0 0 45vh;
+        background-position: 70% 20%;
+    }
+    .landing-hero-overlay {
+        background: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(17,17,17,0.6) 40%, rgba(17,17,17,1) 50%, rgba(17,17,17,1) 100%);
+    }
+    .landing-hero-content {
+        position: relative;
+        text-align: center;
+        max-width: 100%;
+        padding: 0 24px 40px;
+        margin-top: -8vh;
+        z-index: 2;
+    }
+    .landing-headline { font-size: 26px; }
+    .landing-subtitle { font-size: 15px; }
     .landing-cta-row { justify-content: center; }
     .challenge-preview-cards { flex-direction: column; align-items: center; }
 }
