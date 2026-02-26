@@ -15,7 +15,7 @@
 <body>
 
     <!-- Terms Modal (global) -->
-    <div class="modal-overlay" ng-if="showTerms" ng-click="closeTerms()">
+    <div class="modal-overlay" ng-show="showTerms" ng-click="closeTerms()">
         <div class="modal-content" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>Termos de Uso</h2>
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Body Analysis Modal (global) -->
-    <div class="modal-overlay" ng-if="showBodyAnalysis" ng-click="closeBodyAnalysis()">
+    <div class="modal-overlay" ng-show="showBodyAnalysis" ng-click="closeBodyAnalysis()">
         <div class="modal-content modal-large" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>📊 Análise Corporal</h2>
@@ -132,7 +132,7 @@
     </div>
 
     <!-- 90-Day Challenge Modal (global) -->
-    <div class="modal-overlay" ng-if="showChallengeOffer" ng-click="closeChallengeOffer()">
+    <div class="modal-overlay" ng-show="showChallengeOffer" ng-click="closeChallengeOffer()">
         <div class="modal-content" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>🏆 Desafio 90 Dias</h2>
