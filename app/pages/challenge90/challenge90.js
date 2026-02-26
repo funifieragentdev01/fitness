@@ -12,7 +12,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
     }).catch(function() {});
 
     $scope.shareChallenge = function() {
-        var text = '🏆 Estou no Desafio 90 Dias do FitEvolve! Bora evoluir juntos? 💪';
+        var text = '🏆 Estou no Desafio 90 Dias do CoachFit AI! Bora evoluir juntos? 💪';
         if (navigator.share) {
             navigator.share({ title: 'Desafio 90 Dias', text: text });
         } else {

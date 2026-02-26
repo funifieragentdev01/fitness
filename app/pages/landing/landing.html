@@ -1,63 +1,87 @@
 <div id="splash" class="screen landing-screen">
+    <nav class="landing-nav">
+        <div class="landing-nav-inner">
+            <div class="landing-logo-row">
+                <span class="landing-logo-icon">🔥</span>
+                <span class="landing-logo-text">CoachFit AI</span>
+            </div>
+            <div class="landing-nav-actions">
+                <a class="landing-nav-link" ng-click="goTo('login')">Login</a>
+                <button class="btn btn-accent-pill" ng-click="goTo('register')">Começar</button>
+            </div>
+        </div>
+    </nav>
+
     <div class="landing-hero">
         <div class="landing-hero-bg"></div>
+        <div class="landing-hero-overlay"></div>
         <div class="landing-hero-content">
-            <div class="landing-logo-row">
-                <span class="landing-logo-icon">🏔️</span>
-                <span class="landing-logo-text">FitEvolve</span>
-            </div>
-            <h1 class="landing-headline">Seu plano de nutrição e treino <span class="text-accent">personalizado com IA</span></h1>
-            <p class="landing-subtitle">Planos alimentares e de treino adaptados ao seu corpo, objetivo e orçamento. Tudo em português, com comida de verdade. 🇧🇷</p>
+            <h1 class="landing-headline">Seu Coach de <span class="text-accent">Nutrição &amp; Treino</span> com Inteligência Artificial</h1>
+            <p class="landing-subtitle">Personal trainer e nutricionista IA no seu bolso. Planos personalizados, análise por foto e gamificação para te manter motivado.</p>
             <div class="landing-cta-row">
                 <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Começar Grátis 🚀</button>
-                <button class="btn btn-glass btn-lg" ng-click="goTo('login')">Entrar</button>
+                <button class="btn btn-glass btn-lg" ng-click="goTo('login')">Já tenho conta</button>
             </div>
         </div>
     </div>
 
-    <div class="landing-section">
-        <h2 class="landing-section-title">Por que o FitEvolve?</h2>
-        <div class="benefit-grid">
-            <div class="benefit-card">
-                <div class="benefit-icon-circle"><i class="fas fa-utensils"></i></div>
-                <h3>Plano Alimentar Inteligente</h3>
-                <p>Cardápio personalizado com arroz, feijão e os alimentos que você já come. Adaptado ao seu orçamento.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon-circle"><i class="fas fa-dumbbell"></i></div>
-                <h3>Treino Sob Medida</h3>
-                <p>Em casa, no parque ou na academia — o plano se adapta ao seu espaço e equipamento.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon-circle"><i class="fas fa-camera"></i></div>
-                <h3>Análise por Foto</h3>
-                <p>Fotografe seu prato e receba feedback nutricional instantâneo da IA.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon-circle"><i class="fas fa-trophy"></i></div>
-                <h3>Gamificação</h3>
-                <p>XP, níveis e desafios para te manter motivado. Evolua no seu ritmo!</p>
+    <div class="landing-section landing-feature-section">
+        <div class="feature-content">
+            <div class="feature-badge">📸 Análise Corporal</div>
+            <h2 class="landing-section-title left-align">Análise corporal <span class="text-accent">inteligente por foto</span></h2>
+            <p class="feature-desc">Tire uma foto e receba uma análise detalhada do seu corpo. A IA identifica seu biotipo, percentual de gordura estimado e sugere o melhor plano para seus objetivos.</p>
+            <div class="feature-highlights">
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Avaliação de composição corporal</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Fotos de frente e perfil</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Acompanhamento de evolução</div>
             </div>
         </div>
     </div>
 
-    <div class="landing-section landing-how-section">
-        <h2 class="landing-section-title">Como funciona?</h2>
-        <div class="how-steps-row">
-            <div class="how-step-card">
-                <div class="how-step-number">1</div>
-                <h3>Conte sobre você</h3>
-                <p>Responda perguntas sobre seu corpo, rotina e objetivos em 2 minutos.</p>
+    <div class="landing-section landing-feature-section alt-bg">
+        <div class="feature-content">
+            <div class="feature-badge">🥗 Plano Alimentar</div>
+            <h2 class="landing-section-title left-align">Cardápio <span class="text-accent">personalizado</span> com comida de verdade</h2>
+            <p class="feature-desc">Nada de dieta genérica. A IA cria um plano alimentar com os alimentos que você já come, adaptado ao seu orçamento e rotina.</p>
+            <div class="feature-highlights">
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Comida brasileira de verdade</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Adaptado ao seu orçamento</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Análise de foto do prato</div>
             </div>
-            <div class="how-step-card">
-                <div class="how-step-number">2</div>
-                <h3>IA gera seus planos</h3>
-                <p>Em segundos, receba plano alimentar e de treino 100% personalizado.</p>
+        </div>
+    </div>
+
+    <div class="landing-section landing-feature-section">
+        <div class="feature-content">
+            <div class="feature-badge">💪 Treino</div>
+            <h2 class="landing-section-title left-align">Treino sob medida: <span class="text-accent">academia ou casa</span></h2>
+            <p class="feature-desc">Plano de treino personalizado para seu nível, equipamento disponível e objetivo. Em casa, no parque ou na academia.</p>
+            <div class="feature-highlights">
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Adaptado ao seu espaço</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Progressão automática</div>
+                <div class="feature-highlight-item"><i class="fas fa-check-circle"></i> Vídeos demonstrativos</div>
             </div>
-            <div class="how-step-card">
-                <div class="how-step-number">3</div>
-                <h3>Evolua e conquiste</h3>
-                <p>Registre refeições, complete treinos e acompanhe sua evolução diariamente.</p>
+        </div>
+    </div>
+
+    <div class="landing-section landing-challenge-section">
+        <div class="challenge-section-content">
+            <div class="challenge-section-badge">🏆 Desafio 90 Dias</div>
+            <h2 class="landing-section-title">Transforme seu corpo em <span class="text-accent">90 dias</span></h2>
+            <p class="feature-desc center-text">Aceite o desafio, tire sua foto inicial e acompanhe sua transformação. Ao final, compartilhe seu resultado e inspire outros!</p>
+            <div class="challenge-preview-cards">
+                <div class="challenge-preview-card">
+                    <span class="challenge-preview-icon">📸</span>
+                    <span>Foto Antes</span>
+                </div>
+                <div class="challenge-preview-card">
+                    <span class="challenge-preview-icon">📊</span>
+                    <span>Acompanhamento</span>
+                </div>
+                <div class="challenge-preview-card">
+                    <span class="challenge-preview-icon">🎉</span>
+                    <span>Resultado</span>
+                </div>
             </div>
         </div>
     </div>
@@ -84,8 +108,8 @@
     </div>
 
     <div class="landing-section landing-final-cta">
-        <h2>Pronto pra evoluir?</h2>
-        <p>Junte-se a milhares de brasileiros que já estão transformando seu corpo com inteligência artificial.</p>
+        <h2>Pronto pra transformar?</h2>
+        <p>Comece agora com seu coach de nutrição e treino pessoal com inteligência artificial.</p>
         <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Criar conta grátis 💪</button>
         <p class="landing-disclaimer">Gratuito. Não substitui acompanhamento profissional de saúde.</p>
     </div>
