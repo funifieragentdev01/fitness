@@ -71,6 +71,8 @@ app.run(function($rootScope, $location, $sce, AuthService) {
         $rootScope.showTerms = true;
     };
     $rootScope.closeTerms = function() { $rootScope.showTerms = false; };
+    $rootScope.closeChallengeOffer = function() { $rootScope.showChallengeOffer = false; };
+    $rootScope.closeBodyAnalysis = function() { $rootScope.showBodyAnalysis = false; };
 
     $rootScope.openYoutube = function(exerciseName) {
         var query = encodeURIComponent('como fazer ' + exerciseName + ' exercício');

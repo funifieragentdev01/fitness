@@ -26,7 +26,7 @@
         <div class="profile-actions">
             <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
             <button class="btn btn-outline btn-block" ng-click="openBodyAnalysisModal()">📊 Análise Corporal / Medidas</button>
-            <button class="btn btn-outline btn-block" ng-if="!challenge90 || !challenge90.active" ng-click="showChallengeOffer = true">🏆 Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true">🏆 Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')">🏆 Ver Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
             <button class="btn btn-outline btn-block" ng-click="goTo('onboarding')">⚙️ Refazer Perfil</button>

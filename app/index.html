@@ -45,11 +45,11 @@
     </div>
 
     <!-- Body Analysis Modal (global) -->
-    <div class="modal-overlay" ng-if="showBodyAnalysis" ng-click="showBodyAnalysis = false">
+    <div class="modal-overlay" ng-if="showBodyAnalysis" ng-click="closeBodyAnalysis()">
         <div class="modal-content modal-large" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>📊 Análise Corporal</h2>
-                <button class="btn-close" ng-click="showBodyAnalysis = false"><i class="fas fa-times"></i></button>
+                <button class="btn-close" ng-click="closeBodyAnalysis()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div ng-if="bodyAnalysisLoading" class="loading-box">
@@ -132,11 +132,11 @@
     </div>
 
     <!-- 90-Day Challenge Modal (global) -->
-    <div class="modal-overlay" ng-if="showChallengeOffer" ng-click="showChallengeOffer = false">
+    <div class="modal-overlay" ng-if="showChallengeOffer" ng-click="closeChallengeOffer()">
         <div class="modal-content" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>🏆 Desafio 90 Dias</h2>
-                <button class="btn-close" ng-click="showChallengeOffer = false"><i class="fas fa-times"></i></button>
+                <button class="btn-close" ng-click="closeChallengeOffer()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body challenge-offer-body">
                 <div class="challenge-hero-icon">🏆</div>
@@ -149,7 +149,7 @@
                     <div class="challenge-benefit"><i class="fas fa-trophy"></i> Conquista especial ao completar</div>
                 </div>
                 <button class="btn btn-primary btn-block btn-lg" ng-click="joinChallenge90()">Aceitar o Desafio! 💪</button>
-                <button class="btn btn-outline btn-block btn-sm" ng-click="showChallengeOffer = false" style="margin-top:8px">Agora não</button>
+                <button class="btn btn-outline btn-block btn-sm" ng-click="closeChallengeOffer()" style="margin-top:8px">Agora não</button>
             </div>
         </div>
     </div>
