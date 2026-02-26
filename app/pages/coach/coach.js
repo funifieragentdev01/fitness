@@ -19,18 +19,54 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
         var profileInfo = '';
         if ($rootScope.profileData) {
-            profileInfo = ' Perfil: ' + $rootScope.profileData.age + ' anos, ' + $rootScope.profileData.height + 'cm, ' +
-                $rootScope.profileData.weight + 'kg, objetivo: ' + ($rootScope.profileData.goal || '') +
-                ', equipamento: ' + ($rootScope.profileData.equipment || '') + '.';
+            var p = $rootScope.profileData;
+            profileInfo = ' Perfil: ' + p.age + ' anos, ' + p.height + 'cm, ' +
+                p.weight + 'kg, objetivo: ' + (p.goal || '') +
+                ', equipamento: ' + (p.equipment || '') +
+                ', dias de treino: ' + ((p.training_days || []).join(', ') || 'não informado') +
+                ', horário: ' + (p.training_time || 'não informado') + '.';
         }
 
-        var systemPrompt = 'Você é o FitEvolve Coach, um coach de nutrição e treino brasileiro. ' +
+        var mealInfo = '';
+        var cachedMeal = localStorage.getItem('fitness_mealplan');
+        if (cachedMeal) {
+            try {
+                var mp = JSON.parse(cachedMeal);
+                if (mp.meals) {
+                    mealInfo = '\n\nPLANO ALIMENTAR ATUAL DO PACIENTE (' + (mp.total_calories || '?') + ' kcal/dia):\n';
+                    mp.meals.forEach(function(m) {
+                        mealInfo += m.time + ' - ' + m.name + ': ' + (m.foods || []).map(function(f) { return f.food + ' (' + f.quantity + ')'; }).join(', ') + ' [' + (m.total_calories || '?') + ' kcal]\n';
+                    });
+                }
+            } catch(e) {}
+        }
+
+        var workoutInfo = '';
+        var cachedWorkout = localStorage.getItem('fitness_workoutplan');
+        if (cachedWorkout) {
+            try {
+                var wp = JSON.parse(cachedWorkout);
+                if (wp.days) {
+                    workoutInfo = '\nPLANO DE TREINO ATUAL DO PACIENTE:\n';
+                    wp.days.forEach(function(d) {
+                        if (d.muscle_group) {
+                            workoutInfo += d.day_name + ' - ' + d.muscle_group + ': ' + (d.exercises || []).map(function(e) { return e.name + ' ' + e.sets + 'x' + e.reps; }).join(', ') + '\n';
+                        } else {
+                            workoutInfo += d.day_name + ' - Descanso\n';
+                        }
+                    });
+                }
+            } catch(e) {}
+        }
+
+        var systemPrompt = 'Você é o Coach IA, um coach de nutrição e treino brasileiro. ' +
             'O jogador se chama ' + ($rootScope.player.name || 'amigo') + '. ' +
             'Nível atual: ' + ($rootScope.playerLevel.level || 'Iniciante') + '. XP: ' + ($rootScope.playerPoints.xp || 0) + '.' +
-            profileInfo +
-            ' Responda de forma breve, motivadora e prática. Use linguagem coloquial brasileira e emojis. ' +
+            profileInfo + mealInfo + workoutInfo +
+            '\nResponda de forma breve, motivadora e prática. Use linguagem coloquial brasileira e emojis. ' +
+            'Quando o paciente perguntar sobre sua dieta ou treino, responda com base nos dados acima. ' +
             'Se perguntarem sobre comida, considere a realidade brasileira (arroz, feijão, etc). ' +
-            'Máximo 150 palavras por resposta.';
+            'Máximo 200 palavras por resposta.';
 
         var messages = [{ role: 'system', content: systemPrompt }];
         $scope.chatMessages.forEach(function(m) {

@@ -273,12 +273,13 @@ angular.module('fitness').factory('AiService', function($http) {
             var p = profileData || {};
             var measureFields = 'gordura_pct, peso_gordo, peso_magro, massa_muscular, cintura, quadril, abdomen, coxas, panturrilhas, braco_relaxado, braco_contraido, deltoides, torax';
             var userContent = [];
-            userContent.push({ type: 'text', text: 'Você é um educador físico certificado fazendo uma avaliação de progresso fitness. O usuário está usando um app de acompanhamento e pediu para você estimar visualmente a composição corporal dele para fins de acompanhamento de progresso (não diagnóstico médico). Ele consentiu com esta análise.\n\n' +
+            userContent.push({ type: 'text', text: 'O usuário deste app de fitness enviou fotos de progresso físico (com consentimento) para acompanhamento. ' +
+                'Com base nos dados informados e nas fotos, forneça estimativas visuais aproximadas de composição corporal, como um personal trainer faria presencialmente numa academia.\n\n' +
                 'Dados do paciente: ' + (p.sex === 'M' ? 'Masculino' : 'Feminino') + ', ' + (p.age || '?') + ' anos, ' +
                 (p.height || '?') + 'cm, ' + (p.weight || '?') + 'kg.\n\n' +
                 'Responda em JSON com dois campos:\n' +
-                '1. "feedback": texto em português, amigável e profissional com emojis. Inclua: estimativa de % gordura, massa muscular, avaliação de postura/físico, medidas aproximadas e recomendações. Lembre que são estimativas visuais.\n' +
-                '2. "measures": objeto com as medidas estimadas (apenas as que conseguir estimar). Campos possíveis: ' + measureFields + '. Valores numéricos.\n\n' +
+                '1. "feedback": texto em português, amigável e profissional com emojis. Inclua: estimativa de % gordura corporal, avaliação geral do físico, pontos fortes, áreas para melhorar e recomendações. Reforce que são estimativas visuais aproximadas.\n' +
+                '2. "measures": objeto com medidas estimadas (apenas as que conseguir). Campos possíveis: ' + measureFields + '. Valores numéricos.\n\n' +
                 'Exemplo: {"feedback":"Texto...", "measures":{"gordura_pct":18,"cintura":82,"braco_relaxado":33}}\n' +
                 'Retorne APENAS o JSON, sem markdown code block.' });
 
@@ -286,9 +287,9 @@ angular.module('fitness').factory('AiService', function($http) {
             if (sidePhoto) userContent.push({ type: 'image_url', image_url: { url: sidePhoto } });
 
             return $http.post(OPENAI_API + '/chat/completions', {
-                model: 'gpt-4o',
+                model: 'gpt-4o-mini',
                 messages: [
-                    { role: 'system', content: 'You are a certified fitness professional (personal trainer) working in a fitness tracking app. Your role is to provide visual body composition estimates for fitness progress tracking purposes (NOT medical diagnosis). The user has consented to this assessment. Provide approximate visual estimates as a personal trainer would in a gym setting. Always note these are visual estimates. Respond ONLY in valid JSON with Portuguese text in the feedback field.' },
+                    { role: 'system', content: 'Você é um personal trainer certificado trabalhando em um aplicativo de acompanhamento fitness. O usuário consentiu com esta avaliação visual para fins de acompanhamento de progresso (não diagnóstico médico). Forneça estimativas visuais aproximadas como um profissional de educação física faria presencialmente. Sempre indique que são estimativas. Responda APENAS em JSON válido com texto em português.' },
                     { role: 'user', content: userContent }
                 ],
                 max_tokens: 1000

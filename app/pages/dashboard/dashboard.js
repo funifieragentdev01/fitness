@@ -87,10 +87,10 @@ angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScop
             try {
                 var wp = JSON.parse(cachedWorkout);
                 if (wp.days) {
-                    var todayIdx = new Date().getDay();
-                    var dayMap = [6, 0, 1, 2, 3, 4, 5];
-                    var idx = dayMap[todayIdx];
-                    var today = wp.days[idx];
+                    var todayNames = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+                    var todayName = todayNames[new Date().getDay()];
+                    var today = null;
+                    wp.days.forEach(function(d) { if (d.day_name && d.day_name.indexOf(todayName) === 0) today = d; });
                     if (today && today.muscle_group && !today.done) {
                         $scope.nextActions.push({
                             icon: '💪', title: 'Treino de hoje: ' + today.muscle_group,

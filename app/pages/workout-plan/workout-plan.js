@@ -10,10 +10,20 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
             try {
                 $rootScope.workoutPlan = JSON.parse(cached);
                 if ($rootScope.workoutPlan.days) {
-                    var todayIdx = new Date().getDay();
-                    var dayMap = [6, 0, 1, 2, 3, 4, 5];
-                    var idx = dayMap[todayIdx];
-                    if ($rootScope.workoutPlan.days[idx]) $rootScope.workoutPlan.days[idx].open = true;
+                    // Sort days: Segunda first, Domingo last
+                    var dayOrder = {'Segunda':0,'Terça':1,'Terca':1,'Quarta':2,'Quinta':3,'Sexta':4,'Sábado':5,'Sabado':5,'Domingo':6};
+                    $rootScope.workoutPlan.days.sort(function(a, b) {
+                        var aO = 99, bO = 99;
+                        Object.keys(dayOrder).forEach(function(k) { if (a.day_name && a.day_name.indexOf(k) === 0) aO = dayOrder[k]; });
+                        Object.keys(dayOrder).forEach(function(k) { if (b.day_name && b.day_name.indexOf(k) === 0) bO = dayOrder[k]; });
+                        return aO - bO;
+                    });
+                    // Open today's card
+                    var todayNames = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+                    var todayName = todayNames[new Date().getDay()];
+                    $rootScope.workoutPlan.days.forEach(function(day) {
+                        if (day.day_name && day.day_name.indexOf(todayName) === 0) day.open = true;
+                    });
                 }
             } catch(e) { $rootScope.workoutPlan = null; }
         }
