@@ -108,20 +108,35 @@
         </div>
     </div>
 
-    <div class="landing-section landing-testimonials-section" ng-if="realTestimonials.length">
-        <h2 class="landing-section-title">Quem usa, aprova</h2>
-        <div class="testimonials-row">
-            <div class="testimonial-card" ng-repeat="t in realTestimonials">
-                <div class="testimonial-stars">{{'⭐'.repeat(t.rating)}}</div>
-                <p>"{{t.text}}"</p>
-                <div ng-if="t.firstPhoto || t.lastPhoto" style="display:flex;gap:8px;justify-content:center;margin:8px 0">
-                    <img ng-if="t.firstPhoto" ng-src="{{t.firstPhoto}}" style="width:50px;height:65px;object-fit:cover;border-radius:6px;opacity:0.7" title="Antes">
-                    <img ng-if="t.lastPhoto" ng-src="{{t.lastPhoto}}" style="width:50px;height:65px;object-fit:cover;border-radius:6px" title="Depois">
+    <div class="landing-testimonials-section-v2" ng-if="realTestimonials.length">
+        <h2 class="landing-section-title" style="color:#111">Resultados Reais</h2>
+        <div class="testimonial-v2-card" ng-repeat="t in realTestimonials">
+            <div class="testimonial-v2-left">
+                <div class="testimonial-v2-stars">
+                    <span ng-repeat="s in [1,2,3,4,5]" ng-style="{'opacity': s <= t.rating ? 1 : 0.3}">⭐</span>
                 </div>
-                <span class="testimonial-author">
-                    <img ng-if="t.userPhoto" ng-src="{{t.userPhoto}}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px">
-                    — {{t.userName || 'Usuário'}}
-                </span>
+                <p class="testimonial-v2-text">"{{t.text}}"</p>
+                <div class="testimonial-v2-author">
+                    <img ng-if="t.userPhoto" ng-src="{{t.userPhoto}}" class="testimonial-v2-avatar">
+                    <div class="testimonial-v2-avatar-placeholder" ng-if="!t.userPhoto">{{(t.userName || 'U')[0]}}</div>
+                    <div class="testimonial-v2-author-info">
+                        <span class="testimonial-v2-name">{{t.userName || 'Usuário'}}</span>
+                        <span class="testimonial-v2-label">Desafio 90 Dias</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-v2-right" ng-if="t.firstPhoto || t.lastPhoto">
+                <div class="testimonial-v2-photos">
+                    <div class="testimonial-v2-photo-wrapper" ng-if="t.firstPhoto">
+                        <img ng-src="{{t.firstPhoto}}" class="testimonial-v2-photo">
+                        <span class="testimonial-v2-photo-label">Antes</span>
+                    </div>
+                    <div class="testimonial-v2-arrow"><i class="fas fa-chevron-right"></i></div>
+                    <div class="testimonial-v2-photo-wrapper" ng-if="t.lastPhoto">
+                        <img ng-src="{{t.lastPhoto}}" class="testimonial-v2-photo">
+                        <span class="testimonial-v2-photo-label">Depois</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
