@@ -265,7 +265,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .testimonial-v2-arrow { width: 36px; height: 36px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
 
 /* Analysis Section — Phone + Chart */
-.landing-analysis-section { background: #0a0a0a; padding: 60px 20px; overflow: hidden; }
+.landing-analysis-section { background: #0a0a0a; padding: 60px 20px; overflow: hidden; max-width: none; }
 .analysis-layout { display: flex; flex-direction: column; align-items: center; gap: 32px; max-width: 900px; margin: 0 auto; }
 .analysis-left { flex: 0 0 auto; }
 .analysis-phone-img { width: 280px; max-width: 100%; border-radius: 16px; }
@@ -276,7 +276,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .analysis-svg { width: 100%; height: auto; }
 
 /* Meal Plan Section */
-.landing-meal-section { background: #0d0d0a; padding: 60px 20px; }
+.landing-meal-section { background: #0d0d0a; padding: 60px 20px; max-width: none; }
 .meal-section-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; text-align: center; margin-bottom: 32px; letter-spacing: 1px; }
 .meal-layout { display: flex; flex-direction: column; gap: 24px; max-width: 800px; margin: 0 auto; align-items: center; }
 .meal-left { flex: 0 0 auto; }
@@ -299,7 +299,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .meal-schedule-name { font-size: 14px; color: #ddd; font-weight: 500; }
 
 /* Workout Section */
-.landing-workout-section { background: #111; padding: 60px 20px; }
+.landing-workout-section { background: #111; padding: 60px 20px; max-width: none; }
 .workout-layout { display: flex; flex-direction: column; gap: 32px; max-width: 900px; margin: 0 auto; align-items: center; }
 .workout-left { text-align: center; }
 .workout-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
@@ -318,7 +318,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .workout-video-time { font-size: 11px; color: #aaa; }
 
 /* Challenge 90 Days — Hero style */
-.landing-challenge-section { position: relative; min-height: 420px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 60px 20px; }
+.landing-challenge-section { position: relative; min-height: 420px; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 60px 20px; max-width: none; }
 .challenge-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 20%; }
 .challenge-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.85) 100%); }
 .challenge-hero-content { position: relative; z-index: 2; text-align: center; max-width: 600px; }
