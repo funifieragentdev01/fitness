@@ -2,6 +2,7 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
     $scope.showMealAdjust = false;
     $scope.mealAdjustFeedback = null;
     $scope.mealForm = { adjustText: '' };
+    $scope.dietPhoto = null;
     $scope.nextMeal = null;
 
     function loadMealPlan() {
@@ -48,11 +49,20 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
 
     $scope.toggleMealAdjust = function() { $scope.showMealAdjust = !$scope.showMealAdjust; };
 
+    $scope.triggerDietPhoto = function() { document.getElementById('dietPhotoInput').click(); };
+    $scope.onDietPhoto = function(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) { $scope.$apply(function() { $scope.dietPhoto = e.target.result; }); };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
     $scope.adjustMealPlan = function() {
-        if (!$scope.mealForm.adjustText || !$rootScope.mealPlan) return;
+        if ((!$scope.mealForm.adjustText && !$scope.dietPhoto) || !$rootScope.mealPlan) return;
         $rootScope.loading = true;
         $scope.mealAdjustFeedback = null;
-        AiService.adjustMealPlan($rootScope.mealPlan, $scope.mealForm.adjustText, $rootScope.profileData).then(function(result) {
+        AiService.adjustMealPlan($rootScope.mealPlan, $scope.mealForm.adjustText, $rootScope.profileData, $scope.dietPhoto).then(function(result) {
             $scope.mealAdjustFeedback = result.feedback;
             if (result.meals) {
                 $rootScope.mealPlan.meals = result.meals;

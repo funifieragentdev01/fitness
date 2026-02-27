@@ -209,26 +209,42 @@ angular.module('fitness').factory('AiService', function($http) {
             });
         },
 
-        adjustMealPlan: function(mealPlan, adjustText, profileData) {
+        adjustMealPlan: function(mealPlan, adjustText, profileData, dietPhoto) {
             var p = profileData || {};
             var goalMap = { perder_peso: 'perder peso', ganhar_massa: 'ganhar massa', saude: 'saúde geral' };
-            var prompt = 'Você é um nutricionista brasileiro profissional. O paciente tem o seguinte plano alimentar:\n' +
+            var baseContext = 'Você é um nutricionista brasileiro profissional. O paciente tem o seguinte plano alimentar:\n' +
                 JSON.stringify(mealPlan) + '\n\n' +
                 'Perfil: ' + (p.sex === 'M' ? 'Masculino' : 'Feminino') + ', ' + p.age + ' anos, ' + p.height + 'cm, ' + p.weight + 'kg. ' +
                 'Objetivo: ' + (goalMap[p.goal] || 'saúde geral') + '. ' +
-                'Restrições: ' + ((p.restrictions && p.restrictions.length) ? p.restrictions.join(', ') : 'nenhuma') + '.\n\n' +
-                'O paciente pediu este ajuste: "' + adjustText + '"\n\n' +
+                'Restrições: ' + ((p.restrictions && p.restrictions.length) ? p.restrictions.join(', ') : 'nenhuma') + '.\n\n';
+
+            var instruction = dietPhoto
+                ? (adjustText ? 'O paciente enviou uma foto da dieta do nutricionista dele e pediu: "' + adjustText + '". ' : 'O paciente enviou uma foto da dieta que o nutricionista dele prescreveu. ') +
+                  'Analise a foto da dieta, replique ela no formato do app adaptando aos horários e estrutura do plano atual. Mantenha as quantidades e alimentos prescritos pelo nutricionista.'
+                : 'O paciente pediu este ajuste: "' + adjustText + '"';
+
+            var prompt = baseContext + instruction + '\n\n' +
                 'Faça o ajuste se for profissionalmente apropriado. Mantenha dentro das metas calóricas. ' +
                 'Responda em JSON com este formato: {"feedback":"explicação do que você mudou e por quê (em português)","meals":[...],"total_calories":XXXX}\n' +
                 'O campo feedback deve explicar as mudanças de forma amigável. Responda SOMENTE JSON válido, sem markdown.';
 
+            var userContent;
+            if (dietPhoto) {
+                userContent = [
+                    { type: 'text', text: prompt },
+                    { type: 'image_url', image_url: { url: dietPhoto, detail: 'high' } }
+                ];
+            } else {
+                userContent = prompt;
+            }
+
             return $http.post(OPENAI_API + '/chat/completions', {
-                model: 'gpt-4o-mini',
+                model: dietPhoto ? 'gpt-4o' : 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista brasileiro. Responda SOMENTE JSON válido.' },
-                    { role: 'user', content: prompt }
+                    { role: 'user', content: userContent }
                 ],
-                max_tokens: 2500
+                max_tokens: 3000
             }, aiHeaders()).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 return JSON.parse(text);
