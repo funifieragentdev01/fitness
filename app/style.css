@@ -168,11 +168,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .challenge-preview-card {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
     padding: 20px; background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,107,0,0.3);
     border-radius: var(--radius); flex: 1; max-width: 150px;
     font-size: 13px; font-weight: 600;
 }
-.challenge-preview-icon { font-size: 28px; }
+.challenge-preview-icon { font-size: 28px; color: var(--accent); }
 
 /* Benefits Grid (legacy) */
 .benefit-grid {
