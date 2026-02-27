@@ -84,6 +84,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
         if (!$scope.testimonial.text || !$scope.testimonial.rating) return;
         var data = {
             userId: userId,
+            userName: ($rootScope.player && $rootScope.player.name) ? $rootScope.player.name.split(' ')[0] : 'Usuário',
             rating: $scope.testimonial.rating,
             text: $scope.testimonial.text,
             publishOnHome: $scope.testimonial.publishOnHome || false,

@@ -124,7 +124,9 @@
             </div>
             <input type="file" id="bodyPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onBodyPhoto('front', this)">
             <input type="file" id="bodyPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onBodyPhoto('side', this)">
-            <button class="btn btn-outline btn-block btn-sm" ng-if="onboarding.body_photo_front || onboarding.body_photo_side" ng-click="analyzeBodyPhotos(onboarding.body_photo_front, onboarding.body_photo_side)" style="margin-top:12px">🔬 Analisar composição corporal</button>
+            <button class="btn btn-outline btn-block btn-sm" ng-if="(onboarding.body_photo_front || onboarding.body_photo_side) && !onboardingAnalysisResult && !onboardingAnalyzing" ng-click="analyzeOnboardingPhotos()" style="margin-top:12px">🔬 Analisar composição corporal</button>
+            <div ng-if="onboardingAnalyzing" class="loading-box" style="margin-top:12px"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Analisando com IA...</p></div>
+            <div class="analysis-result-box" ng-if="onboardingAnalysisResult" style="margin-top:12px"><div ng-bind-html="formatAnalysis(onboardingAnalysisResult)"></div></div>
             <p class="step-hint">Você pode pular e adicionar depois no perfil</p>
         </div>
 

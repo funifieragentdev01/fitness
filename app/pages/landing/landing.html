@@ -127,6 +127,22 @@
                 <span class="testimonial-author">— Lucas, 25 anos</span>
             </div>
         </div>
+
+        <!-- Real testimonials from users -->
+        <div ng-if="realTestimonials.length" style="margin-top:32px">
+            <h3 style="text-align:center;font-size:18px;margin-bottom:16px;color:var(--accent)">💬 Depoimentos Reais</h3>
+            <div class="testimonials-row">
+                <div class="testimonial-card" ng-repeat="t in realTestimonials">
+                    <div class="testimonial-stars">{{'⭐'.repeat(t.rating)}}</div>
+                    <p>"{{t.text}}"</p>
+                    <div ng-if="t.firstPhoto || t.lastPhoto" style="display:flex;gap:8px;justify-content:center;margin:8px 0">
+                        <img ng-if="t.firstPhoto" ng-src="{{t.firstPhoto}}" style="width:50px;height:65px;object-fit:cover;border-radius:6px;opacity:0.7" title="Antes">
+                        <img ng-if="t.lastPhoto" ng-src="{{t.lastPhoto}}" style="width:50px;height:65px;object-fit:cover;border-radius:6px" title="Depois">
+                    </div>
+                    <span class="testimonial-author">— {{t.userName || 'Usuário'}}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Pricing Section -->

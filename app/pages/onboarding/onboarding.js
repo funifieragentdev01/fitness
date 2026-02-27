@@ -129,6 +129,21 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         }
     };
 
+    // Inline body analysis (no modal)
+    $scope.onboardingAnalyzing = false;
+    $scope.onboardingAnalysisResult = null;
+    $scope.analyzeOnboardingPhotos = function() {
+        $scope.onboardingAnalyzing = true;
+        var p = { weight: $scope.onboarding.weight, height: $scope.onboarding.height, sex: $scope.onboarding.sex, age: $scope.onboarding.age };
+        AiService.analyzeBodyPhotos($scope.onboarding.body_photo_front, $scope.onboarding.body_photo_side, p).then(function(parsed) {
+            $scope.onboardingAnalysisResult = parsed.feedback || JSON.stringify(parsed);
+            $scope.onboardingAnalyzing = false;
+        }).catch(function() {
+            $scope.onboardingAnalysisResult = 'Não consegui analisar as fotos agora. Continue e analise depois no perfil.';
+            $scope.onboardingAnalyzing = false;
+        });
+    };
+
     // AI Goal
     $scope.generateAIGoal = function() {
         $scope.goalLoading = true;

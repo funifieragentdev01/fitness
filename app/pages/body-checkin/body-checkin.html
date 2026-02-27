@@ -115,7 +115,7 @@
                 </div>
                 <img ng-if="bioReportPhoto" ng-src="{{bioReportPhoto}}" class="meal-preview">
             </div>
-            <input type="file" id="bioReportInput" accept="image/*" style="display:none" onchange="angular.element(this).scope().onBioReport(this)">
+            <input type="file" id="bioReportInputCheckin" accept="image/*" style="display:none" onchange="angular.element(this).scope().onBioReport(this)">
 
             <button class="btn btn-primary btn-block" ng-if="bioReportPhoto && !laudoResult" ng-click="analyzeBioReport()" ng-disabled="analyzingLaudo">
                 <span ng-if="!analyzingLaudo">🔬 Analisar Laudo</span>
@@ -146,8 +146,7 @@
             <div style="font-size:64px;margin-bottom:16px">✅</div>
             <h3 style="margin-bottom:8px">Check-in registrado!</h3>
             <p style="color:var(--text-muted);margin-bottom:24px">Seus dados foram salvos com sucesso.</p>
-            <button class="btn btn-primary" ng-click="goTo('body-checkin')" ng-if="fromChallenge">Voltar ao Desafio</button>
-            <button class="btn btn-primary" ng-click="startNew()">Novo Check-in</button>
+            <button class="btn btn-primary" ng-click="goTo('dashboard')">Ir para Dashboard 🏠</button>
         </div>
 
         <!-- ========== History ========== -->

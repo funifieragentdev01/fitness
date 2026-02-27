@@ -51,7 +51,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
         }
     };
 
-    $scope.triggerBioReport = function() { document.getElementById('bioReportInput').click(); };
+    $scope.triggerBioReport = function() { document.getElementById('bioReportInputCheckin').click(); };
 
     $scope.onBioReport = function(input) {
         if (input.files && input.files[0]) {
