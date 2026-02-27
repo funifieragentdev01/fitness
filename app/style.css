@@ -264,6 +264,17 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .testimonial-v2-photo-label { display: block; font-size: 11px; color: #888; margin-top: 4px; font-weight: 600; }
 .testimonial-v2-arrow { width: 36px; height: 36px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
 
+/* Analysis Section — Phone + Chart */
+.landing-analysis-section { background: #0a0a0a; padding: 60px 20px; overflow: hidden; }
+.analysis-layout { display: flex; flex-direction: column; align-items: center; gap: 32px; max-width: 900px; margin: 0 auto; }
+.analysis-left { flex: 0 0 auto; }
+.analysis-phone-img { width: 280px; max-width: 100%; border-radius: 16px; }
+.analysis-right { flex: 1; text-align: center; }
+.analysis-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
+.analysis-desc { font-size: 15px; line-height: 1.6; color: #aaa; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; }
+.analysis-chart { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; max-width: 360px; margin: 0 auto; }
+.analysis-svg { width: 100%; height: auto; }
+
 /* Final CTA */
 .landing-final-cta {
     text-align: center; padding: 60px 24px 80px;
@@ -791,6 +802,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     .testimonial-v2-left { flex: 1; }
     .testimonial-v2-right { flex: 0 0 auto; }
     .testimonial-v2-photo { width: 160px; height: 210px; }
+    .analysis-layout { flex-direction: row; align-items: center; }
+    .analysis-right { text-align: left; }
+    .analysis-desc { margin-left: 0; }
+    .analysis-chart { margin: 0; }
+    .analysis-phone-img { width: 340px; }
 }
 
 @media (max-width: 480px) {
