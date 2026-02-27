@@ -2,7 +2,23 @@
 angular.module('fitness').factory('ApiService', function($http, AuthService) {
     var API = CONFIG.API;
 
+    // BSON helpers — preserve MongoDB types (see patterns.md: Database Strict Mode)
+    function bsonDate(date) {
+        return { $date: (date || new Date()).toISOString() };
+    }
+    function readDate(field) {
+        if (!field) return null;
+        if (field.$date) return new Date(field.$date);
+        if (typeof field === 'string') return new Date(field);
+        if (typeof field === 'number') return new Date(field);
+        return null;
+    }
+
     var service = {
+        // Expose helpers for controllers
+        bsonDate: bsonDate,
+        readDate: readDate,
+
         logAction: function(actionId, attributes) {
             var userId = AuthService.getUser();
             return $http.post(API + '/v3/action/log', {
@@ -21,18 +37,26 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
             return $http.get(API + '/v3/challenge', AuthService.authHeader());
         },
         loadProfile: function(userId) {
-            return $http.get(API + '/v3/database/profile__c/' + userId, AuthService.authHeader());
+            return $http.get(API + '/v3/database/profile__c/' + userId + '?strict=true', AuthService.authHeader());
         },
         saveProfile: function(data) {
+            // Ensure created is BSON $date
+            if (data.created && !data.created.$date) {
+                data.created = bsonDate(new Date(data.created));
+            }
             return $http.put(API + '/v3/database/profile__c', data, AuthService.authHeader());
         },
         saveCheckin: function(data) {
+            // Ensure created is BSON $date
+            if (data.created && !data.created.$date) {
+                data.created = bsonDate(new Date(data.created));
+            }
             return $http.put(API + '/v3/database/body_checkin__c', data, AuthService.authHeader());
         },
         loadWeightHistory: function(userId) {
             return $http({
                 method: 'GET',
-                url: API + '/v3/database/body_checkin__c?_filter=' + encodeURIComponent(JSON.stringify({ userId: userId })) + '&_sort=-created&_limit=20',
+                url: API + '/v3/database/body_checkin__c?strict=true&_filter=' + encodeURIComponent(JSON.stringify({ userId: userId })) + '&_sort=-created&_limit=20',
                 headers: { 'Authorization': 'Bearer ' + AuthService.getToken() }
             });
         },
@@ -55,6 +79,9 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
             });
         },
         saveTestimonial: function(data) {
+            if (data.created && !data.created.$date) {
+                data.created = bsonDate(new Date(data.created));
+            }
             return $http.put(API + '/v3/database/testimonial__c', data, AuthService.authHeader());
         }
     };

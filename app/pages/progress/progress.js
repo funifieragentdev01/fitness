@@ -29,16 +29,17 @@ angular.module('fitness').controller('ProgressCtrl', function($scope, $rootScope
     ApiService.loadWeightHistory(userId).then(function(res) {
         if (Array.isArray(res.data)) {
             $scope.weightHistory = res.data.map(function(w) {
-                return { date: new Date(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
+                return { date: ApiService.readDate(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
             });
 
             $scope.photoTimeline = [];
             res.data.forEach(function(w) {
+                var dateStr = ApiService.readDate(w.created).toLocaleDateString('pt-BR');
                 if (w.photo_front_url) {
-                    $scope.photoTimeline.push({ url: w.photo_front_url, date: new Date(w.created).toLocaleDateString('pt-BR'), type: 'Frente' });
+                    $scope.photoTimeline.push({ url: w.photo_front_url, date: dateStr, type: 'Frente' });
                 }
                 if (w.photo_side_url) {
-                    $scope.photoTimeline.push({ url: w.photo_side_url, date: new Date(w.created).toLocaleDateString('pt-BR'), type: 'Lateral' });
+                    $scope.photoTimeline.push({ url: w.photo_side_url, date: dateStr, type: 'Lateral' });
                 }
             });
 

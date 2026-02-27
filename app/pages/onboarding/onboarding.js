@@ -171,7 +171,7 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         var userId = AuthService.getUser();
         var data = angular.copy($scope.onboarding);
         data._id = userId;
-        data.created = new Date().toISOString();
+        data.created = ApiService.bsonDate();
         var mealTimes = data.meal_routine.filter(function(m) { return m.enabled; }).map(function(m) {
             return { id: m.id, label: m.label, time: (typeof m.time === 'object' && m.time) ? formatTime(m.time) : m.time };
         });

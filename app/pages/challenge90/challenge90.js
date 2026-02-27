@@ -47,7 +47,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
     ApiService.loadWeightHistory(userId).then(function(res) {
         if (Array.isArray(res.data)) {
             $scope.weightHistory = res.data.map(function(w) {
-                return { date: new Date(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
+                return { date: ApiService.readDate(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
             });
         }
     }).catch(function() {});
@@ -70,7 +70,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
             publishOnHome: $scope.testimonial.publishOnHome || false,
             firstPhoto: $scope.firstPhoto,
             lastPhoto: $scope.lastPhoto,
-            created: new Date().toISOString()
+            created: ApiService.bsonDate()
         };
         ApiService.saveTestimonial(data).then(function() {
             $scope.testimonialSaved = true;

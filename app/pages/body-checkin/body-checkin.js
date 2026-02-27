@@ -11,7 +11,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
             if (Array.isArray(res.data)) {
                 $scope.checkinHistory = res.data.map(function(w) {
                     return {
-                        date: new Date(w.created).toLocaleDateString('pt-BR'),
+                        date: ApiService.readDate(w.created).toLocaleDateString('pt-BR'),
                         weight: w.weight,
                         photo_front_url: w.photo_front_url || '',
                         photo_side_url: w.photo_side_url || ''
@@ -76,7 +76,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     weight: parseFloat($scope.checkin.weight),
                     photo_front_url: photoUrls.front,
                     photo_side_url: photoUrls.side,
-                    created: new Date().toISOString()
+                    created: ApiService.bsonDate()
                 };
                 return ApiService.saveCheckin(data);
             })
