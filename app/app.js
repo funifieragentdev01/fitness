@@ -18,6 +18,7 @@ app.config(function($routeProvider, $locationProvider) {
         .when('/profile', { templateUrl: 'pages/profile/profile.html', controller: 'ProfileCtrl' })
         .when('/body-checkin', { templateUrl: 'pages/body-checkin/body-checkin.html', controller: 'BodyCheckinCtrl' })
         .when('/challenge90', { templateUrl: 'pages/challenge90/challenge90.html', controller: 'Challenge90Ctrl' })
+        .when('/contact', { templateUrl: 'pages/contact/contact.html', controller: 'ContactCtrl' })
         .otherwise({ redirectTo: '/landing' });
 });
 

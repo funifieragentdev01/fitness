@@ -1,5 +1,9 @@
 angular.module('fitness').controller('LandingCtrl', function($scope, $location, $http) {
     $scope.goTo = function(view) { $location.path('/' + (view === 'register' ? 'signup' : view)); };
+    $scope.scrollTo = function(className) {
+        var el = document.querySelector('.' + className);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
     $scope.realTestimonials = [];
     $scope.faqs = [];
     $scope.faqOpen = {};
