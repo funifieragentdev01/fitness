@@ -271,7 +271,28 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 /* Phone mockup with CSS */
 .phone-mockup { width: 200px; background: #000; border: 3px solid #333; border-radius: 28px; padding: 8px 6px 12px; position: relative; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
 .phone-notch { width: 60px; height: 6px; background: #222; border-radius: 3px; margin: 0 auto 6px; }
-.phone-screen-img { width: 100%; border-radius: 4px; display: block; }
+.phone-screen { position: relative; overflow: hidden; border-radius: 4px; }
+.phone-screen-img { width: 100%; display: block; }
+
+/* Scan HUD overlay */
+.scan-overlay { position: absolute; inset: 0; pointer-events: none; }
+.scan-line { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,107,0,0.6), transparent); top: 30%; animation: scanMove 3s ease-in-out infinite; }
+@keyframes scanMove { 0%,100% { top: 20%; opacity: 0.4; } 50% { top: 75%; opacity: 0.8; } }
+.scan-data { display: flex; justify-content: space-between; padding: 4px 8px; font-size: 9px; color: rgba(255,107,0,0.8); font-family: monospace; }
+.scan-data strong { color: rgba(255,255,255,0.9); }
+.scan-data-top { position: absolute; top: 4px; left: 0; right: 0; }
+.scan-data-bottom { position: absolute; bottom: 4px; left: 0; right: 0; justify-content: center; }
+.scan-crosshair { position: absolute; display: flex; align-items: center; gap: 4px; }
+.scan-crosshair-chest { top: 28%; right: 8px; }
+.scan-crosshair-waist { top: 45%; right: 8px; }
+.scan-crosshair-hip { top: 55%; right: 8px; }
+.scan-dot { width: 6px; height: 6px; border-radius: 50%; border: 1px solid rgba(255,107,0,0.8); background: rgba(255,107,0,0.3); }
+.scan-label { font-size: 7px; color: rgba(255,107,0,0.8); font-family: monospace; white-space: nowrap; }
+.scan-corner { position: absolute; width: 14px; height: 14px; border-color: rgba(255,107,0,0.4); border-style: solid; border-width: 0; }
+.scan-corner-tl { top: 6px; left: 6px; border-top-width: 1px; border-left-width: 1px; }
+.scan-corner-tr { top: 6px; right: 6px; border-top-width: 1px; border-right-width: 1px; }
+.scan-corner-bl { bottom: 6px; left: 6px; border-bottom-width: 1px; border-left-width: 1px; }
+.scan-corner-br { bottom: 6px; right: 6px; border-bottom-width: 1px; border-right-width: 1px; }
 .analysis-right { flex: 1; text-align: center; }
 .analysis-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
 .analysis-desc { font-size: 15px; line-height: 1.6; color: #aaa; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; }
