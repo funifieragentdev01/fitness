@@ -360,6 +360,52 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .profile-action-icon { color: var(--accent); font-size: 16px; width: 20px; text-align: center; }
 
 /* Final CTA */
+/* FAQ Section */
+.landing-faq-section {
+    padding: 60px 24px;
+    max-width: none;
+    background: #0e0e0e;
+}
+.landing-faq-section .landing-section-title {
+    color: #fff;
+    margin-bottom: 32px;
+}
+.faq-list {
+    max-width: 700px;
+    margin: 0 auto;
+}
+.faq-item {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    cursor: pointer;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    gap: 16px;
+}
+.faq-question i {
+    color: var(--accent);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.faq-question:hover {
+    color: var(--accent);
+}
+.faq-answer {
+    padding: 0 0 18px;
+}
+.faq-answer p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+}
+
 .landing-final-cta {
     text-align: center; padding: 60px 24px 80px;
     background: linear-gradient(180deg, var(--bg) 0%, var(--primary) 100%);

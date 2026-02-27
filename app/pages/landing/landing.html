@@ -292,6 +292,22 @@
         </div>
     </div>
 
+    <!-- FAQ Section -->
+    <div class="landing-faq-section" ng-if="faqs.length">
+        <h2 class="landing-section-title">Dúvidas Frequentes</h2>
+        <div class="faq-list">
+            <div class="faq-item" ng-repeat="faq in faqs" ng-class="{'faq-open': faqOpen[faq._id]}">
+                <div class="faq-question" ng-click="toggleFaq(faq._id)">
+                    <span>{{faq.question}}</span>
+                    <i class="fas" ng-class="faqOpen[faq._id] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </div>
+                <div class="faq-answer" ng-show="faqOpen[faq._id]">
+                    <p>{{faq.answer}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="landing-final-cta">
         <h2>Pronto pra transformar?</h2>
         <p>Comece agora com seu coach de nutrição e treino pessoal com inteligência artificial.</p>
