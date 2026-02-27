@@ -105,10 +105,11 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
             lastPhoto: $scope.lastPhoto,
             created: ApiService.bsonDate()
         };
+        $scope.savingTestimonial = true;
         ApiService.saveTestimonial(data).then(function() {
             $scope.testimonialSaved = true;
-            alert('🌟 Depoimento enviado! Obrigado por compartilhar sua experiência.');
         }).catch(function() {
+            $scope.savingTestimonial = false;
             alert('Erro ao enviar. Tente novamente.');
         });
     };

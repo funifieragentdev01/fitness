@@ -91,8 +91,10 @@
                 <label><input type="checkbox" ng-model="testimonial.publishOnHome"> Publicar meu depoimento e fotos na página inicial</label>
             </div>
 
-            <button class="btn btn-primary btn-block" ng-click="submitTestimonial()" ng-disabled="!testimonial.text || !testimonial.rating">
-                Enviar Depoimento 🌟
+            <button class="btn btn-primary btn-block" ng-click="submitTestimonial()" ng-disabled="!testimonial.text || !testimonial.rating || savingTestimonial || testimonialSaved">
+                <span ng-if="!savingTestimonial && !testimonialSaved">Enviar Depoimento 🌟</span>
+                <span ng-if="savingTestimonial && !testimonialSaved"><i class="fas fa-spinner fa-spin"></i> Enviando...</span>
+                <span ng-if="testimonialSaved">✅ Depoimento enviado!</span>
             </button>
         </div>
 
