@@ -1,7 +1,13 @@
-angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, AuthService, ApiService) {
+angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, AuthService, ApiService, AiService) {
     $scope.checkin = {};
-    $scope.weightHistory = [];
     $scope.checkinHistory = [];
+    $scope.step = 1;
+    $scope.analyzing = false;
+    $scope.analyzingLaudo = false;
+    $scope.analysisResult = null;
+    $scope.laudoResult = null;
+    $scope.bioReportPhoto = null;
+    $scope.manualMeasures = $rootScope.manualMeasures || {};
 
     var userId = AuthService.getUser();
 
@@ -17,12 +23,16 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                         photo_side_url: w.photo_side_url || ''
                     };
                 });
-                $scope.weightHistory = $scope.checkinHistory;
             }
-        }).catch(function() { $scope.checkinHistory = []; $scope.weightHistory = []; });
+        }).catch(function() { $scope.checkinHistory = []; });
     }
-
     loadHistory();
+
+    $scope.handleBack = function() {
+        if ($scope.step === 2) { $scope.step = 1; }
+        else if ($scope.step === 3) { $scope.step = 2; }
+        else { $scope.goTo('profile'); }
+    };
 
     $scope.triggerCheckinPhoto = function(type) {
         document.getElementById('checkinPhoto' + (type === 'front' ? 'Front' : 'Side') + 'Input').click();
@@ -41,7 +51,62 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
         }
     };
 
-    $scope.submitCheckin = function() {
+    $scope.triggerBioReport = function() { document.getElementById('bioReportInput').click(); };
+
+    $scope.onBioReport = function(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $scope.$apply(function() { $scope.bioReportPhoto = e.target.result; $scope.laudoResult = null; });
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    // Step 1 → Step 2: Analyze photos then advance
+    $scope.analyzeAndAdvance = function() {
+        if (!$scope.checkin.weight) return;
+        $scope.analyzing = true;
+
+        var p = $rootScope.profileData || {};
+        if (p.weight && !$scope.manualMeasures.peso) $scope.manualMeasures.peso = parseFloat(p.weight);
+        if (p.height && !$scope.manualMeasures.altura) $scope.manualMeasures.altura = parseFloat(p.height) / 100;
+        $scope.manualMeasures.peso = parseFloat($scope.checkin.weight);
+
+        AiService.analyzeBodyPhotos($scope.checkin.photo_front, $scope.checkin.photo_side, p).then(function(parsed) {
+            $scope.analysisResult = parsed.feedback || JSON.stringify(parsed);
+            if (parsed.measures) {
+                Object.keys(parsed.measures).forEach(function(k) {
+                    if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                });
+            }
+            $scope.analyzing = false;
+            $scope.step = 2;
+        }).catch(function() {
+            $scope.analysisResult = 'Não consegui analisar as fotos agora. Você pode salvar o check-in mesmo assim.';
+            $scope.analyzing = false;
+            $scope.step = 2;
+        });
+    };
+
+    // Step 1: Save without analysis
+    $scope.saveCheckinOnly = function() {
+        doSaveCheckin();
+    };
+
+    // Step 2/3: Save with analysis
+    $scope.saveCheckinWithAnalysis = function() {
+        // Save measures
+        localStorage.setItem('fitness_measures', JSON.stringify($scope.manualMeasures));
+        $rootScope.manualMeasures = $scope.manualMeasures;
+        if ($scope.analysisResult) {
+            localStorage.setItem('fitness_body_analysis', $scope.analysisResult);
+            $rootScope.latestBodyAnalysis = $scope.analysisResult;
+        }
+        doSaveCheckin();
+    };
+
+    function doSaveCheckin() {
         if (!$scope.checkin.weight) return;
         $scope.loading = true;
 
@@ -91,6 +156,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                         ApiService.saveProfile(profileUpdate);
                     }
 
+                    // Update challenge90 checkpoints
                     if ($rootScope.challenge90 && $rootScope.challenge90.active) {
                         var ch = $rootScope.challenge90;
                         if (ch.checkpoints) {
@@ -106,21 +172,48 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                         localStorage.setItem('fitness_challenge90', JSON.stringify(ch));
                     }
 
-                    $scope.success = '✅ Check-in registrado com sucesso!';
-                    if ($scope.checkin.photo_front || $scope.checkin.photo_side) {
-                        $rootScope.analyzeBodyPhotos($scope.checkin.photo_front, $scope.checkin.photo_side);
-                    }
-                    $scope.checkin = {};
+                    $scope.step = 'done';
                     $scope.loading = false;
                     loadHistory();
                 });
             })
-            .catch(function(err) {
+            .catch(function() {
                 $scope.$apply(function() {
-                    $scope.success = '✅ Check-in salvo (fotos podem não ter sido enviadas).';
-                    $scope.checkin = {};
+                    $scope.step = 'done';
                     $scope.loading = false;
                 });
             });
+    }
+
+    // Analyze bio report (step 3)
+    $scope.analyzeBioReport = function() {
+        if (!$scope.bioReportPhoto) return;
+        $scope.analyzingLaudo = true;
+        $scope.laudoResult = null;
+
+        AiService.analyzeBioReport($scope.bioReportPhoto).then(function(parsed) {
+            $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
+            if (parsed.measures) {
+                Object.keys(parsed.measures).forEach(function(k) {
+                    if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                });
+            }
+            $scope.analyzingLaudo = false;
+        }).catch(function() {
+            $scope.laudoResult = 'Não consegui ler o laudo. Tente com foto mais nítida.';
+            $scope.analyzingLaudo = false;
+        });
+    };
+
+    $scope.startNew = function() {
+        $scope.checkin = {};
+        $scope.step = 1;
+        $scope.analysisResult = null;
+        $scope.laudoResult = null;
+        $scope.bioReportPhoto = null;
+    };
+
+    $scope.formatAnalysis = function(text) {
+        return $rootScope.formatAnalysis(text);
     };
 });

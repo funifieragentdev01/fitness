@@ -28,7 +28,7 @@
                         <span>⏱️ ~{{day.duration_minutes}} min</span>
                         <span ng-if="day.warmup">🔥 {{day.warmup}}</span>
                     </div>
-                    <button class="btn btn-primary btn-sm btn-block" ng-click="markWorkoutDone(day)" ng-if="!day.done" style="margin-top:10px">Bora! Concluir treino ✅</button>
+                    <button class="btn btn-primary btn-sm btn-block" ng-click="markWorkoutDone(day)" ng-if="!day.done && day.muscle_group" style="margin-top:10px">Bora! Concluir treino ✅</button>
                     <div class="alert alert-success" ng-if="day.done" style="margin-top:10px">✅ Treino concluído! Mandou bem! 💪</div>
                 </div>
             </div>

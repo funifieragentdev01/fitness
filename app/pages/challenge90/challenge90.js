@@ -39,6 +39,25 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
         }
     }
 
+    // Also try loading from check-in history if no checkpoint photos
+    if (!$scope.firstPhoto && userId) {
+        ApiService.loadWeightHistory(userId).then(function(res) {
+            if (Array.isArray(res.data) && res.data.length) {
+                // Sort by date ascending
+                var sorted = res.data.filter(function(w) { return w.photo_front_url; })
+                    .sort(function(a, b) {
+                        var da = a.created && a.created.$date ? new Date(a.created.$date) : new Date(a.created);
+                        var db = b.created && b.created.$date ? new Date(b.created.$date) : new Date(b.created);
+                        return da - db;
+                    });
+                if (sorted.length) {
+                    $scope.firstPhoto = $scope.firstPhoto || sorted[0].photo_front_url;
+                    $scope.lastPhoto = sorted[sorted.length - 1].photo_front_url;
+                }
+            }
+        });
+    }
+
     $scope.formatDate = function(dateStr) {
         if (!dateStr) return '';
         return new Date(dateStr).toLocaleDateString('pt-BR');

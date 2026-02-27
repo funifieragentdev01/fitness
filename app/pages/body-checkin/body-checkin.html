@@ -1,49 +1,157 @@
 <div id="body-checkin" class="screen">
     <div class="screen-header">
-        <button class="btn-back" ng-click="goTo('profile')"><i class="fas fa-arrow-left"></i></button>
+        <button class="btn-back" ng-click="handleBack()"><i class="fas fa-arrow-left"></i></button>
         <h2>📸 Check-in Corporal</h2>
     </div>
     <div class="screen-body">
-        <div class="form-group">
-            <label>Peso atual (kg)</label>
-            <input type="number" ng-model="checkin.weight" placeholder="Ex: 78.5" step="0.1" min="30" max="300">
-        </div>
-        <div class="form-group">
-            <label>Fotos corporais (opcional)</label>
-            <div class="body-photos-grid">
-                <div class="body-photo-box">
-                    <label>Frente</label>
-                    <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('front')">
-                        <img ng-if="checkin.photo_front" ng-src="{{checkin.photo_front}}" class="meal-preview">
-                        <div ng-if="!checkin.photo_front" class="photo-placeholder">
-                            <i class="fas fa-person fa-2x"></i>
-                            <p>Frente</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="body-photo-box">
-                    <label>Lateral</label>
-                    <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('side')">
-                        <img ng-if="checkin.photo_side" ng-src="{{checkin.photo_side}}" class="meal-preview">
-                        <div ng-if="!checkin.photo_side" class="photo-placeholder">
-                            <i class="fas fa-person fa-2x"></i>
-                            <p>Lateral</p>
-                        </div>
-                    </div>
-                </div>
+
+        <!-- ========== STEP 1: Fotos + Peso ========== -->
+        <div ng-show="step === 1">
+            <div class="wizard-step-indicator">
+                <span class="step-dot active"></span>
+                <span class="step-dot"></span>
+                <span class="step-dot"></span>
             </div>
-            <input type="file" id="checkinPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('front', this)">
-            <input type="file" id="checkinPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('side', this)">
+
+            <div class="form-group">
+                <label>Peso atual (kg)</label>
+                <input type="number" ng-model="checkin.weight" placeholder="Ex: 78.5" step="0.1" min="30" max="300">
+            </div>
+
+            <div class="form-group">
+                <label>Fotos corporais</label>
+                <div class="body-photos-grid">
+                    <div class="body-photo-box">
+                        <label>Frente</label>
+                        <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('front')">
+                            <img ng-if="checkin.photo_front" ng-src="{{checkin.photo_front}}" class="meal-preview">
+                            <div ng-if="!checkin.photo_front" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Frente</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="body-photo-box">
+                        <label>Lateral</label>
+                        <div class="photo-upload-area small" ng-click="triggerCheckinPhoto('side')">
+                            <img ng-if="checkin.photo_side" ng-src="{{checkin.photo_side}}" class="meal-preview">
+                            <div ng-if="!checkin.photo_side" class="photo-placeholder">
+                                <i class="fas fa-person fa-2x"></i>
+                                <p>Lateral</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="checkinPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('front', this)">
+                <input type="file" id="checkinPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('side', this)">
+            </div>
+
+            <!-- Primary action: Analyze if has photos, otherwise just save -->
+            <button class="btn btn-primary btn-block" ng-if="checkin.photo_front || checkin.photo_side" ng-click="analyzeAndAdvance()" ng-disabled="!checkin.weight || analyzing">
+                <span ng-if="!analyzing">🔬 Analisar composição corporal</span>
+                <span ng-if="analyzing"><i class="fas fa-spinner fa-spin"></i> Analisando com IA...</span>
+            </button>
+            <button class="btn btn-primary btn-block" ng-if="!checkin.photo_front && !checkin.photo_side" ng-click="saveCheckinOnly()" ng-disabled="!checkin.weight || loading">
+                <span ng-if="!loading">Salvar Check-in 📸</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Salvando...</span>
+            </button>
         </div>
-        <button class="btn btn-primary btn-block" ng-click="submitCheckin()" ng-disabled="!checkin.weight || loading">
-            <span ng-if="!loading">Salvar Check-in 📸</span>
-            <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Salvando...</span>
-        </button>
-        <button class="btn btn-outline btn-block" ng-if="checkin.photo_front || checkin.photo_side" ng-click="analyzeBodyPhotos(checkin.photo_front, checkin.photo_side)" ng-disabled="bodyAnalysisLoading" style="margin-top:8px">
-            🔬 Analisar composição corporal
-        </button>
-        <div class="alert alert-success" ng-if="success">{{success}}</div>
-        <div class="progress-section" ng-show="checkinHistory.length" style="margin-top:24px">
+
+        <!-- ========== STEP 2: Resultado da Análise ========== -->
+        <div ng-show="step === 2">
+            <div class="wizard-step-indicator">
+                <span class="step-dot done"></span>
+                <span class="step-dot active"></span>
+                <span class="step-dot"></span>
+            </div>
+
+            <h3 style="margin-bottom:16px">📊 Resultado da Análise</h3>
+
+            <!-- Thumbnails of photos analyzed -->
+            <div class="analysis-photos-preview" ng-show="checkin.photo_front || checkin.photo_side">
+                <img ng-if="checkin.photo_front" ng-src="{{checkin.photo_front}}" class="analysis-thumb">
+                <img ng-if="checkin.photo_side" ng-src="{{checkin.photo_side}}" class="analysis-thumb">
+            </div>
+
+            <!-- Analysis result -->
+            <div class="analysis-result-box" ng-if="analysisResult">
+                <div ng-bind-html="formatAnalysis(analysisResult)"></div>
+            </div>
+
+            <!-- Measures (peso, altura, extras from AI) -->
+            <div class="measures-summary" ng-show="manualMeasures.peso || manualMeasures.gordura_pct">
+                <div class="measure-pill" ng-show="manualMeasures.peso">⚖️ {{manualMeasures.peso}} kg</div>
+                <div class="measure-pill" ng-show="manualMeasures.gordura_pct">📊 {{manualMeasures.gordura_pct}}% gordura</div>
+                <div class="measure-pill" ng-show="manualMeasures.peso_magro">💪 {{manualMeasures.peso_magro}} kg magro</div>
+            </div>
+
+            <button class="btn btn-primary btn-block" ng-click="saveCheckinWithAnalysis()" ng-disabled="loading" style="margin-top:20px">
+                <span ng-if="!loading">Salvar Check-in ✅</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Salvando...</span>
+            </button>
+            <button class="btn btn-outline btn-block" ng-click="step = 3" style="margin-top:8px">
+                📋 Analisar laudo de bioimpedância
+            </button>
+            <button class="btn btn-link btn-block" ng-click="step = 1" style="margin-top:4px">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- ========== STEP 3: Laudo de Bioimpedância ========== -->
+        <div ng-show="step === 3">
+            <div class="wizard-step-indicator">
+                <span class="step-dot done"></span>
+                <span class="step-dot done"></span>
+                <span class="step-dot active"></span>
+            </div>
+
+            <h3 style="margin-bottom:16px">📋 Laudo de Bioimpedância</h3>
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px">Tire uma foto do seu laudo para análise automática.</p>
+
+            <div class="photo-upload-area" ng-click="triggerBioReport()" style="margin-bottom:16px">
+                <div class="photo-placeholder" ng-if="!bioReportPhoto">
+                    <i class="fas fa-file-medical fa-3x"></i>
+                    <p>Toque para tirar foto do laudo</p>
+                </div>
+                <img ng-if="bioReportPhoto" ng-src="{{bioReportPhoto}}" class="meal-preview">
+            </div>
+            <input type="file" id="bioReportInput" accept="image/*" style="display:none" onchange="angular.element(this).scope().onBioReport(this)">
+
+            <button class="btn btn-primary btn-block" ng-if="bioReportPhoto && !laudoResult" ng-click="analyzeBioReport()" ng-disabled="analyzingLaudo">
+                <span ng-if="!analyzingLaudo">🔬 Analisar Laudo</span>
+                <span ng-if="analyzingLaudo"><i class="fas fa-spinner fa-spin"></i> Analisando...</span>
+            </button>
+
+            <!-- Laudo result appears BELOW the image -->
+            <div class="analysis-result-box" ng-if="laudoResult" style="margin-top:16px">
+                <div ng-bind-html="formatAnalysis(laudoResult)"></div>
+            </div>
+
+            <div ng-show="laudoResult" style="margin-top:16px">
+                <button class="btn btn-primary btn-block" ng-click="saveCheckinWithAnalysis()">
+                    Salvar Check-in ✅
+                </button>
+                <button class="btn btn-outline btn-block" ng-click="laudoResult = null; bioReportPhoto = null" style="margin-top:8px">
+                    📋 Analisar outro laudo
+                </button>
+            </div>
+
+            <button class="btn btn-link btn-block" ng-click="step = 2" style="margin-top:8px">
+                ← Voltar
+            </button>
+        </div>
+
+        <!-- ========== Success state ========== -->
+        <div ng-show="step === 'done'" style="text-align:center;padding:40px 0">
+            <div style="font-size:64px;margin-bottom:16px">✅</div>
+            <h3 style="margin-bottom:8px">Check-in registrado!</h3>
+            <p style="color:var(--text-muted);margin-bottom:24px">Seus dados foram salvos com sucesso.</p>
+            <button class="btn btn-primary" ng-click="goTo('body-checkin')" ng-if="fromChallenge">Voltar ao Desafio</button>
+            <button class="btn btn-primary" ng-click="startNew()">Novo Check-in</button>
+        </div>
+
+        <!-- ========== History ========== -->
+        <div class="progress-section" ng-show="checkinHistory.length && step === 1" style="margin-top:24px">
             <h3 class="section-title">Histórico de Check-ins</h3>
             <div class="checkin-history-list">
                 <div class="checkin-history-item" ng-repeat="item in checkinHistory">
@@ -58,5 +166,6 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>
