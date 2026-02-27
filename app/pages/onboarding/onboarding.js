@@ -1,5 +1,6 @@
-angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootScope, $location, $timeout, $interval, AuthService, ApiService, AiService) {
-    $scope.onboardingStep = 1;
+angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootScope, $location, $timeout, $interval, $routeParams, AuthService, ApiService, AiService) {
+    $scope.onboardingStep = parseInt($routeParams.step) || 1;
+    $scope.redefineGoalMode = !!$routeParams.step;
     $scope.onboardingTotalSteps = 9;
     $scope.onboarding = {
         sex: '', restrictions: [], budget: 'medium', equipment: 'none',
@@ -44,8 +45,24 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         ];
     }
 
-    // Check if we have existing profile and should resume
-    if ($rootScope.profileData && !localStorage.getItem('fitness_mealplan')) {
+    // Redefine goal mode: pre-fill from profile, jump to goal step
+    if ($scope.redefineGoalMode && $rootScope.profileData) {
+        $scope.onboarding = buildOnboardingFromProfile($rootScope.profileData);
+        // Load existing goal
+        $scope.aiGoal = $rootScope.profileData.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
+        if (!$scope.aiGoal) {
+            $scope.goalLoading = true;
+            AiService.generateAIGoal($scope.onboarding).then(function(goal) {
+                $scope.aiGoal = goal;
+                $scope.goalLoading = false;
+            }).catch(function() {
+                $scope.aiGoal = { summary: 'Com base nos seus dados, recomendo uma abordagem gradual e consistente.', tip: 'Consistência é mais importante que intensidade!' };
+                $scope.goalLoading = false;
+            });
+        }
+    }
+    // Check if we have existing profile and should resume (normal onboarding)
+    else if ($rootScope.profileData && !localStorage.getItem('fitness_mealplan')) {
         $scope.onboarding = buildOnboardingFromProfile($rootScope.profileData);
         $scope.onboardingStep = 1;
         startGeneratingPlans();
@@ -144,6 +161,21 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         });
     };
 
+    // Save goal and return to profile (redefine goal mode)
+    $scope.saveGoalAndReturn = function() {
+        if (!$scope.aiGoal) return;
+        localStorage.setItem('fitness_ai_goal', JSON.stringify($scope.aiGoal));
+        // Save to profile
+        if ($rootScope.profileData) {
+            var profileUpdate = angular.copy($rootScope.profileData);
+            profileUpdate._id = AuthService.getUser();
+            profileUpdate.aiGoal = $scope.aiGoal;
+            ApiService.saveProfile(profileUpdate);
+            $rootScope.profileData.aiGoal = $scope.aiGoal;
+        }
+        $location.path('/profile').search({});
+    };
+
     // AI Goal
     $scope.generateAIGoal = function() {
         $scope.goalLoading = true;
@@ -194,6 +226,10 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         delete data.body_photo_front;
         delete data.body_photo_side;
         delete data.space_photo;
+        if ($scope.aiGoal) {
+            data.aiGoal = $scope.aiGoal;
+            localStorage.setItem('fitness_ai_goal', JSON.stringify($scope.aiGoal));
+        }
 
         ApiService.saveProfile(data).then(function() { $rootScope.profileData = data; }).catch(function() {});
 

@@ -4,11 +4,29 @@
     </div>
     <div class="screen-body">
         <div class="profile-card">
-            <div class="profile-avatar">{{player.name ? player.name[0].toUpperCase() : '?'}}</div>
+            <div class="profile-avatar-wrapper" ng-click="triggerProfilePhoto()">
+                <img ng-if="profilePhoto" ng-src="{{profilePhoto}}" class="profile-avatar-img">
+                <div ng-if="!profilePhoto" class="profile-avatar">{{player.name ? player.name[0].toUpperCase() : '?'}}</div>
+                <div class="profile-avatar-edit"><i class="fas fa-camera"></i></div>
+            </div>
+            <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="angular.element(this).scope().onProfilePhoto(this)">
             <h3>{{player.name}}</h3>
             <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
             <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
         </div>
+
+        <!-- Goal/Meta -->
+        <div class="profile-goal-card" ng-if="aiGoal">
+            <h3 style="font-size:15px;margin-bottom:8px">🎯 Minha Meta</h3>
+            <div class="analysis-formatted" ng-bind-html="formatAnalysis(aiGoal.summary)"></div>
+            <div class="goal-details-row" ng-if="aiGoal.target_weight || aiGoal.target_bf || aiGoal.timeline">
+                <span ng-if="aiGoal.target_weight">⚖️ {{aiGoal.target_weight}} kg</span>
+                <span ng-if="aiGoal.target_bf">📊 {{aiGoal.target_bf}}% gordura</span>
+                <span ng-if="aiGoal.timeline">📅 {{aiGoal.timeline}}</span>
+            </div>
+            <div ng-if="aiGoal.tip" style="margin-top:8px;font-size:13px;color:var(--text-muted)"><i class="fas fa-lightbulb" style="color:var(--accent)"></i> {{aiGoal.tip}}</div>
+        </div>
+
         <div class="profile-data" ng-if="profileData">
             <div class="data-row"><span>Sexo:</span><span>{{profileData.sex === 'M' ? 'Masculino' : 'Feminino'}}</span></div>
             <div class="data-row"><span>Idade:</span><span>{{profileData.age}} anos</span></div>
@@ -17,7 +35,7 @@
             <div class="data-row"><span>Objetivo:</span><span>{{goalLabel(profileData.goal)}}</span></div>
             <div class="data-row"><span>Equipamento:</span><span>{{equipLabel(profileData.equipment)}}</span></div>
             <div class="data-row" ng-if="profileData.training_days"><span>Dias de treino:</span><span>{{profileData.training_days.join(', ')}}</span></div>
-            <div class="data-row" ng-if="profileData.training_time"><span>Horário:</span><span>{{profileData.training_time}}</span></div>
+            <div class="data-row" ng-if="profileData.training_time"><span>Horário:</span><span>{{formatTime(profileData.training_time)}}</span></div>
         </div>
         <div class="profile-data" ng-if="latestBodyAnalysis" style="margin-top:12px">
             <h3 style="margin-bottom:8px;font-size:15px">📊 Última Análise Corporal</h3>
@@ -25,11 +43,10 @@
         </div>
         <div class="profile-actions">
             <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
-            <button class="btn btn-outline btn-block" ng-click="openBodyAnalysisModal()">📊 Análise Corporal / Medidas</button>
             <button class="btn btn-outline btn-block" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true">🏆 Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')">🏆 Ver Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
-            <button class="btn btn-outline btn-block" ng-click="goTo('onboarding')">⚙️ Refazer Perfil</button>
+            <button class="btn btn-outline btn-block" ng-click="redefineGoal()">🎯 Redefinir Meta</button>
             <button class="btn btn-outline btn-block" ng-click="openTerms()">📋 Termos de Uso</button>
             <button class="btn btn-danger btn-block" ng-click="logout()">Sair</button>
             <button class="btn btn-outline btn-block btn-sm" ng-click="confirmDeleteAccount()" style="margin-top:16px;color:var(--danger);border-color:var(--danger)">Excluir minha conta</button>

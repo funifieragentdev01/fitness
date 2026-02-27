@@ -98,6 +98,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
         var data = {
             userId: userId,
             userName: ($rootScope.player && $rootScope.player.name) ? $rootScope.player.name.split(' ')[0] : 'Usuário',
+            userPhoto: ($rootScope.profileData && $rootScope.profileData.photo_url) ? $rootScope.profileData.photo_url : '',
             rating: $scope.testimonial.rating,
             text: $scope.testimonial.text,
             publishOnHome: $scope.testimonial.publishOnHome || false,

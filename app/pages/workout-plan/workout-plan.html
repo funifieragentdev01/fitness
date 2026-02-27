@@ -9,7 +9,6 @@
         <div ng-if="workoutPlan && !loading">
             <div class="plan-header">
                 <span class="plan-date">Gerado em {{workoutPlan.date}}</span>
-                <button class="btn btn-outline btn-sm" ng-click="regenerateWorkoutPlan()"><i class="fas fa-refresh"></i> Regenerar</button>
             </div>
             <div class="workout-day-card" ng-repeat="day in workoutPlan.days" ng-class="{'rest-day': !day.muscle_group}">
                 <h3 class="day-title" ng-click="day.open = !day.open">

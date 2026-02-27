@@ -200,13 +200,15 @@
         </div>
 
         <div class="onboarding-actions" ng-if="onboardingStep !== 8">
-            <button class="btn btn-outline" ng-if="onboardingStep > 1 && onboardingStep < 9" ng-click="prevOnboardingStep()">Voltar</button>
+            <button class="btn btn-outline" ng-if="onboardingStep > 1 && onboardingStep < 9 && !redefineGoalMode" ng-click="prevOnboardingStep()">Voltar</button>
+            <button class="btn btn-outline" ng-if="redefineGoalMode && onboardingStep === 7" ng-click="goTo('profile')">Cancelar</button>
             <button class="btn btn-primary" ng-if="onboardingStep < 6" ng-click="nextOnboardingStep()" ng-disabled="!canAdvanceOnboarding()">Próximo</button>
             <button class="btn btn-primary" ng-if="onboardingStep === 6" ng-click="generateAIGoal()">
                 <span ng-if="!loading">Definir minha meta 🎯</span>
                 <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
             </button>
-            <button class="btn btn-primary" ng-if="onboardingStep === 7 && aiGoal && !goalLoading" ng-click="startGeneratingPlans()">Gerar meus planos! 🚀</button>
+            <button class="btn btn-primary" ng-if="onboardingStep === 7 && aiGoal && !goalLoading && !redefineGoalMode" ng-click="startGeneratingPlans()">Gerar meus planos! 🚀</button>
+            <button class="btn btn-primary" ng-if="onboardingStep === 7 && aiGoal && !goalLoading && redefineGoalMode" ng-click="saveGoalAndReturn()">Salvar Meta ✅</button>
             <button class="btn btn-primary btn-block" ng-if="onboardingStep === 9" ng-click="completeOnboarding()">Bora começar! 🚀</button>
         </div>
     </div>
