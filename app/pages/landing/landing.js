@@ -5,23 +5,23 @@ angular.module('fitness').controller('LandingCtrl', function($scope, $location, 
     var API = CONFIG.API;
     var BASIC_TOKEN = CONFIG.BASIC_TOKEN;
 
-    // Aggregate testimonials with $lookup to get player photo
+    // Aggregate testimonials with $lookup on profile__c for player photo
     var pipeline = [
         { "$match": { "publishOnHome": true } },
         { "$sort": { "created": -1 } },
         { "$limit": 6 },
         { "$lookup": {
-            "from": "player",
+            "from": "profile__c",
             "localField": "userId",
             "foreignField": "_id",
-            "as": "playerData"
+            "as": "profile"
         }},
-        { "$unwind": { "path": "$playerData", "preserveNullAndEmptyArrays": true } },
+        { "$unwind": { "path": "$profile", "preserveNullAndEmptyArrays": true } },
         { "$project": {
             "text": 1,
             "rating": 1,
             "userName": 1,
-            "userPhoto": { "$ifNull": ["$playerData.photo_url", "$playerData.image.medium", "$userPhoto"] },
+            "userPhoto": { "$ifNull": ["$profile.photo_url", "$userPhoto"] },
             "firstPhoto": 1,
             "lastPhoto": 1,
             "created": 1
