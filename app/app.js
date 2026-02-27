@@ -45,6 +45,7 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     $rootScope.bodyAnalysisError = null;
     $rootScope.bioReportPhoto = null;
     $rootScope.measureCat = {};
+    $rootScope.appVersion = CONFIG.VERSION;
 
     // Load saved state
     try { $rootScope.challenge90 = JSON.parse(localStorage.getItem('fitness_challenge90')); } catch(e) {}
