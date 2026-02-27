@@ -268,7 +268,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .landing-analysis-section { background: #0a0a0a; padding: 60px 20px; overflow: hidden; max-width: none; }
 .analysis-layout { display: flex; flex-direction: column; align-items: center; gap: 32px; max-width: 900px; margin: 0 auto; }
 .analysis-left { flex: 0 0 auto; }
-.analysis-phone-img { width: 280px; max-width: 100%; border-radius: 16px; }
+.analysis-phone-img { width: 200px; max-width: 100%; border-radius: 16px; }
 .analysis-right { flex: 1; text-align: center; }
 .analysis-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
 .analysis-desc { font-size: 15px; line-height: 1.6; color: #aaa; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; }
@@ -856,7 +856,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     .analysis-right { text-align: left; }
     .analysis-desc { margin-left: 0; }
     .analysis-chart { margin: 0; }
-    .analysis-phone-img { width: 340px; }
+    .analysis-phone-img { width: 240px; }
     .meal-layout { flex-direction: row; align-items: flex-start; }
     .meal-photo-card { width: 300px; }
     .workout-layout { flex-direction: row; align-items: center; }
