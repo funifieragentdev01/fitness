@@ -1,4 +1,4 @@
-angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, AuthService, ApiService, AiService) {
+angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService) {
     $scope.checkin = {};
     $scope.checkinHistory = [];
     $scope.step = 1;
@@ -8,6 +8,8 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
     $scope.laudoResult = null;
     $scope.bioReportPhoto = null;
     $scope.manualMeasures = $rootScope.manualMeasures || {};
+    $scope.fromChallenge = $routeParams.from === 'challenge90';
+    $scope.challengeCheckpoint = parseInt($routeParams.checkpoint) || null;
 
     var userId = AuthService.getUser();
 
@@ -31,6 +33,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
     $scope.handleBack = function() {
         if ($scope.step === 2) { $scope.step = 1; }
         else if ($scope.step === 3) { $scope.step = 2; }
+        else if ($scope.fromChallenge) { $scope.goTo('challenge90'); }
         else { $scope.goTo('profile'); }
     };
 
@@ -143,6 +146,10 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     photo_side_url: photoUrls.side,
                     created: ApiService.bsonDate()
                 };
+                if ($scope.fromChallenge && $scope.challengeCheckpoint) {
+                    data.challenge_day = $scope.challengeCheckpoint;
+                    data.challenge_id = $rootScope.challenge90 ? $rootScope.challenge90.startDate : null;
+                }
                 return ApiService.saveCheckin(data);
             })
             .then(function() {
@@ -156,14 +163,15 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                         ApiService.saveProfile(profileUpdate);
                     }
 
-                    // Update challenge90 checkpoints
-                    if ($rootScope.challenge90 && $rootScope.challenge90.active) {
+                    // Update challenge90 checkpoints ONLY when initiated from challenge page
+                    if ($scope.fromChallenge && $rootScope.challenge90 && $rootScope.challenge90.active) {
                         var ch = $rootScope.challenge90;
-                        if (ch.checkpoints) {
+                        if (ch.checkpoints && $scope.challengeCheckpoint) {
                             for (var i = 0; i < ch.checkpoints.length; i++) {
-                                if (ch.checkpoints[i].current && !ch.checkpoints[i].done) {
+                                if (ch.checkpoints[i].day === $scope.challengeCheckpoint && !ch.checkpoints[i].done) {
                                     ch.checkpoints[i].done = true;
                                     ch.checkpoints[i].photos = { front: photoUrls.front, side: photoUrls.side };
+                                    ch.checkpoints[i].current = false;
                                     if (i + 1 < ch.checkpoints.length) ch.checkpoints[i + 1].current = true;
                                     break;
                                 }

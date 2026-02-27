@@ -21,7 +21,7 @@
             <div style="font-size:36px;margin-bottom:8px">📸</div>
             <h3 style="margin-bottom:8px">Registre seu ponto de partida!</h3>
             <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px">Tire sua foto de frente e lateral para acompanhar sua transformação.</p>
-            <button class="btn btn-primary" ng-click="goTo('body-checkin')">Fazer Check-in Corporal 📸</button>
+            <button class="btn btn-primary" ng-click="goToCheckin()">Fazer Check-in Corporal 📸</button>
         </div>
 
         <!-- Before/After Photos -->
@@ -55,7 +55,7 @@
                 <div ng-show="cp.photos && cp.photos.front" style="display:flex;gap:4px">
                     <img ng-src="{{cp.photos.front}}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">
                 </div>
-                <button class="btn btn-sm btn-primary" ng-show="cp.current && !cp.done" ng-click="goTo('body-checkin')">Registrar</button>
+                <button class="btn btn-sm btn-primary" ng-show="cp.current && !cp.done" ng-click="goToCheckin(cp.day)">Registrar</button>
             </div>
         </div>
 

@@ -58,6 +58,19 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
         });
     }
 
+    $scope.goToCheckin = function(checkpointDay) {
+        // Find current checkpoint day if not specified
+        if (!checkpointDay && $rootScope.challenge90 && $rootScope.challenge90.checkpoints) {
+            for (var i = 0; i < $rootScope.challenge90.checkpoints.length; i++) {
+                if ($rootScope.challenge90.checkpoints[i].current && !$rootScope.challenge90.checkpoints[i].done) {
+                    checkpointDay = $rootScope.challenge90.checkpoints[i].day;
+                    break;
+                }
+            }
+        }
+        $location.path('/body-checkin').search({ from: 'challenge90', checkpoint: checkpointDay || 1 });
+    };
+
     $scope.formatDate = function(dateStr) {
         if (!dateStr) return '';
         return new Date(dateStr).toLocaleDateString('pt-BR');

@@ -146,7 +146,8 @@
             <div style="font-size:64px;margin-bottom:16px">✅</div>
             <h3 style="margin-bottom:8px">Check-in registrado!</h3>
             <p style="color:var(--text-muted);margin-bottom:24px">Seus dados foram salvos com sucesso.</p>
-            <button class="btn btn-primary" ng-click="goTo('dashboard')">Ir para Dashboard 🏠</button>
+            <button class="btn btn-primary" ng-if="fromChallenge" ng-click="goTo('challenge90')">Voltar ao Desafio 🏆</button>
+            <button class="btn btn-primary" ng-if="!fromChallenge" ng-click="goTo('dashboard')">Ir para Dashboard 🏠</button>
         </div>
 
         <!-- ========== History ========== -->
