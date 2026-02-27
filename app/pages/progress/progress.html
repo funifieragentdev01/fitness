@@ -3,43 +3,65 @@
         <h2>📊 Evolução</h2>
     </div>
     <div class="screen-body">
+        <!-- Current Level Card -->
         <div class="progress-section">
-            <h3 class="section-title">Nível Atual</h3>
-            <div class="level-timeline">
-                <div class="level-node" ng-repeat="lv in allLevels" ng-class="{'reached': lv.reached, 'current': lv.current}">
-                    <div class="level-dot"></div>
-                    <span class="level-name">{{lv.level}}</span>
-                    <span class="level-pts">{{lv.minPoints}} XP</span>
+            <div class="level-current-card">
+                <div class="level-current-info">
+                    <span class="level-current-name">{{playerLevel.level || 'Iniciante'}}</span>
+                    <span class="level-current-xp">{{playerPoints.xp || 0}} XP</span>
+                </div>
+                <div class="progress-bar" style="margin:12px 0 8px">
+                    <div class="progress-fill" ng-style="{'width': levelProgress + '%'}"></div>
+                </div>
+                <div class="level-next-info" ng-show="nextLevel">
+                    <span>Próximo: <strong>{{nextLevel.level}}</strong></span>
+                    <span>{{nextLevel.minPoints - playerPoints.xp}} XP restantes</span>
                 </div>
             </div>
         </div>
+
+        <!-- Stats -->
         <div class="progress-section">
-            <h3 class="section-title">XP por Semana</h3>
-            <div class="bar-chart">
-                <div class="bar-item" ng-repeat="bar in xpBars">
-                    <div class="bar-fill" ng-style="{'height': bar.pct + '%'}"></div>
-                    <span class="bar-label">{{bar.label}}</span>
-                    <span class="bar-value">{{bar.value}}</span>
-                </div>
-            </div>
-        </div>
-        <div class="progress-section">
-            <h3 class="section-title">Desafios</h3>
+            <h3 class="section-title">Resumo</h3>
             <div class="stat-row">
                 <div class="stat-box">
                     <span class="stat-number">{{completedChallenges}}</span>
-                    <span class="stat-label">Concluídos</span>
+                    <span class="stat-label">Desafios</span>
                 </div>
                 <div class="stat-box">
-                    <span class="stat-number">{{activeChallengesCount}}</span>
-                    <span class="stat-label">Ativos</span>
+                    <span class="stat-number">{{playerPoints.energy || 0}}</span>
+                    <span class="stat-label">Energia ⚡</span>
                 </div>
             </div>
         </div>
-        <div class="progress-section" ng-if="weightHistory.length">
+
+        <!-- Weight Chart -->
+        <div class="progress-section" ng-show="weightHistory.length">
             <h3 class="section-title">Peso ao Longo do Tempo</h3>
+            <div class="weight-chart-container">
+                <canvas id="weightChart" style="width:100%;height:200px"></canvas>
+            </div>
+        </div>
+
+        <!-- Photo Timeline -->
+        <div class="progress-section">
+            <h3 class="section-title">Timeline de Fotos</h3>
+            <div class="photo-timeline" ng-show="photoTimeline.length">
+                <div class="photo-timeline-item" ng-repeat="photo in photoTimeline">
+                    <img ng-src="{{photo.url}}" class="photo-timeline-img">
+                    <span class="photo-timeline-date">{{photo.date}}</span>
+                </div>
+            </div>
+            <div ng-show="!photoTimeline.length" class="empty-state">
+                <p>Nenhuma foto ainda. <a href="" ng-click="goTo('body-checkin')" style="color:var(--accent)">Fazer check-in</a></p>
+            </div>
+        </div>
+
+        <!-- Weight History List -->
+        <div class="progress-section" ng-show="weightHistory.length">
+            <h3 class="section-title">Histórico de Peso</h3>
             <div class="weight-list">
-                <div class="weight-entry" ng-repeat="w in weightHistory">
+                <div class="weight-entry" ng-repeat="w in weightHistory | limitTo:10">
                     <span class="weight-date">{{w.date}}</span>
                     <span class="weight-value">{{w.weight}} kg</span>
                 </div>

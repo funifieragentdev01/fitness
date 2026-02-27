@@ -208,15 +208,26 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     // Challenge90 join from anywhere
     $rootScope.joinChallenge90 = function() {
         var ApiService = angular.element(document.body).injector().get('ApiService');
+        var now = new Date();
+        var end = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
         $rootScope.challenge90 = {
             active: true,
-            startDate: new Date().toISOString(),
-            day: 0,
+            startDate: now.toISOString(),
+            endDate: end.toISOString(),
+            currentDay: 1,
+            nextCheckpoint: 30,
+            checkpoints: [
+                { day: 1, done: false, current: true },
+                { day: 30, done: false, current: false },
+                { day: 60, done: false, current: false },
+                { day: 90, done: false, current: false }
+            ],
             photos: {}
         };
         localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
         $rootScope.showChallengeOffer = false;
         ApiService.logAction('daily_challenge', { type: '90_day_challenge', action: 'join' });
+        $location.path('/challenge90');
     };
 
     // Init: auto-login if token exists

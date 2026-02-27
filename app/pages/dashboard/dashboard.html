@@ -16,7 +16,7 @@
     </div>
 
     <!-- 90-Day Challenge Card -->
-    <div class="section" ng-if="challenge90.active">
+    <div ng-show="challenge90 && challenge90.active" style="padding:0 20px;margin-bottom:20px">
         <div class="challenge90-dashboard-card" ng-click="goTo('challenge90')">
             <div class="challenge90-header">
                 <span class="challenge90-title">🏆 Desafio 90 Dias</span>

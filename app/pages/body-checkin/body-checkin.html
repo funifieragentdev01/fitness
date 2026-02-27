@@ -43,12 +43,18 @@
             🔬 Analisar composição corporal
         </button>
         <div class="alert alert-success" ng-if="success">{{success}}</div>
-        <div class="progress-section" ng-if="weightHistory.length" style="margin-top:24px">
-            <h3 class="section-title">Histórico</h3>
-            <div class="weight-list">
-                <div class="weight-entry" ng-repeat="w in weightHistory">
-                    <span class="weight-date">{{w.date}}</span>
-                    <span class="weight-value">{{w.weight}} kg</span>
+        <div class="progress-section" ng-show="checkinHistory.length" style="margin-top:24px">
+            <h3 class="section-title">Histórico de Check-ins</h3>
+            <div class="checkin-history-list">
+                <div class="checkin-history-item" ng-repeat="item in checkinHistory">
+                    <div class="checkin-history-header">
+                        <span class="weight-date">{{item.date}}</span>
+                        <span class="weight-value">{{item.weight}} kg</span>
+                    </div>
+                    <div class="checkin-history-photos" ng-show="item.photo_front_url || item.photo_side_url">
+                        <img ng-show="item.photo_front_url" ng-src="{{item.photo_front_url}}" class="checkin-thumb">
+                        <img ng-show="item.photo_side_url" ng-src="{{item.photo_side_url}}" class="checkin-thumb">
+                    </div>
                 </div>
             </div>
         </div>

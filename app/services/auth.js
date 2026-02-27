@@ -56,7 +56,7 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
         },
         register: function(reg) {
             return $http.put(API + '/v3/database/signup__c', {
-                _id: reg.username,
+                _id: reg.email || reg.username,
                 name: reg.name,
                 email: reg.email,
                 password: reg.password

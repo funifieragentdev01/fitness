@@ -11,7 +11,12 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
         $scope.error = '';
         $scope.success = '';
 
-        AuthService.register($scope.reg).then(function(res) {
+        AuthService.register({
+            username: $scope.reg.email,
+            name: $scope.reg.name,
+            email: $scope.reg.email,
+            password: $scope.reg.password
+        }).then(function(res) {
             if (res.data && res.data.status === 'OK') {
                 $scope.success = 'Conta criada! Faça login para começar. 🎉';
                 $timeout(function() { $location.path('/login'); }, 1500);
