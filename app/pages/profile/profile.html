@@ -42,12 +42,12 @@
             <div class="analysis-formatted" ng-bind-html="formatAnalysis(latestBodyAnalysis)"></div>
         </div>
         <div class="profile-actions">
-            <button class="btn btn-outline btn-block" ng-click="goTo('body-checkin')">📸 Check-in Corporal</button>
-            <button class="btn btn-outline btn-block" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true">🏆 Desafio 90 Dias</button>
-            <button class="btn btn-outline btn-block" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')">🏆 Ver Desafio 90 Dias</button>
-            <button class="btn btn-outline btn-block" ng-click="goTo('progress')">📊 Ver Evolução</button>
-            <button class="btn btn-outline btn-block" ng-click="redefineGoal()">🎯 Redefinir Meta</button>
-            <button class="btn btn-outline btn-block" ng-click="openTerms()">📋 Termos de Uso</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('body-checkin')"><i class="fas fa-camera profile-action-icon"></i> Check-in Corporal</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true"><i class="fas fa-trophy profile-action-icon"></i> Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')"><i class="fas fa-trophy profile-action-icon"></i> Ver Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('progress')"><i class="fas fa-chart-line profile-action-icon"></i> Ver Evolução</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-click="redefineGoal()"><i class="fas fa-bullseye profile-action-icon"></i> Redefinir Meta</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-click="openTerms()"><i class="fas fa-file-alt profile-action-icon"></i> Termos de Uso</button>
             <button class="btn btn-danger btn-block" ng-click="logout()">Sair</button>
             <button class="btn btn-outline btn-block btn-sm" ng-click="confirmDeleteAccount()" style="margin-top:16px;color:var(--danger);border-color:var(--danger)">Excluir minha conta</button>
         </div>

@@ -325,6 +325,16 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .challenge-hero-title { font-size: 32px; font-weight: 900; line-height: 1.15; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
 .challenge-hero-desc { font-size: 15px; line-height: 1.6; color: #ccc; margin-bottom: 24px; }
 
+/* Challenge90 page banner */
+.challenge90-banner { position: relative; height: 120px; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.challenge90-banner-bg { position: absolute; inset: 0; background-size: cover; background-position: center 30%; }
+.challenge90-banner-overlay { position: absolute; inset: 0; background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.3)); }
+.challenge90-banner-text { position: relative; z-index: 2; display: flex; align-items: center; height: 100%; padding: 0 24px; font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
+
+/* Profile action buttons with orange icons */
+.profile-action-btn { text-align: left; display: flex; align-items: center; gap: 10px; }
+.profile-action-icon { color: var(--accent); font-size: 16px; width: 20px; text-align: center; }
+
 /* Final CTA */
 .landing-final-cta {
     text-align: center; padding: 60px 24px 80px;
