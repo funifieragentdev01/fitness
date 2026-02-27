@@ -298,6 +298,25 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .meal-schedule-icon { font-size: 22px; }
 .meal-schedule-name { font-size: 14px; color: #ddd; font-weight: 500; }
 
+/* Workout Section */
+.landing-workout-section { background: #111; padding: 60px 20px; }
+.workout-layout { display: flex; flex-direction: column; gap: 32px; max-width: 900px; margin: 0 auto; align-items: center; }
+.workout-left { text-align: center; }
+.workout-title { font-size: 32px; font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
+.workout-desc { font-size: 15px; line-height: 1.6; color: #aaa; margin-bottom: 24px; max-width: 340px; margin-left: auto; margin-right: auto; }
+.workout-mode-row { display: flex; gap: 16px; justify-content: center; }
+.workout-mode-card { display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,107,0,0.3); border-radius: 14px; padding: 20px 28px; min-width: 100px; }
+.workout-mode-card i { font-size: 28px; color: var(--accent); }
+.workout-mode-card span { font-size: 14px; font-weight: 600; color: #fff; }
+.workout-right { flex: 1; width: 100%; max-width: 480px; }
+.workout-video-mockup { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,107,0,0.2); }
+.workout-video-img { width: 100%; display: block; }
+.workout-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 56px; height: 56px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; box-shadow: 0 4px 20px rgba(255,107,0,0.4); }
+.workout-video-bar { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0,0,0,0.7); color: #fff; }
+.workout-progress-track { flex: 1; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; }
+.workout-progress-fill { width: 35%; height: 100%; background: var(--accent); border-radius: 2px; }
+.workout-video-time { font-size: 11px; color: #aaa; }
+
 /* Final CTA */
 .landing-final-cta {
     text-align: center; padding: 60px 24px 80px;
@@ -832,6 +851,10 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     .analysis-phone-img { width: 340px; }
     .meal-layout { flex-direction: row; align-items: flex-start; }
     .meal-photo-card { width: 300px; }
+    .workout-layout { flex-direction: row; align-items: center; }
+    .workout-left { text-align: left; }
+    .workout-desc { margin-left: 0; }
+    .workout-mode-row { justify-content: flex-start; }
 }
 
 @media (max-width: 480px) {
