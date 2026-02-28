@@ -5,9 +5,33 @@
     </div>
     <div class="screen-body">
         <div class="alert alert-success" ng-if="success">{{success}}</div>
+        <div class="alert alert-danger" ng-if="error">{{error}}</div>
 
         <div class="sandbox-badge" ng-if="envLabel">
             <span>{{envLabel}}</span>
+        </div>
+
+        <!-- Coupon Section -->
+        <div class="coupon-section">
+            <div class="coupon-input-row">
+                <input type="text" class="coupon-input" ng-model="couponCode"
+                       placeholder="Tem um cupom? Digite aqui"
+                       ng-disabled="couponValid"
+                       ng-keyup="$event.keyCode === 13 && validateCoupon()">
+                <button class="btn btn-sm coupon-btn" ng-click="validateCoupon()"
+                        ng-if="!couponValid" ng-disabled="checkingCoupon || !couponCode">
+                    {{checkingCoupon ? '...' : 'Aplicar'}}
+                </button>
+                <button class="btn btn-sm coupon-btn-clear" ng-click="clearCoupon()" ng-if="couponValid">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="coupon-result coupon-success" ng-if="couponValid">
+                <i class="fas fa-check-circle"></i> {{couponInfo.description}}
+            </div>
+            <div class="coupon-result coupon-error" ng-if="couponValid === false">
+                <i class="fas fa-times-circle"></i> {{couponError}}
+            </div>
         </div>
 
         <div class="plans-container">
@@ -17,7 +41,8 @@
                 <div class="plan-header">
                     <h3>⭐ Standard</h3>
                     <div class="plan-price">
-                        <span class="price-value">R$ 29,90</span>
+                        <span class="price-old" ng-if="hasDiscount('standard')">R$ {{getOriginalPrice('standard') | number:2}}</span>
+                        <span class="price-value">R$ {{getPrice('standard') | number:2}}</span>
                         <span class="price-period">/mês</span>
                     </div>
                 </div>
@@ -32,8 +57,8 @@
                     <li class="feature-disabled"><i class="fas fa-times"></i> Coach IA 24/7</li>
                     <li class="feature-disabled"><i class="fas fa-times"></i> Suporte prioritário</li>
                 </ul>
-                <button class="btn btn-block" ng-class="{'btn-outline': !isPremium, 'btn-primary': isPremium}" ng-click="selectPlan('standard')" ng-disabled="!isPremium">
-                    {{isPremium ? 'Mudar para Standard' : 'Plano Atual ⭐'}}
+                <button class="btn btn-block btn-primary" ng-click="selectPlan('standard')" ng-disabled="loading">
+                    {{loading ? 'Processando...' : 'Assinar Standard ⭐'}}
                 </button>
             </div>
 
@@ -44,7 +69,8 @@
                 <div class="plan-header">
                     <h3>👑 Premium</h3>
                     <div class="plan-price">
-                        <span class="price-value premium-price">R$ 179,90</span>
+                        <span class="price-old" ng-if="hasDiscount('premium')">R$ {{getOriginalPrice('premium') | number:2}}</span>
+                        <span class="price-value premium-price">R$ {{getPrice('premium') | number:2}}</span>
                         <span class="price-period">/mês</span>
                     </div>
                 </div>
@@ -56,8 +82,8 @@
                     <li><i class="fas fa-check"></i> Coach IA personalizado 24/7</li>
                     <li><i class="fas fa-check"></i> Suporte prioritário</li>
                 </ul>
-                <button class="btn btn-block" ng-class="{'btn-outline': isPremium, 'btn-primary btn-premium': !isPremium}" ng-click="selectPlan('premium')" ng-disabled="isPremium">
-                    {{isPremium ? 'Plano Atual 👑' : 'Assinar Premium 👑'}}
+                <button class="btn btn-block btn-primary btn-premium" ng-click="selectPlan('premium')" ng-disabled="isPremium || loading">
+                    {{isPremium ? 'Plano Atual 👑' : (loading ? 'Processando...' : 'Assinar Premium 👑')}}
                 </button>
             </div>
         </div>

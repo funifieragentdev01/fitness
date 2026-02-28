@@ -1,7 +1,10 @@
-angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
+angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService, PaymentService) {
     $scope.isPremium = PlanService.isPremium();
     var userId = AuthService.getUser();
     if (!AuthService.isLoggedIn()) { $location.path('/login'); return; }
+
+    // Check if returning from payment
+    PaymentService.checkPaymentReturn();
 
     $scope.nextMeal = null;
     $scope.nextActions = [];

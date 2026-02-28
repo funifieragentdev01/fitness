@@ -1,34 +1,100 @@
-// PaymentService — Asaas payment gateway integration
-angular.module('fitness').factory('PaymentService', function($rootScope, PlanService) {
+// PaymentService — Asaas payment gateway via Funifier public endpoints
+angular.module('fitness').factory('PaymentService', function($http, $rootScope, AuthService) {
+    var PUB_URL = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY;
+
     var service = {
         /**
-         * Get payment link URL for a plan type
+         * Validate a coupon code
+         * @returns Promise<{ valid, discountType, discountValue, description, error }>
          */
-        getPaymentLink: function(planType) {
-            if (!CONFIG.ASAAS_PAYMENT_LINKS) return null;
-            return CONFIG.ASAAS_PAYMENT_LINKS[planType] || null;
+        validateCoupon: function(couponCode) {
+            return $http.post(PUB_URL + '/validate_coupon', {
+                couponCode: couponCode
+            }).then(function(res) { return res.data; });
         },
 
         /**
-         * Open Asaas checkout in new tab
-         * The checkout is hosted by Asaas — handles Pix, card, boleto
+         * Create subscription via Funifier public endpoint
+         * Funifier calls Asaas server-side (no CORS, no key exposure)
+         * @returns Promise<{ success, invoiceUrl, subscriptionId, value, discount, error }>
          */
-        checkout: function(planType) {
-            var url = service.getPaymentLink(planType);
-            if (!url) {
-                $rootScope.error = 'Link de pagamento não configurado.';
+        createSubscription: function(planType, couponCode) {
+            var playerId = AuthService.getUser();
+            return $http.post(PUB_URL + '/create_subscription', {
+                playerId: playerId,
+                planType: planType,
+                couponCode: couponCode || null
+            }).then(function(res) { return res.data; });
+        },
+
+        /**
+         * Open Asaas checkout for a plan
+         * Creates subscription server-side, then redirects to invoiceUrl
+         */
+        checkout: function(planType, couponCode) {
+            $rootScope.loading = true;
+            return service.createSubscription(planType, couponCode).then(function(result) {
+                $rootScope.loading = false;
+                if (result.error) {
+                    $rootScope.error = result.error;
+                    return false;
+                }
+                if (result.invoiceUrl) {
+                    window.open(result.invoiceUrl, '_blank');
+                    return true;
+                }
+                $rootScope.error = 'Não foi possível gerar o link de pagamento.';
                 return false;
-            }
-            window.open(url, '_blank');
-            return true;
+            }).catch(function(err) {
+                $rootScope.loading = false;
+                $rootScope.error = 'Erro ao processar pagamento. Tente novamente.';
+                return false;
+            });
         },
 
         /**
-         * Check if payment is configured
+         * Check if payment was completed (called on dashboard load)
+         * Reads URL params and refreshes player data
          */
-        isConfigured: function() {
-            return !!(CONFIG.ASAAS_PAYMENT_LINKS &&
-                (CONFIG.ASAAS_PAYMENT_LINKS.standard || CONFIG.ASAAS_PAYMENT_LINKS.premium));
+        checkPaymentReturn: function() {
+            var hash = window.location.hash || '';
+            if (hash.indexOf('payment=success') > -1) {
+                // Extract plan from URL
+                var planMatch = hash.match(/plan=(\w+)/);
+                var plan = planMatch ? planMatch[1] : null;
+
+                // Clean URL
+                var cleanHash = hash.replace(/[?&]payment=success/, '').replace(/[?&]plan=\w+/, '');
+                if (cleanHash !== hash) {
+                    window.location.hash = cleanHash;
+                }
+
+                // Refresh player data to get updated plan
+                if (plan) {
+                    $rootScope.success = '🎉 Pagamento confirmado! Seu plano ' +
+                        (plan === 'premium' ? 'Premium 👑' : 'Standard ⭐') +
+                        ' está sendo ativado.';
+                } else {
+                    $rootScope.success = '🎉 Pagamento realizado com sucesso!';
+                }
+
+                // Reload player to get updated extra
+                AuthService.loadPlayer();
+                return true;
+            }
+            return false;
+        },
+
+        /**
+         * Calculate price with discount
+         */
+        calculatePrice: function(planType, discountType, discountValue) {
+            var basePrice = planType === 'premium' ? 179.90 : 29.90;
+            if (!discountType || !discountValue) return basePrice;
+            if (discountType === 'PERCENTAGE') {
+                return Math.max(0, basePrice - (basePrice * discountValue / 100));
+            }
+            return Math.max(0, basePrice - discountValue);
         },
 
         /**
