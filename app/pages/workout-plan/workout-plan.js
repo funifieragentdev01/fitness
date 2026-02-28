@@ -1,4 +1,4 @@
-angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService, FeedbackService) {
+angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService, FeedbackService, PlanService) {
     $scope.showWorkoutAdjust = false;
     $scope.workoutAdjustFeedback = null;
     $scope.workoutForm = { adjustText: '' };
@@ -51,10 +51,15 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
 
     $scope.regenerateWorkoutPlan = function() {
         if (!$rootScope.profileData) return;
+        if (!PlanService.canChange('workoutPlan')) {
+            $rootScope.openUpgrade('Você já alterou seu plano de treino este mês. Seja Premium para alterações ilimitadas!');
+            return;
+        }
         $rootScope.loading = true;
         AiService.generateWorkoutPlan($rootScope.profileData).then(function(plan) {
             $rootScope.workoutPlan = plan;
             localStorage.setItem('fitness_workoutplan', JSON.stringify(plan));
+            PlanService.recordChange('workoutPlan');
             $rootScope.loading = false;
         }).catch(function() { $rootScope.loading = false; });
     };
@@ -107,6 +112,10 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
 
     $scope.adjustWorkoutPlan = function() {
         if (!$scope.workoutForm.adjustText || !$rootScope.workoutPlan) return;
+        if (!PlanService.canChange('workoutPlan')) {
+            $rootScope.openUpgrade('Você já alterou seu plano de treino este mês. Seja Premium para alterações ilimitadas!');
+            return;
+        }
         $rootScope.loading = true;
         $scope.workoutAdjustFeedback = null;
         AiService.adjustWorkoutPlan($rootScope.workoutPlan, $scope.workoutForm.adjustText, $rootScope.profileData, $scope.workoutAdjustPhoto).then(function(result) {
@@ -115,6 +124,7 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
                 $rootScope.workoutPlan.days = result.days;
                 $rootScope.workoutPlan.date = new Date().toLocaleDateString('pt-BR');
                 localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
+                PlanService.recordChange('workoutPlan');
             }
             $rootScope.loading = false;
         }).catch(function() {

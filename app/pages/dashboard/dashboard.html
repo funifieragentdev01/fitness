@@ -45,7 +45,7 @@
             <div class="action-card" ng-click="goTo('meal-plan')"><div class="action-icon">🍽️</div><span>Nutrição</span></div>
             <div class="action-card" ng-click="goTo('workout-plan')"><div class="action-icon">💪</div><span>Treino</span></div>
             <div class="action-card" ng-click="goTo('water')"><div class="action-icon">💧</div><span>Água</span><small>{{waterMl || 0}}ml</small></div>
-            <div class="action-card" ng-click="goTo('coach')"><div class="action-icon">🤖</div><span>Coach IA</span></div>
+            <div class="action-card" ng-click="goTo('coach')"><div class="action-icon">🤖</div><span>Coach</span><span class="premium-badge" ng-if="!isPremium">PREMIUM</span></div>
         </div>
     </div>
 

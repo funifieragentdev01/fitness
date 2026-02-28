@@ -1,4 +1,4 @@
-angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService) {
+angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, PlanService) {
     $scope.showMealAdjust = false;
     $scope.mealAdjustFeedback = null;
     $scope.mealForm = { adjustText: '' };
@@ -62,10 +62,15 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
 
     $scope.regenerateMealPlan = function() {
         if (!$rootScope.profileData) return;
+        if (!PlanService.canChange('mealPlan')) {
+            $rootScope.openUpgrade('Você já alterou seu plano alimentar este mês. Seja Premium para alterações ilimitadas!');
+            return;
+        }
         $rootScope.loading = true;
         AiService.generateMealPlan($rootScope.profileData).then(function(plan) {
             $rootScope.mealPlan = plan;
             localStorage.setItem('fitness_mealplan', JSON.stringify(plan));
+            PlanService.recordChange('mealPlan');
             $rootScope.loading = false;
             updateNextMeal();
         }).catch(function() { $rootScope.loading = false; });
@@ -84,6 +89,10 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
 
     $scope.adjustMealPlan = function() {
         if ((!$scope.mealForm.adjustText && !$scope.dietPhoto) || !$rootScope.mealPlan) return;
+        if (!PlanService.canChange('mealPlan')) {
+            $rootScope.openUpgrade('Você já alterou seu plano alimentar este mês. Seja Premium para alterações ilimitadas!');
+            return;
+        }
         $rootScope.loading = true;
         $scope.mealAdjustFeedback = null;
         AiService.adjustMealPlan($rootScope.mealPlan, $scope.mealForm.adjustText, $rootScope.profileData, $scope.dietPhoto).then(function(result) {
@@ -93,6 +102,7 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
                 if (result.total_calories) $rootScope.mealPlan.total_calories = result.total_calories;
                 $rootScope.mealPlan.date = new Date().toLocaleDateString('pt-BR');
                 localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
+                PlanService.recordChange('mealPlan');
             }
             $rootScope.loading = false;
         }).catch(function() {

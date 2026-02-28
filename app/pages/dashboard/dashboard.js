@@ -1,4 +1,5 @@
-angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScope, $location, AuthService, ApiService) {
+angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
+    $scope.isPremium = PlanService.isPremium();
     var userId = AuthService.getUser();
     if (!AuthService.isLoggedIn()) { $location.path('/login'); return; }
 

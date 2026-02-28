@@ -1,4 +1,4 @@
-angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $location, AuthService, ApiService) {
+angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
     var userId = AuthService.getUser();
     $scope.profilePhoto = null;
     $scope.aiGoal = null;
@@ -69,6 +69,11 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
 
     // Redefine goal - navigate to onboarding step 7 (goal)
     $scope.redefineGoal = function() {
+        if (!PlanService.canChange('goal')) {
+            $rootScope.openUpgrade('Você já alterou sua meta este mês. Seja Premium para alterações ilimitadas!');
+            return;
+        }
+        PlanService.recordChange('goal');
         $location.path('/onboarding').search({ step: '7' });
     };
 

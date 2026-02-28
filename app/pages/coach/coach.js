@@ -1,4 +1,10 @@
-angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, AiService, ApiService) {
+angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, AiService, ApiService, PlanService) {
+    $scope.coachLocked = !PlanService.canAccessCoach();
+
+    if ($scope.coachLocked) {
+        $rootScope.openUpgrade('O Coach é exclusivo do plano Premium. Faça upgrade para ter seu coach personalizado!');
+    }
+
     $scope.chatMessages = [
         { role: 'assistant', content: 'E aí! Sou seu coach de nutrição e treino. Como posso te ajudar hoje? 🏔️' }
     ];
@@ -11,6 +17,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
     }, 100);
 
     $scope.sendChat = function() {
+        if ($scope.coachLocked) {
+            $rootScope.openUpgrade('O Coach é exclusivo do plano Premium. Faça upgrade para ter seu coach personalizado!');
+            return;
+        }
         if (!$scope.chat.input || $scope.chatLoading) return;
         var msg = $scope.chat.input;
         $scope.chatMessages.push({ role: 'user', content: msg });
@@ -59,7 +69,7 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
             } catch(e) {}
         }
 
-        var systemPrompt = 'Você é o Coach IA, um coach de nutrição e treino brasileiro. ' +
+        var systemPrompt = 'Você é o Coach, um coach de nutrição e treino brasileiro. ' +
             'O jogador se chama ' + ($rootScope.player.name || 'amigo') + '. ' +
             'Nível atual: ' + ($rootScope.playerLevel.level || 'Iniciante') + '. XP: ' + ($rootScope.playerPoints.xp || 0) + '.' +
             profileInfo + mealInfo + workoutInfo +

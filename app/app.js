@@ -48,6 +48,21 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     $rootScope.measureCat = {};
     $rootScope.appVersion = CONFIG.VERSION;
 
+    // Upgrade modal
+    $rootScope.showUpgradeModal = false;
+    $rootScope.upgradeReason = '';
+    $rootScope.openUpgrade = function(reason) {
+        $rootScope.upgradeReason = reason || 'Faça upgrade para o Premium e desbloqueie todos os recursos!';
+        $rootScope.showUpgradeModal = true;
+    };
+    $rootScope.closeUpgradeModal = function() {
+        $rootScope.showUpgradeModal = false;
+    };
+    $rootScope.upgradeToPremium = function() {
+        $rootScope.showUpgradeModal = false;
+        $rootScope.success = '🚧 Pagamento será integrado em breve! Contate-nos pelo WhatsApp.';
+    };
+
     // Load saved state
     try { $rootScope.challenge90 = JSON.parse(localStorage.getItem('fitness_challenge90')); } catch(e) {}
     try { var m = JSON.parse(localStorage.getItem('fitness_measures')); if (m) $rootScope.manualMeasures = m; } catch(e) {}
@@ -209,6 +224,11 @@ app.run(function($rootScope, $location, $sce, AuthService) {
 
     // Challenge90 join from anywhere
     $rootScope.joinChallenge90 = function() {
+        var PlanService = angular.element(document.body).injector().get('PlanService');
+        if (!PlanService.canAccessChallenge90()) {
+            $rootScope.openUpgrade('O Desafio 90 Dias é exclusivo do plano Premium. Faça upgrade e transforme seu corpo!');
+            return;
+        }
         var ApiService = angular.element(document.body).injector().get('ApiService');
         var now = new Date();
         var end = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);

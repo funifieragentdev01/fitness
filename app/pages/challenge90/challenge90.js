@@ -1,4 +1,8 @@
-angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootScope, $location, AuthService, ApiService) {
+angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
+    $scope.challengeLocked = !PlanService.canAccessChallenge90();
+    if ($scope.challengeLocked) {
+        $rootScope.openUpgrade('O Desafio 90 Dias é exclusivo do plano Premium. Faça upgrade e transforme seu corpo!');
+    }
     $scope.weightHistory = [];
     $scope.testimonial = {};
     $scope.firstPhoto = '';
