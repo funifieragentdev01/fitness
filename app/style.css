@@ -70,6 +70,15 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     background: url('images/bg.jpeg') center right / cover no-repeat;
     z-index: 0;
 }
+.landing-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
+    z-index: 0;
+}
 .landing-hero-overlay {
     position: absolute;
     inset: 0;
@@ -1112,6 +1121,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
         position: relative;
         flex: 0 0 45vh;
         background-position: 100% 20%;
+    }
+    .landing-hero-video {
+        position: relative;
+        flex: 0 0 45vh;
+        object-position: 70% 20%;
     }
     .landing-hero-overlay {
         background: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(17,17,17,0.6) 40%, rgba(17,17,17,1) 50%, rgba(17,17,17,1) 100%);
