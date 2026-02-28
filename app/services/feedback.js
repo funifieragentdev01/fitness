@@ -1,150 +1,86 @@
-angular.module('fitness').factory('FeedbackService', function($timeout) {
+angular.module('fitness').factory('FeedbackService', function() {
+    // iOS Safari requires AudioContext to be created/resumed within user gesture
+    // So we create it lazily on first use (which is always inside a button click)
     var audioCtx = null;
-    var audioUnlocked = false;
 
-    function getAudioCtx() {
+    function ctx() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        // Resume suspended context (mobile browsers require user gesture)
+        // iOS keeps context suspended until resumed in a user gesture
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
         return audioCtx;
     }
 
-    // Unlock audio on first user touch/click (required for iOS/mobile)
-    function unlockAudio() {
-        if (audioUnlocked) return;
-        try {
-            var ctx = getAudioCtx();
-            // Play silent buffer to unlock
-            var buffer = ctx.createBuffer(1, 1, 22050);
-            var source = ctx.createBufferSource();
-            source.buffer = buffer;
-            source.connect(ctx.destination);
-            source.start(0);
-            audioUnlocked = true;
-        } catch(e) {}
+    function tone(freq, startOffset, duration, type, vol) {
+        var c = ctx();
+        var osc = c.createOscillator();
+        var gain = c.createGain();
+        osc.connect(gain);
+        gain.connect(c.destination);
+        osc.type = type || 'sine';
+        var t = c.currentTime + (startOffset || 0);
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(vol || 0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + (duration || 0.15));
+        osc.start(t);
+        osc.stop(t + (duration || 0.15));
     }
-    document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
-    document.addEventListener('touchend', unlockAudio, { once: false, passive: true });
-    document.addEventListener('click', unlockAudio, { once: false, passive: true });
+
+    function sweep(fromFreq, toFreq, duration, type, vol) {
+        var c = ctx();
+        var osc = c.createOscillator();
+        var gain = c.createGain();
+        osc.connect(gain);
+        gain.connect(c.destination);
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(fromFreq, c.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(toFreq, c.currentTime + duration);
+        gain.gain.setValueAtTime(vol || 0.35, c.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + duration + 0.05);
+        osc.start(c.currentTime);
+        osc.stop(c.currentTime + duration + 0.05);
+    }
+
+    var sounds = {
+        water: function() {
+            sweep(600, 200, 0.15, 'sine', 0.4);
+            setTimeout(function() { sweep(400, 150, 0.15, 'sine', 0.2); }, 50);
+        },
+        meal: function() {
+            tone(880, 0, 0.18, 'sine', 0.4);
+            tone(1100, 0.15, 0.25, 'sine', 0.4);
+        },
+        workout: function() {
+            sweep(200, 800, 0.3, 'sawtooth', 0.25);
+        },
+        levelup: function() {
+            [523, 659, 784, 1047].forEach(function(f, i) {
+                tone(f, i * 0.12, 0.15, 'sine', 0.35);
+            });
+        },
+        complete: function() {
+            [523, 659, 784, 1047].forEach(function(f, i) {
+                tone(f, i * 0.1, 0.2, 'sine', 0.4);
+            });
+        }
+    };
 
     var service = {
         vibrate: function(pattern) {
+            // navigator.vibrate not supported on iOS Safari
             if (navigator.vibrate) navigator.vibrate(pattern);
         },
+
         playSound: function(type) {
             try {
-                var ctx = getAudioCtx();
-                if (ctx.state === 'suspended') ctx.resume();
-
-                switch(type) {
-                    case 'water':
-                        // Bubbly splash — two overlapping tones
-                        (function() {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(600, ctx.currentTime);
-                            osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.15);
-                            gain.gain.setValueAtTime(0.4, ctx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-                            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
-                        })();
-                        (function() {
-                            var osc2 = ctx.createOscillator();
-                            var gain2 = ctx.createGain();
-                            osc2.connect(gain2); gain2.connect(ctx.destination);
-                            osc2.type = 'sine';
-                            osc2.frequency.setValueAtTime(400, ctx.currentTime + 0.05);
-                            osc2.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.2);
-                            gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.05);
-                            gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                            osc2.start(ctx.currentTime + 0.05); osc2.stop(ctx.currentTime + 0.3);
-                        })();
-                        break;
-                    case 'meal':
-                        // Two-tone ding
-                        (function() {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(880, ctx.currentTime);
-                            gain.gain.setValueAtTime(0.4, ctx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2);
-                        })();
-                        (function() {
-                            var osc2 = ctx.createOscillator();
-                            var gain2 = ctx.createGain();
-                            osc2.connect(gain2); gain2.connect(ctx.destination);
-                            osc2.type = 'sine';
-                            osc2.frequency.setValueAtTime(1100, ctx.currentTime + 0.15);
-                            gain2.gain.setValueAtTime(0.4, ctx.currentTime + 0.15);
-                            gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                            osc2.start(ctx.currentTime + 0.15); osc2.stop(ctx.currentTime + 0.4);
-                        })();
-                        break;
-                    case 'workout':
-                        // Epic ascending power-up
-                        (function() {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sawtooth';
-                            osc.frequency.setValueAtTime(200, ctx.currentTime);
-                            osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.3);
-                            gain.gain.setValueAtTime(0.25, ctx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
-                        })();
-                        break;
-                    case 'levelup':
-                        // Ascending 4-note triumph
-                        [523, 659, 784, 1047].forEach(function(freq, i) {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine';
-                            var t = ctx.currentTime + i * 0.12;
-                            osc.frequency.setValueAtTime(freq, t);
-                            gain.gain.setValueAtTime(0.35, t);
-                            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
-                            osc.start(t); osc.stop(t + 0.15);
-                        });
-                        break;
-                    case 'complete':
-                        // Victory fanfare — 4 ascending notes
-                        [523, 659, 784, 1047].forEach(function(freq, i) {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine';
-                            var t = ctx.currentTime + i * 0.1;
-                            osc.frequency.setValueAtTime(freq, t);
-                            gain.gain.setValueAtTime(0.4, t);
-                            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
-                            osc.start(t); osc.stop(t + 0.2);
-                        });
-                        break;
-                    default:
-                        (function() {
-                            var osc = ctx.createOscillator();
-                            var gain = ctx.createGain();
-                            osc.connect(gain); gain.connect(ctx.destination);
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(800, ctx.currentTime);
-                            gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-                            osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
-                        })();
-                }
-            } catch(e) { console.warn('FeedbackService sound error:', e); }
+                if (sounds[type]) sounds[type]();
+                else tone(800, 0, 0.1, 'sine', 0.3);
+            } catch(e) { console.warn('Sound error:', e); }
         },
+
         showConfetti: function(intensity) {
             var count = intensity === 'heavy' ? 50 : (intensity === 'medium' ? 25 : 10);
             var container = document.createElement('div');
@@ -152,16 +88,17 @@ angular.module('fitness').factory('FeedbackService', function($timeout) {
             document.body.appendChild(container);
             var colors = ['#FF6B00', '#FFD700', '#FF4444', '#00C853', '#2196F3', '#E040FB'];
             for (var i = 0; i < count; i++) {
-                var particle = document.createElement('div');
-                particle.className = 'confetti-particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.animationDelay = (Math.random() * 0.5) + 's';
-                particle.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
-                container.appendChild(particle);
+                var p = document.createElement('div');
+                p.className = 'confetti-particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDelay = (Math.random() * 0.5) + 's';
+                p.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+                container.appendChild(p);
             }
             setTimeout(function() { container.remove(); }, 3500);
         },
+
         showXpPopup: function(xp, element) {
             var popup = document.createElement('div');
             popup.className = 'xp-popup';
@@ -177,6 +114,7 @@ angular.module('fitness').factory('FeedbackService', function($timeout) {
             document.body.appendChild(popup);
             setTimeout(function() { popup.remove(); }, 1500);
         },
+
         waterFeedback: function() {
             service.vibrate([50]);
             service.playSound('water');
