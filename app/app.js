@@ -224,11 +224,6 @@ app.run(function($rootScope, $location, $sce, AuthService) {
 
     // Challenge90 join from anywhere
     $rootScope.joinChallenge90 = function() {
-        var PlanService = angular.element(document.body).injector().get('PlanService');
-        if (!PlanService.canAccessChallenge90()) {
-            $rootScope.openUpgrade('O Desafio 90 Dias é exclusivo do plano Premium. Faça upgrade e transforme seu corpo!');
-            return;
-        }
         var ApiService = angular.element(document.body).injector().get('ApiService');
         var now = new Date();
         var end = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);

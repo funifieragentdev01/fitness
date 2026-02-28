@@ -2,6 +2,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     var userId = AuthService.getUser();
     $scope.profilePhoto = null;
     $scope.aiGoal = null;
+    $scope.isPremium = PlanService.isPremium();
 
     function loadProfileData() {
         if (!userId) return;

@@ -1,5 +1,5 @@
 angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
-    $scope.challengeLocked = !PlanService.canAccessChallenge90();
+    $scope.challengeLocked = false; // Desafio 90 dias disponível para todos os planos
     if ($scope.challengeLocked) {
         $rootScope.openUpgrade('O Desafio 90 Dias é exclusivo do plano Premium. Faça upgrade e transforme seu corpo!');
     }
