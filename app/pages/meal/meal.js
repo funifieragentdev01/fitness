@@ -1,4 +1,4 @@
-angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $location, $timeout, ApiService, AiService, AuthService) {
+angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $location, $timeout, ApiService, AiService, AuthService, FeedbackService) {
     $scope.registeringMeal = $rootScope._registeringMeal || null;
     $scope.mealType = $scope.registeringMeal ? $scope.registeringMeal.name : '';
     $scope.mealPhoto = null;
@@ -67,6 +67,7 @@ angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $l
                 doc.completed = doc.entries.length >= totalMeals;
                 if (doc.completed && !wasCompleted) {
                     ApiService.logAction('complete_daily_checkin', { type: 'meal', date: dateStr });
+                    FeedbackService.dailyCompleteFeedback();
                 }
                 // Save and propagate to rootScope for meal-plan to pick up
                 $rootScope._mealCheckin = doc;
@@ -74,6 +75,7 @@ angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $l
             }).catch(function() {});
         }
         $rootScope.success = '✅ Refeição registrada! +15 XP';
+        FeedbackService.mealFeedback();
         $rootScope._registeringMeal = null;
         $timeout(function() { $location.path('/meal-plan'); }, 1500);
     };

@@ -1,4 +1,4 @@
-angular.module('fitness').controller('WaterCtrl', function($scope, $rootScope, ApiService, AuthService) {
+angular.module('fitness').controller('WaterCtrl', function($scope, $rootScope, ApiService, AuthService, FeedbackService) {
     $scope.waterCupSize = 250;
     $scope.waterGoalMl = 2800;
     $scope.waterMl = 0;
@@ -54,6 +54,7 @@ angular.module('fitness').controller('WaterCtrl', function($scope, $rootScope, A
         $scope.waterPercent = Math.min(100, Math.round(($scope.waterMl / $scope.waterGoalMl) * 100));
         $scope.waterCupsGoal = Math.ceil($scope.waterGoalMl / $scope.waterCupSize);
         $scope.waterCupsArray = new Array(Math.max($scope.waterCupsToday, $scope.waterCupsGoal));
+        FeedbackService.waterFeedback();
         ApiService.logAction('register_water', { cups: 1, ml: $scope.waterCupSize });
 
         // Persist to checkin__c
@@ -83,6 +84,7 @@ angular.module('fitness').controller('WaterCtrl', function($scope, $rootScope, A
         $scope.waterCheckin.completed = $scope.waterMl >= $scope.waterGoalMl;
         if ($scope.waterCheckin.completed && !wasCompleted) {
             ApiService.logAction('complete_daily_checkin', { type: 'water', date: dateStr });
+            FeedbackService.dailyCompleteFeedback();
         }
         ApiService.saveCheckinDoc($scope.waterCheckin);
     };

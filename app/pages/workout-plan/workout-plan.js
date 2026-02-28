@@ -1,4 +1,4 @@
-angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService) {
+angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService, FeedbackService) {
     $scope.showWorkoutAdjust = false;
     $scope.workoutAdjustFeedback = null;
     $scope.workoutForm = { adjustText: '' };
@@ -61,6 +61,7 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
 
     $scope.markWorkoutDone = function(day) {
         day.done = true;
+        FeedbackService.workoutFeedback();
         ApiService.logAction('complete_workout', { day: day.day_name, focus: day.muscle_group });
 
         // Persist to checkin__c
@@ -89,6 +90,7 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
         if (!exists) $scope.workoutCheckin.entries.push(entry);
         $scope.workoutCheckin.completed = true;
         ApiService.logAction('complete_daily_checkin', { type: 'workout', date: dateStr });
+        FeedbackService.dailyCompleteFeedback();
         ApiService.saveCheckinDoc($scope.workoutCheckin);
     };
 
