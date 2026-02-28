@@ -5,12 +5,24 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
     $scope.dietPhoto = null;
     $scope.nextMeal = null;
 
+    $scope.mealCheckin = null;
+
     function loadMealPlan() {
         var cached = localStorage.getItem('fitness_mealplan');
         if (cached) { try { $rootScope.mealPlan = JSON.parse(cached); } catch(e) { $rootScope.mealPlan = null; } }
         $scope.showMealAdjust = false;
         $scope.mealAdjustFeedback = null;
         updateNextMeal();
+        // Load today's meal checkin from server
+        ApiService.loadCheckin('meal').then(function(doc) {
+            if (doc) {
+                $scope.mealCheckin = doc;
+                // Sync to localStorage cache
+                var key = 'fitness_meals_' + new Date().toISOString().slice(0, 10);
+                var ids = (doc.entries || []).map(function(e) { return e.id; });
+                localStorage.setItem(key, JSON.stringify(ids));
+            }
+        }).catch(function() {});
     }
 
     function updateNextMeal() {
@@ -28,7 +40,15 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
 
     function mealRegKey() { return 'fitness_meals_' + new Date().toISOString().slice(0, 10); }
     $scope.isMealRegistered = function(meal) {
-        try { return JSON.parse(localStorage.getItem(mealRegKey()) || '[]').indexOf(meal.time + '_' + meal.name) > -1; } catch(e) { return false; }
+        var id = meal.time + '_' + meal.name;
+        // Check server data first
+        if ($scope.mealCheckin && $scope.mealCheckin.entries) {
+            for (var i = 0; i < $scope.mealCheckin.entries.length; i++) {
+                if ($scope.mealCheckin.entries[i].id === id) return true;
+            }
+        }
+        // Fallback to localStorage
+        try { return JSON.parse(localStorage.getItem(mealRegKey()) || '[]').indexOf(id) > -1; } catch(e) { return false; }
     };
 
     $scope.registerMealPhoto = function(meal) {

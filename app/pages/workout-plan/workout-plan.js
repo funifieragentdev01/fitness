@@ -1,8 +1,9 @@
-angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService) {
+angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService) {
     $scope.showWorkoutAdjust = false;
     $scope.workoutAdjustFeedback = null;
     $scope.workoutForm = { adjustText: '' };
     $scope.workoutAdjustPhoto = null;
+    $scope.workoutCheckin = null;
 
     function loadWorkoutPlan() {
         var cached = localStorage.getItem('fitness_workoutplan');
@@ -18,6 +19,8 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
                         Object.keys(dayOrder).forEach(function(k) { if (b.day_name && b.day_name.indexOf(k) === 0) bO = dayOrder[k]; });
                         return aO - bO;
                     });
+                    // Reset all day.done — will restore from today's checkin
+                    $rootScope.workoutPlan.days.forEach(function(day) { day.done = false; });
                     // Open today's card
                     var todayNames = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
                     var todayName = todayNames[new Date().getDay()];
@@ -29,6 +32,21 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
         }
         $scope.showWorkoutAdjust = false;
         $scope.workoutAdjustFeedback = null;
+
+        // Load today's workout checkin from server
+        ApiService.loadCheckin('workout').then(function(doc) {
+            if (doc) {
+                $scope.workoutCheckin = doc;
+                // Restore day.done from today's checkin entries
+                if ($rootScope.workoutPlan && $rootScope.workoutPlan.days && doc.entries) {
+                    doc.entries.forEach(function(entry) {
+                        $rootScope.workoutPlan.days.forEach(function(day) {
+                            if (day.day_name === entry.day_name) day.done = true;
+                        });
+                    });
+                }
+            }
+        }).catch(function() {});
     }
 
     $scope.regenerateWorkoutPlan = function() {
@@ -44,7 +62,34 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
     $scope.markWorkoutDone = function(day) {
         day.done = true;
         ApiService.logAction('complete_workout', { day: day.day_name, focus: day.muscle_group });
-        if ($rootScope.workoutPlan) localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
+
+        // Persist to checkin__c
+        var userId = AuthService.getUser();
+        var dateStr = new Date().toISOString().slice(0, 10);
+        var docId = userId + '_workout_' + dateStr;
+        var now = new Date().toISOString();
+        var entry = { day_name: day.day_name, muscle_group: day.muscle_group || '', ts: now };
+
+        if (!$scope.workoutCheckin) {
+            $scope.workoutCheckin = {
+                _id: docId,
+                userId: userId,
+                type: 'workout',
+                date: ApiService.bsonDate(new Date(dateStr + 'T03:00:00.000Z')),
+                entries: [],
+                completed: false,
+                created: ApiService.bsonDate()
+            };
+        }
+        // Avoid duplicates
+        var exists = false;
+        for (var i = 0; i < $scope.workoutCheckin.entries.length; i++) {
+            if ($scope.workoutCheckin.entries[i].day_name === day.day_name) { exists = true; break; }
+        }
+        if (!exists) $scope.workoutCheckin.entries.push(entry);
+        $scope.workoutCheckin.completed = true;
+        ApiService.logAction('complete_daily_checkin', { type: 'workout', date: dateStr });
+        ApiService.saveCheckinDoc($scope.workoutCheckin);
     };
 
     $scope.toggleWorkoutAdjust = function() { $scope.showWorkoutAdjust = !$scope.showWorkoutAdjust; };

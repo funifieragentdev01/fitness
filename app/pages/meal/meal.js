@@ -1,4 +1,4 @@
-angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $location, $timeout, ApiService, AiService) {
+angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $location, $timeout, ApiService, AiService, AuthService) {
     $scope.registeringMeal = $rootScope._registeringMeal || null;
     $scope.mealType = $scope.registeringMeal ? $scope.registeringMeal.name : '';
     $scope.mealPhoto = null;
@@ -34,6 +34,42 @@ angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $l
             var id = $scope.registeringMeal.time + '_' + $scope.registeringMeal.name;
             if (regs.indexOf(id) === -1) regs.push(id);
             localStorage.setItem(key, JSON.stringify(regs));
+
+            // Persist to checkin__c
+            var userId = AuthService.getUser();
+            var dateStr = new Date().toISOString().slice(0, 10);
+            var docId = userId + '_meal_' + dateStr;
+            var now = new Date().toISOString();
+            var entry = { id: id, time: $scope.registeringMeal.time, name: $scope.registeringMeal.name, photo: !!$scope.mealPhoto, ts: now };
+            var totalMeals = ($rootScope.mealPlan && $rootScope.mealPlan.meals) ? $rootScope.mealPlan.meals.length : 6;
+
+            ApiService.loadCheckin('meal').then(function(doc) {
+                if (!doc) {
+                    doc = {
+                        _id: docId,
+                        userId: userId,
+                        type: 'meal',
+                        date: ApiService.bsonDate(new Date(dateStr + 'T03:00:00.000Z')),
+                        entries: [],
+                        completed: false,
+                        total: totalMeals,
+                        created: ApiService.bsonDate()
+                    };
+                }
+                // Avoid duplicate entries
+                var exists = false;
+                for (var i = 0; i < doc.entries.length; i++) {
+                    if (doc.entries[i].id === id) { exists = true; break; }
+                }
+                if (!exists) doc.entries.push(entry);
+                doc.total = totalMeals;
+                var wasCompleted = doc.completed;
+                doc.completed = doc.entries.length >= totalMeals;
+                if (doc.completed && !wasCompleted) {
+                    ApiService.logAction('complete_daily_checkin', { type: 'meal', date: dateStr });
+                }
+                ApiService.saveCheckinDoc(doc);
+            }).catch(function() {});
         }
         $rootScope.success = '✅ Refeição registrada! +15 XP';
         $rootScope._registeringMeal = null;

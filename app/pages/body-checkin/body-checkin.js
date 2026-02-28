@@ -150,7 +150,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     data.challenge_day = $scope.challengeCheckpoint;
                     data.challenge_id = $rootScope.challenge90 ? $rootScope.challenge90.startDate : null;
                 }
-                return ApiService.saveCheckin(data);
+                return ApiService.saveBodyCheckin(data);
             })
             .then(function() {
                 $scope.$apply(function() {

@@ -46,7 +46,7 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
             }
             return $http.put(API + '/v3/database/profile__c', data, AuthService.authHeader());
         },
-        saveCheckin: function(data) {
+        saveBodyCheckin: function(data) {
             // Ensure created is BSON $date
             if (data.created && !data.created.$date) {
                 data.created = bsonDate(new Date(data.created));
@@ -78,6 +78,28 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
                 transformRequest: angular.identity
             });
         },
+        // --- Checkin __c methods ---
+        loadCheckin: function(type, date) {
+            var userId = AuthService.getUser();
+            var dateStr = (date || new Date()).toISOString().slice(0, 10);
+            var id = userId + '_' + type + '_' + dateStr;
+            return $http.get(API + '/v3/database/checkin__c/' + id + '?strict=true', AuthService.authHeader())
+                .then(function(res) { return res.data; })
+                .catch(function(err) {
+                    if (err.status === 404) return null;
+                    throw err;
+                });
+        },
+        saveCheckinDoc: function(doc) {
+            if (doc.created && !doc.created.$date) {
+                doc.created = bsonDate(new Date(doc.created));
+            }
+            if (doc.date && !doc.date.$date) {
+                doc.date = bsonDate(new Date(doc.date));
+            }
+            return $http.put(API + '/v3/database/checkin__c', doc, AuthService.authHeader());
+        },
+
         saveTestimonial: function(data) {
             if (data.created && !data.created.$date) {
                 data.created = bsonDate(new Date(data.created));
