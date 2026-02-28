@@ -1,4 +1,4 @@
-angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService) {
+angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService, PlanService) {
     $scope.checkin = {};
     $scope.checkinHistory = [];
     $scope.step = 1;
@@ -69,6 +69,10 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
     // Step 1 → Step 2: Analyze photos then advance
     $scope.analyzeAndAdvance = function() {
         if (!$scope.checkin.weight) return;
+        if (!PlanService.canChange('bodyCheckin')) {
+            $rootScope.openUpgrade('Você já fez seu check-in corporal este mês. Seja Premium para check-ins ilimitados!');
+            return;
+        }
         $scope.analyzing = true;
 
         var p = $rootScope.profileData || {};
@@ -154,6 +158,7 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
             })
             .then(function() {
                 $scope.$apply(function() {
+                    PlanService.recordChange('bodyCheckin');
                     ApiService.logAction('body_checkin', { weight: parseFloat($scope.checkin.weight) });
                     ApiService.logAction('update_weight', { weight: parseFloat($scope.checkin.weight) });
                     if ($rootScope.profileData) {
@@ -196,10 +201,15 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
     // Analyze bio report (step 3)
     $scope.analyzeBioReport = function() {
         if (!$scope.bioReportPhoto) return;
+        if (!PlanService.canChange('bioReport')) {
+            $rootScope.openUpgrade('Você já analisou um laudo este mês. Seja Premium para análises ilimitadas!');
+            return;
+        }
         $scope.analyzingLaudo = true;
         $scope.laudoResult = null;
 
         AiService.analyzeBioReport($scope.bioReportPhoto).then(function(parsed) {
+            PlanService.recordChange('bioReport');
             $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
             if (parsed.measures) {
                 Object.keys(parsed.measures).forEach(function(k) {
