@@ -1,0 +1,67 @@
+<div id="plans" class="screen has-nav">
+    <div class="screen-header">
+        <button class="btn-back" ng-click="goTo('profile')"><i class="fas fa-arrow-left"></i></button>
+        <h2>Planos</h2>
+    </div>
+    <div class="screen-body">
+        <div class="alert alert-success" ng-if="success">{{success}}</div>
+
+        <div class="plans-container">
+            <!-- Standard Card -->
+            <div class="plan-card" ng-class="{'plan-active': !isPremium}">
+                <div class="plan-badge" ng-if="!isPremium">Plano Atual</div>
+                <div class="plan-header">
+                    <h3>⭐ Standard</h3>
+                    <div class="plan-price">
+                        <span class="price-value">R$ 29,90</span>
+                        <span class="price-period">/mês</span>
+                    </div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Plano alimentar personalizado por IA</li>
+                    <li><i class="fas fa-check"></i> Plano de treino personalizado por IA</li>
+                    <li><i class="fas fa-check"></i> 1 alteração de plano por mês</li>
+                    <li><i class="fas fa-check"></i> 1 check-in corporal por mês</li>
+                    <li><i class="fas fa-check"></i> 1 análise de laudo por mês</li>
+                    <li><i class="fas fa-check"></i> Controle de água e refeições</li>
+                    <li class="feature-disabled"><i class="fas fa-times"></i> Coach IA 24/7</li>
+                    <li class="feature-disabled"><i class="fas fa-times"></i> Desafio 90 Dias</li>
+                    <li class="feature-disabled"><i class="fas fa-times"></i> Suporte prioritário</li>
+                </ul>
+                <button class="btn btn-block" ng-class="{'btn-outline': !isPremium, 'btn-primary': isPremium}" ng-click="selectPlan('standard')" ng-disabled="!isPremium">
+                    {{isPremium ? 'Mudar para Standard' : 'Plano Atual ⭐'}}
+                </button>
+            </div>
+
+            <!-- Premium Card -->
+            <div class="plan-card plan-premium" ng-class="{'plan-active': isPremium}">
+                <div class="plan-badge premium-badge" ng-if="isPremium">Plano Atual 👑</div>
+                <div class="plan-badge premium-badge" ng-if="!isPremium">Recomendado</div>
+                <div class="plan-header">
+                    <h3>👑 Premium</h3>
+                    <div class="plan-price">
+                        <span class="price-value premium-price">R$ 179,90</span>
+                        <span class="price-period">/mês</span>
+                    </div>
+                </div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Plano alimentar personalizado por IA</li>
+                    <li><i class="fas fa-check"></i> Plano de treino personalizado por IA</li>
+                    <li><i class="fas fa-check"></i> Alterações <strong>ilimitadas</strong> de planos</li>
+                    <li><i class="fas fa-check"></i> Check-ins corporais <strong>ilimitados</strong></li>
+                    <li><i class="fas fa-check"></i> Análises de laudos <strong>ilimitadas</strong></li>
+                    <li><i class="fas fa-check"></i> Controle de água e refeições</li>
+                    <li><i class="fas fa-check"></i> Coach IA personalizado 24/7</li>
+                    <li><i class="fas fa-check"></i> Desafio 90 Dias</li>
+                    <li><i class="fas fa-check"></i> Suporte prioritário</li>
+                </ul>
+                <button class="btn btn-block" ng-class="{'btn-outline': isPremium, 'btn-primary btn-premium': !isPremium}" ng-click="selectPlan('premium')" ng-disabled="isPremium">
+                    {{isPremium ? 'Plano Atual 👑' : 'Assinar Premium 👑'}}
+                </button>
+            </div>
+        </div>
+
+        <p class="plans-footer">7 dias grátis • Cancele quando quiser</p>
+    </div>
+    <bottom-nav active="'profile'"></bottom-nav>
+</div>

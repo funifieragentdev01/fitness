@@ -76,6 +76,10 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
             if (!token || !userId) return;
             return $http.get(API + '/v3/player/' + userId, service.authHeader()).then(function(res) {
                 $rootScope.player = res.data;
+                if (!$rootScope.player.extra) $rootScope.player.extra = {};
+                if (!$rootScope.player.extra.plan) {
+                    $rootScope.player.extra.plan = { type: 'standard', changesUsed: { mealPlan: 0, workoutPlan: 0, goal: 0, bodyCheckin: 0, bioReport: 0, lastReset: new Date().toISOString().slice(0,10) } };
+                }
                 return res.data;
             });
         },

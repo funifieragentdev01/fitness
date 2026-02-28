@@ -104,6 +104,13 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
             return $http.put(API + '/v3/database/checkin__c', doc, AuthService.authHeader());
         },
 
+        updatePlayerExtra: function(extra) {
+            var userId = AuthService.getUser();
+            return $http.post(API + '/v3/player', {
+                _id: userId,
+                extra: extra
+            }, AuthService.authHeader());
+        },
         saveTestimonial: function(data) {
             if (data.created && !data.created.$date) {
                 data.created = bsonDate(new Date(data.created));

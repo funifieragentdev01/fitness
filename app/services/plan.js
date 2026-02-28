@@ -1,4 +1,4 @@
-angular.module('fitness').factory('PlanService', function($rootScope) {
+angular.module('fitness').factory('PlanService', function($rootScope, $injector) {
     var service = {
         getPlan: function() {
             if ($rootScope.player && $rootScope.player.extra && $rootScope.player.extra.plan) {
@@ -41,6 +41,13 @@ angular.module('fitness').factory('PlanService', function($rootScope) {
             plan.changesUsed[changeType] = (plan.changesUsed[changeType] || 0) + 1;
             if ($rootScope.player && $rootScope.player.extra) {
                 $rootScope.player.extra.plan = plan;
+            }
+            service.savePlan();
+        },
+        savePlan: function() {
+            if ($rootScope.player && $rootScope.player.extra) {
+                var ApiService = $injector.get('ApiService');
+                ApiService.updatePlayerExtra($rootScope.player.extra);
             }
         },
         canAccessCoach: function() {

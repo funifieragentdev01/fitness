@@ -19,6 +19,7 @@ app.config(function($routeProvider, $locationProvider) {
         .when('/body-checkin', { templateUrl: 'pages/body-checkin/body-checkin.html', controller: 'BodyCheckinCtrl' })
         .when('/challenge90', { templateUrl: 'pages/challenge90/challenge90.html', controller: 'Challenge90Ctrl' })
         .when('/contact', { templateUrl: 'pages/contact/contact.html', controller: 'ContactCtrl' })
+        .when('/plans', { templateUrl: 'pages/plans/plans.html', controller: 'PlansCtrl' })
         .otherwise({ redirectTo: '/landing' });
 });
 
@@ -60,7 +61,7 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     };
     $rootScope.upgradeToPremium = function() {
         $rootScope.showUpgradeModal = false;
-        $rootScope.success = '🚧 Pagamento será integrado em breve! Contate-nos pelo WhatsApp.';
+        $location.path('/plans');
     };
 
     // Load saved state
