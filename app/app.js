@@ -61,7 +61,12 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     };
     $rootScope.upgradeToPremium = function() {
         $rootScope.showUpgradeModal = false;
-        $location.path('/plans');
+        // Open Asaas checkout directly
+        if (CONFIG.ASAAS_PAYMENT_LINKS && CONFIG.ASAAS_PAYMENT_LINKS.premium) {
+            window.open(CONFIG.ASAAS_PAYMENT_LINKS.premium, '_blank');
+        } else {
+            $location.path('/plans');
+        }
     };
 
     // Load saved state

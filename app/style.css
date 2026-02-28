@@ -1383,4 +1383,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .plan-features .feature-disabled { color: var(--text-muted, #666); }
 .btn-premium { background: linear-gradient(135deg, #FFD700, #FF6B00) !important; color: #000 !important; font-weight: 700; }
 .plans-footer { text-align: center; color: var(--text-muted, #aaa); font-size: 13px; margin-top: 16px; }
+.sandbox-badge { text-align: center; margin-bottom: 12px; }
+.sandbox-badge span { background: #ff9800; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.plans-payment-info { text-align: center; margin-top: 20px; color: var(--text-muted, #aaa); font-size: 13px; }
+.plans-payment-info p { margin: 4px 0; }
+.plans-payment-info i { margin: 0 4px; }
 @media (min-width: 600px) { .plans-container { flex-direction: row; } .plan-card { flex: 1; } }

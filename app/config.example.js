@@ -7,5 +7,11 @@ var CONFIG = {
     OPENAI_KEY: 'YOUR_OPENAI_KEY',
     APP_NAME: 'FitEvolve',
     APP_TAGLINE: 'Evolua no seu ritmo.',
-    VERSION: '0.1.0'
+    VERSION: '0.1.0',
+    // Asaas Payment Gateway
+    ASAAS_ENV: 'sandbox', // 'sandbox' or 'production'
+    ASAAS_PAYMENT_LINKS: {
+        standard: 'https://sandbox.asaas.com/c/YOUR_STANDARD_LINK_ID',
+        premium: 'https://sandbox.asaas.com/c/YOUR_PREMIUM_LINK_ID'
+    }
 };
