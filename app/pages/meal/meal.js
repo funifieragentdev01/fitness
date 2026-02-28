@@ -68,7 +68,9 @@ angular.module('fitness').controller('MealCtrl', function($scope, $rootScope, $l
                 if (doc.completed && !wasCompleted) {
                     ApiService.logAction('complete_daily_checkin', { type: 'meal', date: dateStr });
                 }
-                ApiService.saveCheckinDoc(doc);
+                // Save and propagate to rootScope for meal-plan to pick up
+                $rootScope._mealCheckin = doc;
+                return ApiService.saveCheckinDoc(doc);
             }).catch(function() {});
         }
         $rootScope.success = '✅ Refeição registrada! +15 XP';

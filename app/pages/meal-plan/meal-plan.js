@@ -13,6 +13,10 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
         $scope.showMealAdjust = false;
         $scope.mealAdjustFeedback = null;
         updateNextMeal();
+        // Check if meal.js already loaded checkin into rootScope
+        if ($rootScope._mealCheckin) {
+            $scope.mealCheckin = $rootScope._mealCheckin;
+        }
         // Load today's meal checkin from server
         ApiService.loadCheckin('meal').then(function(doc) {
             if (doc) {

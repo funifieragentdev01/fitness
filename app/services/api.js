@@ -83,12 +83,16 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
             var userId = AuthService.getUser();
             var dateStr = (date || new Date()).toISOString().slice(0, 10);
             var id = userId + '_' + type + '_' + dateStr;
-            return $http.get(API + '/v3/database/checkin__c/' + id + '?strict=true', AuthService.authHeader())
-                .then(function(res) { return res.data; })
-                .catch(function(err) {
-                    if (err.status === 404) return null;
-                    throw err;
-                });
+            return $http.post(API + '/v3/database/checkin__c/aggregate?strict=true', [
+                { $match: { _id: id } },
+                { $limit: 1 }
+            ], AuthService.authHeader())
+                .then(function(res) {
+                    var results = res.data;
+                    if (results && results.length > 0) return results[0];
+                    return null;
+                })
+                .catch(function() { return null; });
         },
         saveCheckinDoc: function(doc) {
             if (doc.created && !doc.created.$date) {
