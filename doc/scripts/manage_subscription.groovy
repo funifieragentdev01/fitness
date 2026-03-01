@@ -32,15 +32,19 @@ public Object handle(Object payload) {
         fields.each { k, v -> setFields.put(k, v) }
         def setCmd = new HashMap()
         setCmd.put(d + "set", setFields)
+        def jsonStr = groovy.json.JsonOutput.toJson(setCmd)
         manager.getJongoConnection().getCollection("player")
             .update("{_id: #}", playerId)
-            .with(JsonUtil.toJson(setCmd))
+            .with(jsonStr)
     }
 
     // Helper: parse Unirest response body safely
     def parseBody = { rawBody ->
-        def bodyStr = new String(rawBody, "UTF-8")
-        return slurper.parseText(bodyStr)
+        def cls = rawBody.getClass().getName()
+        if (cls.startsWith("[")) {
+            return slurper.parseText(new String(rawBody, "UTF-8"))
+        }
+        return slurper.parseText(rawBody.toString())
     }
 
     // Helper: call Asaas API
@@ -55,7 +59,7 @@ public Object handle(Object payload) {
         def resp = Unirest.post(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
             .header("Content-Type", "application/json")
-            .body(JsonUtil.toJson(bodyData))
+            .body(groovy.json.JsonOutput.toJson(bodyData))
             .asString()
         return [status: resp.getStatus(), body: parseBody(resp.getBody())]
     }
@@ -176,7 +180,7 @@ public Object handle(Object payload) {
                     incCmd.put(d + "inc", incFields)
                     manager.getJongoConnection().getCollection("coupon__c")
                         .update("{_id: #}", couponCode.trim().toUpperCase())
-                        .with(JsonUtil.toJson(incCmd))
+                        .with(groovy.json.JsonOutput.toJson(incCmd))
                 }
             }
         }
