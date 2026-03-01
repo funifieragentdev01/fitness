@@ -20,10 +20,10 @@ public Object handle(Object payload) {
         return response
     }
 
-    def extra = player.getExtra() ?: [:]
-    def plan = extra.plan ?: [:]
-    def customerId = plan.asaas_customer_id ?: extra.asaas_customer_id
-    def subscriptionId = plan.asaas_subscription_id ?: extra.asaas_subscription_id
+    def extra = player.getAt("extra") ?: [:]
+    def plan = extra.get("plan") ?: [:]
+    def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
+    def subscriptionId = plan.get("asaas_subscription_id") ?: extra.get("asaas_subscription_id")
 
     // Helper: update player fields via Jongo
     def updatePlayer = { Map fields ->
@@ -91,7 +91,7 @@ public Object handle(Object payload) {
             response.put("error", "Nenhuma assinatura ativa encontrada")
             return response
         }
-        if (plan.type != "premium") {
+        if (plan.get("type") != "premium") {
             response.put("error", "Voce ja esta no plano Standard")
             return response
         }
@@ -137,8 +137,8 @@ public Object handle(Object payload) {
 
     // --- REACTIVATE ---
     } else if (action == "reactivate") {
-        def planType = input.planType ?: "standard"
-        def couponCode = input.couponCode
+        def planType = input.get("planType") ?: "standard"
+        def couponCode = input.get("couponCode")
 
         if (!customerId) {
             response.put("error", "Customer ID nao encontrado. Faca uma nova assinatura.")
@@ -218,11 +218,11 @@ public Object handle(Object payload) {
     // --- STATUS ---
     } else if (action == "status") {
         def result = new HashMap()
-        result.put("plan", plan.type ?: "standard")
-        result.put("status", plan.plan_status ?: "active")
-        result.put("endDate", plan.plan_end_date)
-        result.put("pendingPlan", plan.pending_plan)
-        result.put("downgradeDate", plan.plan_downgrade_date)
+        result.put("plan", plan.get("type") ?: "standard")
+        result.put("status", plan.get("plan_status") ?: "active")
+        result.put("endDate", plan.get("plan_end_date"))
+        result.put("pendingPlan", plan.get("pending_plan"))
+        result.put("downgradeDate", plan.get("plan_downgrade_date"))
         result.put("subscriptionId", subscriptionId)
         result.put("customerId", customerId)
 
