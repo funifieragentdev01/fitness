@@ -14,13 +14,14 @@ public Object handle(Object payload) {
         return response
     }
 
-    def player = manager.getPlayerManager().findById(playerId)
-    if (!player) {
+    def playerDoc = manager.getJongoConnection().getCollection("player")
+        .findOne("{_id: #}", playerId).as(Object.class)
+    if (!playerDoc) {
         response.put("error", "Player nao encontrado")
         return response
     }
 
-    def extra = player.getAt("extra") ?: [:]
+    def extra = playerDoc.get("extra") ?: [:]
     def plan = extra.get("plan") ?: [:]
     def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
     def subscriptionId = plan.get("asaas_subscription_id") ?: extra.get("asaas_subscription_id")
@@ -36,14 +37,9 @@ public Object handle(Object payload) {
             .with(JsonUtil.toJson(setCmd))
     }
 
-    // Helper: parse Unirest response body safely (may be byte[] or String)
+    // Helper: parse Unirest response body safely
     def parseBody = { rawBody ->
-        def bodyStr
-        try {
-            bodyStr = new String((byte[]) rawBody, "UTF-8")
-        } catch (Exception e) {
-            bodyStr = rawBody.toString()
-        }
+        def bodyStr = new String(rawBody, "UTF-8")
         return slurper.parseText(bodyStr)
     }
 
