@@ -14,17 +14,25 @@ public Object handle(Object payload) {
         return response
     }
 
-    def playerDoc = manager.getJongoConnection().getCollection("player")
+    def playerRaw = manager.getJongoConnection().getCollection("player")
         .findOne("{_id: #}", playerId).as(Object.class)
-    if (!playerDoc) {
+    if (!playerRaw) {
         response.put("error", "Player nao encontrado")
         return response
     }
 
-    def extra = playerDoc.get("extra") ?: [:]
-    def plan = extra.get("plan") ?: [:]
-    def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
-    def subscriptionId = plan.get("asaas_subscription_id") ?: extra.get("asaas_subscription_id")
+    // Convert to clean Map - try Document.toJson, fallback to JsonUtil
+    def playerJson
+    try {
+        playerJson = playerRaw.toJson()
+    } catch (Exception e) {
+        playerJson = JsonUtil.toJson(playerRaw)
+    }
+    def playerDoc = slurper.parseText(playerJson)
+    def extra = playerDoc.extra ?: [:]
+    def plan = extra.plan ?: [:]
+    def customerId = plan.asaas_customer_id ?: extra.asaas_customer_id
+    def subscriptionId = plan.asaas_subscription_id ?: extra.asaas_subscription_id
 
     // Helper: update player fields via Jongo
     def updatePlayer = { Map fields ->
