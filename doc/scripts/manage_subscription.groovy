@@ -15,16 +15,16 @@ public Object handle(Object payload) {
     }
 
     def playerIt = manager.getJongoConnection().getCollection("player")
-        .find("{_id: #}", playerId).projection("{password: 0}").as(HashMap.class)
+        .find("{_id: #}", playerId).projection("{_id: 1, extra: 1}").as(HashMap.class)
     if (!playerIt.hasNext()) {
         response.put("error", "Player nao encontrado")
         return response
     }
     def playerDoc = playerIt.next()
-    def extra = playerDoc.extra ?: [:]
-    def plan = extra.plan ?: [:]
-    def customerId = plan.asaas_customer_id ?: extra.asaas_customer_id
-    def subscriptionId = plan.asaas_subscription_id ?: extra.asaas_subscription_id
+    def extra = playerDoc.get("extra") ?: new HashMap()
+    def plan = (extra.get("plan") != null) ? extra.get("plan") : new HashMap()
+    def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
+    def subscriptionId = plan.get("asaas_subscription_id") ?: extra.get("asaas_subscription_id")
 
     // Helper: update player fields via Jongo
     def updatePlayer = { Map fields ->
