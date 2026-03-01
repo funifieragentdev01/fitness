@@ -36,35 +36,40 @@ public Object handle(Object payload) {
         manager.getPlayerManager().insert(player)
     }
 
-    // Helper: call Asaas API using Apache HttpClient (avoids Unirest byte[]/String issues)
-    def asaasGet = { String path ->
-        def client = HttpClientBuilder.create().build()
-        def req = new HttpGet(ASAAS_URL + path)
-        req.setHeader("access_token", ASAAS_KEY)
-        req.setHeader("Content-Type", "application/json")
-        def resp = client.execute(req)
-        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
-        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
+    // Helper: call Asaas API using URL connection (no library dependency issues)
+    def asaasCall = { String method, String path, String bodyJson = null ->
+        def url = new java.net.URL(ASAAS_URL + path)
+        def conn = url.openConnection()
+        conn.setRequestMethod(method)
+        conn.setRequestProperty("access_token", ASAAS_KEY)
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.setConnectTimeout(4000)
+        conn.setReadTimeout(4000)
+        if (bodyJson != null) {
+            conn.setDoOutput(true)
+            def os = conn.getOutputStream()
+            os.write(bodyJson.getBytes("UTF-8"))
+            os.close()
+        }
+        def statusCode = conn.getResponseCode()
+        def is = (statusCode >= 200 && statusCode < 400) ? conn.getInputStream() : conn.getErrorStream()
+        def bodyStr = ""
+        if (is != null) {
+            def reader = new BufferedReader(new java.io.InputStreamReader(is, "UTF-8"))
+            def sb = new StringBuffer()
+            def line
+            while ((line = reader.readLine()) != null) {
+                sb.append(line)
+            }
+            reader.close()
+            bodyStr = sb.toString()
+        }
+        def body = bodyStr.length() > 0 ? slurper.parseText(bodyStr) : [:]
+        return [status: statusCode, body: body]
     }
-    def asaasPost = { String path, Map bodyData ->
-        def client = HttpClientBuilder.create().build()
-        def req = new HttpPost(ASAAS_URL + path)
-        req.setHeader("access_token", ASAAS_KEY)
-        req.setHeader("Content-Type", "application/json")
-        req.setEntity(new org.apache.http.entity.StringEntity(groovy.json.JsonOutput.toJson(bodyData), "UTF-8"))
-        def resp = client.execute(req)
-        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
-        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
-    }
-    def asaasDelete = { String path ->
-        def client = HttpClientBuilder.create().build()
-        def req = new org.apache.http.client.methods.HttpDelete(ASAAS_URL + path)
-        req.setHeader("access_token", ASAAS_KEY)
-        req.setHeader("Content-Type", "application/json")
-        def resp = client.execute(req)
-        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
-        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
-    }
+    def asaasGet = { String path -> asaasCall("GET", path) }
+    def asaasPost = { String path, Map bodyData -> asaasCall("POST", path, groovy.json.JsonOutput.toJson(bodyData)) }
+    def asaasDelete = { String path -> asaasCall("DELETE", path) }
 
     // --- CANCEL ---
     if (action == "cancel") {
