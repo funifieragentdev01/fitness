@@ -7,8 +7,27 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
     $scope.testimonial = {};
     $scope.firstPhoto = '';
     $scope.lastPhoto = '';
+    $scope.testMode = $rootScope.player && $rootScope.player.extra && $rootScope.player.extra.teste === true;
 
     var userId = AuthService.getUser();
+
+    // Refresh player to check test mode
+    AuthService.loadPlayer().then(function() {
+        $scope.testMode = $rootScope.player && $rootScope.player.extra && $rootScope.player.extra.teste === true;
+        applyCheckpointLogic();
+    });
+
+    function applyCheckpointLogic() {
+        if ($rootScope.challenge90 && $rootScope.challenge90.checkpoints) {
+            if ($scope.testMode) {
+                // Test mode: all checkpoints are open for check-in
+                $rootScope.challenge90.checkpoints.forEach(function(cp) {
+                    if (!cp.done) cp.current = true;
+                });
+            }
+            localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
+        }
+    }
 
     // Calculate current day
     if ($rootScope.challenge90 && $rootScope.challenge90.startDate) {
@@ -28,6 +47,12 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
                     if (prevAllDone) cp.current = true;
                 }
             });
+            // If test mode, open all undone checkpoints
+            if ($scope.testMode) {
+                $rootScope.challenge90.checkpoints.forEach(function(cp) {
+                    if (!cp.done) cp.current = true;
+                });
+            }
         }
         localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
     }
