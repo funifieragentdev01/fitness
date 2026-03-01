@@ -1,6 +1,12 @@
-angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $location, PlanService, PaymentService) {
+angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $location, PlanService, PaymentService, AuthService) {
     $scope.isPremium = PlanService.isPremium();
     $scope.currentPlan = PlanService.getPlan();
+
+    // Refresh player data
+    AuthService.loadPlayer().then(function() {
+        $scope.isPremium = PlanService.isPremium();
+        $scope.currentPlan = PlanService.getPlan();
+    });
     $scope.envLabel = PaymentService.getEnvLabel();
 
     // Coupon

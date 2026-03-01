@@ -4,6 +4,11 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     $scope.aiGoal = null;
     $scope.isPremium = PlanService.isPremium();
 
+    // Refresh player data to ensure plan is up-to-date
+    AuthService.loadPlayer().then(function() {
+        $scope.isPremium = PlanService.isPremium();
+    });
+
     function loadProfileData() {
         if (!userId) return;
         ApiService.loadProfile(userId).then(function(res) {

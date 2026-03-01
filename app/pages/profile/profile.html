@@ -13,9 +13,8 @@
             <h3>{{player.name}}</h3>
             <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
             <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
-            <div class="profile-plan-badge" ng-class="{'premium': isPremium}">
-                <span ng-if="isPremium">👑 Premium</span>
-                <span ng-if="!isPremium">⭐ Standard</span>
+            <div class="profile-plan-badge" ng-class="{'premium': isPremiumFn()}">
+                <span>{{planLabel()}}</span>
             </div>
         </div>
 

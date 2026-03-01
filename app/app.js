@@ -26,6 +26,13 @@ app.config(function($routeProvider, $locationProvider) {
 app.run(function($rootScope, $location, $sce, AuthService) {
     // Shared state on $rootScope
     $rootScope.player = {};
+    // Reactive plan helpers — always read fresh from player data
+    $rootScope.isPremiumFn = function() {
+        return $rootScope.player && $rootScope.player.extra && $rootScope.player.extra.plan && $rootScope.player.extra.plan.type === 'premium';
+    };
+    $rootScope.planLabel = function() {
+        return $rootScope.isPremiumFn() ? '👑 Premium' : '⭐ Standard';
+    };
     $rootScope.playerPoints = { xp: 0, energy: 0 };
     $rootScope.playerLevel = {};
     $rootScope.nextLevel = null;

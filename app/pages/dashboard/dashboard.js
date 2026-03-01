@@ -6,6 +6,11 @@ angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScop
     // Check if returning from payment
     PaymentService.checkPaymentReturn();
 
+    // Always reload player data to ensure fresh plan info
+    AuthService.loadPlayer().then(function() {
+        $scope.isPremium = PlanService.isPremium();
+    });
+
     $scope.nextMeal = null;
     $scope.nextActions = [];
     $scope.activeChallenges = [];
