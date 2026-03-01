@@ -14,21 +14,13 @@ public Object handle(Object payload) {
         return response
     }
 
-    def playerRaw = manager.getJongoConnection().getCollection("player")
-        .findOne("{_id: #}", playerId).as(Object.class)
-    if (!playerRaw) {
+    def playerIt = manager.getJongoConnection().getCollection("player")
+        .find("{_id: #}", playerId).as(HashMap.class)
+    if (!playerIt.hasNext()) {
         response.put("error", "Player nao encontrado")
         return response
     }
-
-    // Convert to clean Map - try Document.toJson, fallback to JsonUtil
-    def playerJson
-    try {
-        playerJson = playerRaw.toJson()
-    } catch (Exception e) {
-        playerJson = JsonUtil.toJson(playerRaw)
-    }
-    def playerDoc = slurper.parseText(playerJson)
+    def playerDoc = playerIt.next()
     def extra = playerDoc.extra ?: [:]
     def plan = extra.plan ?: [:]
     def customerId = plan.asaas_customer_id ?: extra.asaas_customer_id
