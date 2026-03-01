@@ -38,7 +38,12 @@ public Object handle(Object payload) {
 
     // Helper: parse Unirest response body safely (may be byte[] or String)
     def parseBody = { rawBody ->
-        def bodyStr = (rawBody instanceof byte[]) ? new String((byte[]) rawBody, "UTF-8") : rawBody.toString()
+        def bodyStr
+        try {
+            bodyStr = new String((byte[]) rawBody, "UTF-8")
+        } catch (Exception e) {
+            bodyStr = rawBody.toString()
+        }
         return slurper.parseText(bodyStr)
     }
 
