@@ -1427,3 +1427,79 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .reactivate-section h3 { margin: 0 0 8px; color: var(--text, #fff); }
 .reactivate-note { color: var(--text-muted, #aaa); font-size: 14px; margin-bottom: 16px; }
 .reactivate-options { display: flex; flex-direction: column; gap: 10px; }
+
+/* ========== Coach — Mode Selection ========== */
+.coach-select-screen { padding-bottom: 80px; }
+.coach-select-content { padding: 24px 16px; text-align: center; }
+.coach-avatar-preview { margin: 20px auto; }
+.coach-avatar-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); padding: 8px; background: rgba(242,107,29,0.1); }
+.coach-select-title { font-family: 'Futura', sans-serif; font-size: 22px; letter-spacing: 1px; margin: 16px 0 4px; }
+.coach-select-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+.coach-mode-cards { display: flex; flex-direction: column; gap: 12px; }
+.coach-mode-card {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    cursor: pointer; transition: all 0.2s;
+}
+.coach-mode-card:active { transform: scale(0.98); }
+.coach-mode-card.mode-locked { opacity: 0.5; }
+.coach-mode-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(242,107,29,0.15); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; flex-shrink: 0; }
+.coach-mode-info { flex: 1; text-align: left; }
+.coach-mode-name { display: block; font-weight: 700; font-size: 16px; }
+.coach-mode-desc { display: block; font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.coach-mode-card > .fa-chevron-right { color: var(--text-muted); font-size: 14px; }
+
+/* ========== Coach — Call Screen ========== */
+.coach-call-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; display: flex; flex-direction: column; }
+.call-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%); }
+.call-content { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; }
+
+.call-avatar { position: relative; margin-bottom: 20px; }
+.call-avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 3px solid rgba(242,107,29,0.3); padding: 4px; transition: border-color 0.3s; }
+.call-avatar-img.avatar-speaking { border-color: var(--accent); }
+.call-pulse {
+    position: absolute; top: -8px; left: -8px; right: -8px; bottom: -8px;
+    border-radius: 50%; border: 2px solid var(--accent);
+    animation: callPulse 1.5s ease-out infinite;
+}
+@keyframes callPulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.3); opacity: 0; }
+}
+
+.call-name { font-family: 'Futura', sans-serif; font-size: 24px; letter-spacing: 2px; color: #fff; margin: 0 0 4px; }
+.call-status { color: var(--text-muted); font-size: 14px; margin: 0 0 20px; }
+
+.call-transcript {
+    background: rgba(255,255,255,0.05); border-radius: 12px;
+    padding: 12px 16px; max-width: 90%; max-height: 120px;
+    overflow-y: auto; margin-bottom: 30px; min-height: 48px;
+}
+.transcript-text { color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.5; margin: 0; }
+
+.call-controls { display: flex; gap: 32px; align-items: center; margin-top: auto; padding-bottom: 40px; }
+.call-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.1); border: none; color: #fff;
+    width: 64px; height: 64px; border-radius: 50%;
+    font-size: 20px; cursor: pointer; transition: all 0.2s;
+    justify-content: center;
+}
+.call-btn span { font-size: 10px; margin-top: 2px; }
+.call-btn:active { transform: scale(0.95); }
+.call-btn-active { background: rgba(242,107,29,0.3); color: var(--accent); }
+.call-btn-end { background: #e53935; width: 72px; height: 72px; font-size: 24px; }
+.call-btn-end:active { background: #c62828; }
+
+/* ========== Coach — Video Avatar ========== */
+.coach-video-screen .call-content { padding-top: 0; }
+.video-avatar-container {
+    width: 100%; max-width: 400px; height: 350px;
+    border-radius: 16px; overflow: hidden;
+    background: #0a0a0a; position: relative;
+    margin-bottom: 16px;
+}
+.video-avatar-container canvas { width: 100% !important; height: 100% !important; }
+.video-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--text-muted); }

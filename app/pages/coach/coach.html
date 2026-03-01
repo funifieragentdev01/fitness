@@ -1,20 +1,128 @@
 <div id="coach" class="screen">
-    <div class="screen-header">
-        <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
-        <h2>Coach 🤖 <span class="premium-badge" ng-if="coachLocked">PREMIUM</span></h2>
-    </div>
-    <div class="chat-container" ng-class="{'premium-lock-overlay': coachLocked}">
-        <div class="chat-messages" id="chatMessages">
-            <div ng-repeat="msg in chatMessages" class="chat-msg" ng-class="msg.role">
-                <div class="msg-bubble">{{msg.content}}</div>
+    <!-- Mode Selection Screen -->
+    <div ng-if="mode === 'select'" class="coach-select-screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="goTo('dashboard')"><i class="fas fa-arrow-left"></i></button>
+            <h2>Coach <span class="premium-badge" ng-if="coachLocked">PREMIUM</span></h2>
+        </div>
+        <div class="coach-select-content">
+            <div class="coach-avatar-preview">
+                <img src="img/logo-hero.png" alt="Coach Orvya" class="coach-avatar-img">
             </div>
-            <div ng-if="chatLoading" class="chat-msg assistant">
-                <div class="msg-bubble"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>
+            <h3 class="coach-select-title">Como quer conversar?</h3>
+            <p class="coach-select-subtitle">Escolha o modo de interação com seu coach</p>
+            <div class="coach-mode-cards">
+                <div class="coach-mode-card" ng-click="enterMode('chat')">
+                    <div class="coach-mode-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="coach-mode-info">
+                        <span class="coach-mode-name">Chat</span>
+                        <span class="coach-mode-desc">Conversa por texto</span>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="coach-mode-card" ng-click="enterMode('audio')" ng-class="{'mode-locked': !isPremium}">
+                    <div class="coach-mode-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="coach-mode-info">
+                        <span class="coach-mode-name">Ligação</span>
+                        <span class="coach-mode-desc">Conversa por voz em tempo real</span>
+                    </div>
+                    <span class="premium-badge" ng-if="!isPremium">PREMIUM</span>
+                    <i class="fas fa-chevron-right" ng-if="isPremium"></i>
+                </div>
+                <div class="coach-mode-card" ng-click="enterMode('video')" ng-class="{'mode-locked': !isPremium}">
+                    <div class="coach-mode-icon"><i class="fas fa-video"></i></div>
+                    <div class="coach-mode-info">
+                        <span class="coach-mode-name">Vídeo</span>
+                        <span class="coach-mode-desc">Avatar 3D com lip sync</span>
+                    </div>
+                    <span class="premium-badge" ng-if="!isPremium">PREMIUM</span>
+                    <i class="fas fa-chevron-right" ng-if="isPremium"></i>
+                </div>
             </div>
         </div>
-        <div class="chat-input">
-            <input type="text" ng-model="chat.input" placeholder="Pergunte ao seu coach..." ng-keydown="$event.keyCode === 13 && sendChat()">
-            <button ng-click="sendChat()" ng-disabled="!chat.input || chatLoading"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <!-- Chat Mode -->
+    <div ng-if="mode === 'chat'" class="coach-chat-screen">
+        <div class="screen-header">
+            <button class="btn-back" ng-click="mode = 'select'"><i class="fas fa-arrow-left"></i></button>
+            <h2>Coach — Chat</h2>
+        </div>
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div ng-repeat="msg in chatMessages" class="chat-msg" ng-class="msg.role">
+                    <div class="msg-bubble">{{msg.content}}</div>
+                </div>
+                <div ng-if="chatLoading" class="chat-msg assistant">
+                    <div class="msg-bubble"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" ng-model="chat.input" placeholder="Pergunte ao seu coach..." ng-keydown="$event.keyCode === 13 && sendChat()">
+                <button ng-click="sendChat()" ng-disabled="!chat.input || chatLoading"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Call Mode -->
+    <div ng-if="mode === 'audio'" class="coach-call-screen">
+        <div class="call-bg"></div>
+        <div class="call-content">
+            <div class="call-avatar">
+                <img src="img/logo-hero.png" alt="Coach" class="call-avatar-img" ng-class="{'avatar-speaking': coachSpeaking}">
+                <div class="call-pulse" ng-if="callStatus === 'connected' && coachSpeaking"></div>
+            </div>
+            <h3 class="call-name">Coach Orvya</h3>
+            <p class="call-status">{{callStatusText}}</p>
+            <div class="call-transcript" ng-if="transcript">
+                <p class="transcript-text">{{transcript}}</p>
+            </div>
+            <div class="call-controls">
+                <button class="call-btn" ng-class="{'call-btn-active': isMuted}" ng-click="toggleMute()">
+                    <i class="fas" ng-class="isMuted ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+                    <span>{{isMuted ? 'Mudo' : 'Mic'}}</span>
+                </button>
+                <button class="call-btn call-btn-end" ng-click="endCall()">
+                    <i class="fas fa-phone-slash"></i>
+                    <span>Desligar</span>
+                </button>
+                <button class="call-btn" ng-click="enterMode('chat')">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Chat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Call Mode -->
+    <div ng-if="mode === 'video'" class="coach-call-screen coach-video-screen">
+        <div class="call-bg"></div>
+        <div class="call-content">
+            <div class="video-avatar-container" id="avatarContainer">
+                <!-- Three.js canvas will be inserted here -->
+                <div class="video-loading" ng-if="!avatarReady">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Carregando avatar...</span>
+                </div>
+            </div>
+            <p class="call-status">{{callStatusText}}</p>
+            <div class="call-transcript" ng-if="transcript">
+                <p class="transcript-text">{{transcript}}</p>
+            </div>
+            <div class="call-controls">
+                <button class="call-btn" ng-class="{'call-btn-active': isMuted}" ng-click="toggleMute()">
+                    <i class="fas" ng-class="isMuted ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+                    <span>{{isMuted ? 'Mudo' : 'Mic'}}</span>
+                </button>
+                <button class="call-btn call-btn-end" ng-click="endCall()">
+                    <i class="fas fa-phone-slash"></i>
+                    <span>Desligar</span>
+                </button>
+                <button class="call-btn" ng-click="enterMode('chat')">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Chat</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
