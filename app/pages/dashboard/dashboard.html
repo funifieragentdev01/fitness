@@ -45,10 +45,10 @@
     <div class="section">
         <h2 class="section-title">Hoje</h2>
         <div class="action-grid">
-            <div class="action-card" ng-click="goTo('meal-plan')"><div class="action-icon">🍽️</div><span>Nutrição</span></div>
-            <div class="action-card" ng-click="goTo('workout-plan')"><div class="action-icon">💪</div><span>Treino</span></div>
-            <div class="action-card" ng-click="goTo('water')"><div class="action-icon">💧</div><span>Água</span><small>{{waterMl || 0}}ml</small></div>
-            <div class="action-card" ng-class="{'action-locked': !isPremium}" ng-click="goTo('coach')"><div class="action-icon" ng-class="{'icon-locked': !isPremium}">🤖</div><span>Coach</span><span class="premium-badge" ng-if="!isPremium">PREMIUM</span></div>
+            <div class="action-card" ng-click="goTo('meal-plan')"><div class="action-icon action-icon-flat"><i class="fas fa-utensils"></i></div><span>Nutrição</span></div>
+            <div class="action-card" ng-click="goTo('workout-plan')"><div class="action-icon action-icon-flat"><i class="fas fa-dumbbell"></i></div><span>Treino</span></div>
+            <div class="action-card" ng-click="goTo('water')"><div class="action-icon action-icon-flat"><i class="fas fa-tint"></i></div><span>Água</span><small>{{waterMl || 0}}ml</small></div>
+            <div class="action-card" ng-class="{'action-locked': !isPremium}" ng-click="goTo('coach')"><div class="action-icon action-icon-flat" ng-class="{'icon-locked': !isPremium}"><i class="fas fa-brain"></i></div><span>Coach</span><span class="premium-badge" ng-if="!isPremium">PREMIUM</span></div>
         </div>
     </div>
 
