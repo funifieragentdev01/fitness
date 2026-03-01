@@ -14,13 +14,15 @@ public Object handle(Object payload) {
         return response
     }
 
-    def playerIt = manager.getJongoConnection().getCollection("player")
-        .find("{_id: #}", playerId).projection("{_id: 1, extra: 1}").as(HashMap.class)
-    if (!playerIt.hasNext()) {
+    // Use aggregate to read player as clean JSON (avoids Jongo BSON binary issues)
+    def pipeline = '[{"' + d + 'match":{"_id":"' + playerId + '"}},{"' + d + 'project":{"extra":1}}]'
+    def playerResults = manager.getJongoConnection().getCollection("player")
+        .aggregate(pipeline).as(HashMap.class)
+    if (!playerResults.hasNext()) {
         response.put("error", "Player nao encontrado")
         return response
     }
-    def playerDoc = playerIt.next()
+    def playerDoc = playerResults.next()
     def extra = playerDoc.get("extra") ?: new HashMap()
     def plan = (extra.get("plan") != null) ? extra.get("plan") : new HashMap()
     def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
