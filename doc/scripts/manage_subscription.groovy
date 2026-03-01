@@ -25,8 +25,10 @@ public Object handle(Object payload) {
         plan = new HashMap()
         player.extra.put('plan', plan)
     }
-    def customerId = plan.get('asaas_customer_id') ?: player.extra.get('asaas_customer_id')
-    def subscriptionId = plan.get('asaas_subscription_id') ?: player.extra.get('asaas_subscription_id')
+    def rawCustId = plan.get('asaas_customer_id') ?: player.extra.get('asaas_customer_id')
+    def rawSubId = plan.get('asaas_subscription_id') ?: player.extra.get('asaas_subscription_id')
+    String customerId = rawCustId != null ? rawCustId.toString() : null
+    String subscriptionId = rawSubId != null ? rawSubId.toString() : null
 
     // --- CANCEL ---
     if (action == 'cancel') {
