@@ -76,7 +76,7 @@ angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScop
         $scope.nextActions = [];
         if ($scope.nextMeal) {
             $scope.nextActions.push({
-                icon: '🍽️',
+                faIcon: 'fa-utensils',
                 title: $scope.nextMeal.time + ' — ' + $scope.nextMeal.name,
                 desc: $scope.nextMeal.description || ($scope.nextMeal.foods ? $scope.nextMeal.foods.map(function(f){return f.food;}).join(', ') : ''),
                 onClick: function() { $location.path('/meal-plan'); }
@@ -86,7 +86,7 @@ angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScop
         var waterPct = $scope.waterMl / waterGoalMl * 100;
         if (waterPct < 100) {
             $scope.nextActions.push({
-                icon: '💧', title: 'Beber água',
+                faIcon: 'fa-tint', title: 'Beber água',
                 desc: ($scope.waterMl || 0) + 'ml / ' + waterGoalMl + 'ml',
                 onClick: function() { $location.path('/water'); }
             });
@@ -102,7 +102,7 @@ angular.module('fitness').controller('DashboardCtrl', function($scope, $rootScop
                     wp.days.forEach(function(d) { if (d.day_name && d.day_name.indexOf(todayName) === 0) today = d; });
                     if (today && today.muscle_group && !today.done) {
                         $scope.nextActions.push({
-                            icon: '💪', title: 'Treino de hoje: ' + today.muscle_group,
+                            faIcon: 'fa-dumbbell', title: 'Treino de hoje: ' + today.muscle_group,
                             desc: (today.exercises ? today.exercises.length : 0) + ' exercícios' + (today.duration_minutes ? ' • ~' + today.duration_minutes + 'min' : ''),
                             onClick: function() { $location.path('/workout-plan'); }
                         });

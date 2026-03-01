@@ -32,10 +32,10 @@
 
     <!-- Next Actions -->
     <div class="section" ng-if="nextActions.length">
-        <h2 class="section-title">📋 Próximo</h2>
+        <h2 class="section-title">Próximo</h2>
         <div class="next-actions-list">
             <div class="next-action-card" ng-repeat="action in nextActions" ng-click="action.onClick()">
-                <span class="next-action-icon">{{action.icon}}</span>
+                <span class="next-action-icon action-icon-flat"><i class="fas {{action.faIcon}}"></i></span>
                 <div class="next-action-info"><span class="next-action-title">{{action.title}}</span><span class="next-action-desc">{{action.desc}}</span></div>
                 <i class="fas fa-chevron-right next-action-arrow"></i>
             </div>
