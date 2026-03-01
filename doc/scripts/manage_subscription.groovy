@@ -36,13 +36,9 @@ public Object handle(Object payload) {
         manager.getPlayerManager().insert(player)
     }
 
-    // Helper: parse Unirest response body
+    // Helper: parse Unirest response body (getBody() returns String from asString())
     def parseBody = { rawBody ->
-        try {
-            return slurper.parseText(new String(rawBody, "UTF-8"))
-        } catch (Exception e) {
-            return slurper.parseText(rawBody.toString())
-        }
+        return slurper.parseText(rawBody.toString())
     }
 
     // Helper: call Asaas API
