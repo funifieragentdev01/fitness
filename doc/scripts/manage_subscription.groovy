@@ -36,28 +36,28 @@ public Object handle(Object payload) {
         manager.getPlayerManager().insert(player)
     }
 
-    // Helper: call Asaas API using Unirest
+    // Helper: call Asaas API using Unirest asJson
     def asaasGet = { String path ->
-        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.get(ASAAS_URL + path)
+        def resp = Unirest.get(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
-            .asString()
-        String bodyStr = resp.getBody()
+            .asJson()
+        def bodyStr = resp.getBody().toString()
         return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
     }
     def asaasPost = { String path, Map bodyData ->
-        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.post(ASAAS_URL + path)
+        def resp = Unirest.post(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
             .header("Content-Type", "application/json")
             .body(groovy.json.JsonOutput.toJson(bodyData))
-            .asString()
-        String bodyStr = resp.getBody()
+            .asJson()
+        def bodyStr = resp.getBody().toString()
         return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
     }
     def asaasDelete = { String path ->
-        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.delete(ASAAS_URL + path)
+        def resp = Unirest.delete(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
-            .asString()
-        String bodyStr = resp.getBody()
+            .asJson()
+        def bodyStr = resp.getBody().toString()
         return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
     }
 
