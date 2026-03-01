@@ -4,15 +4,18 @@ public Object handle(Object payload) {
     def ASAAS_URL = 'https://api-sandbox.asaas.com/v3'
     def slurper = new groovy.json.JsonSlurper()
 
-    // Step 1: read player
     def player = manager.getPlayerManager().findById('test_payment_e2e')
-    String name = player.getName()
-
-    // Step 2: Unirest call with HARDCODED id
-    def resp = Unirest.get(ASAAS_URL + '/subscriptions/sub_vx7octkcbzq9v5hw').header('access_token', ASAAS_KEY).asString()
+    if (player.extra == null) player.extra = new java.util.HashMap()
+    
+    def rawSubId = player.extra.get('asaas_subscription_id')
+    String subscriptionId = rawSubId != null ? rawSubId.toString() : null
+    
+    String url = ASAAS_URL + '/subscriptions/' + subscriptionId
+    def resp = Unirest.get(url).header('access_token', ASAAS_KEY).asString()
     
     Map result = new java.util.HashMap()
-    result.put('name', name)
+    result.put('subscriptionId', subscriptionId)
+    result.put('url', url)
     result.put('status', resp.getStatus())
     result.put('bodyClass', resp.getBody().getClass().getName())
     return result
