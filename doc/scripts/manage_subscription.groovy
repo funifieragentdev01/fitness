@@ -1,28 +1,19 @@
 public Object handle(Object payload) {
-    Map response = new HashMap()
     def d = String.valueOf((char)0x24)
     def ASAAS_KEY = d + 'aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmY0MjRhYjkwLWE3ZjgtNGE0OS04MTQzLTg4MWQ2NTE4Mzc3NTo6JGFhY2hfMmNlYTI4M2QtYmNkYS00OTEyLTkyY2EtNjk3ZTVjNDAwMTQ0'
     def ASAAS_URL = 'https://api-sandbox.asaas.com/v3'
-    def slurper = new groovy.json.JsonSlurper()
 
-    def playerId = payload.get('playerId')
-    def action = payload.get('action')
-
-    if (!playerId || !action) {
-        response.put('error', 'playerId e action sao obrigatorios')
-        return response
-    }
+    String playerId = payload.get('playerId')
+    String action = payload.get('action')
+    if (!playerId || !action) return [error: 'playerId e action sao obrigatorios']
 
     def player = manager.getPlayerManager().findById(playerId)
-    if (!player) {
-        response.put('error', 'Player nao encontrado')
-        return response
-    }
+    if (!player) return [error: 'Player nao encontrado']
 
-    if (player.extra == null) player.extra = new HashMap()
+    if (player.extra == null) player.extra = new java.util.HashMap()
     def plan = player.extra.get('plan')
     if (plan == null) {
-        plan = new HashMap()
+        plan = new java.util.HashMap()
         player.extra.put('plan', plan)
     }
     def rawCustId = plan.get('asaas_customer_id') ?: player.extra.get('asaas_customer_id')
@@ -32,127 +23,101 @@ public Object handle(Object payload) {
 
     // --- CANCEL ---
     if (action == 'cancel') {
-        if (!subscriptionId) {
-            response.put('error', 'Nenhuma assinatura ativa encontrada')
-            return response
-        }
-        // Get subscription info
-        def subResp = Unirest.get(ASAAS_URL + '/subscriptions/' + subscriptionId).header('access_token', ASAAS_KEY).asString()
-        def subInfo = slurper.parseText(subResp.getBody().toString())
-        def nextDueDate = subInfo.nextDueDate
+        if (!subscriptionId) return [error: 'Nenhuma assinatura ativa encontrada']
 
-        // Delete subscription
-        def delResp = Unirest.delete(ASAAS_URL + '/subscriptions/' + subscriptionId).header('access_token', ASAAS_KEY).asString()
-        def delStatus = delResp.getStatus()
+        String subUrl = ASAAS_URL + '/subscriptions/' + subscriptionId
+        def subResp = Unirest.get(subUrl).header('access_token', ASAAS_KEY).asString()
+        Map subInfo = JsonUtil.fromJsonToMap(subResp.getBody().toString())
+        String nextDueDate = subInfo.get('nextDueDate')
+
+        def delResp = Unirest.delete(subUrl).header('access_token', ASAAS_KEY).asString()
+        int delStatus = delResp.getStatus()
 
         if (delStatus == 200 || delStatus == 204) {
-            def endDate = nextDueDate ?: new Date().format('yyyy-MM-dd')
+            String endDate = nextDueDate ?: new java.util.Date().format('yyyy-MM-dd')
             plan.put('plan_status', 'canceled')
             plan.put('plan_end_date', endDate)
             plan.put('asaas_subscription_id', null)
             manager.getPlayerManager().insert(player)
-            response.put('success', true)
-            response.put('message', 'Assinatura cancelada. Acesso mantido ate ' + endDate + '.')
-            response.put('planEndDate', endDate)
-        } else {
-            response.put('error', 'Erro ao cancelar assinatura')
+            return [success: true, message: 'Assinatura cancelada. Acesso mantido ate ' + endDate + '.', planEndDate: endDate]
         }
-        return response
+        return [error: 'Erro ao cancelar assinatura']
 
     // --- DOWNGRADE ---
     } else if (action == 'downgrade') {
-        if (!subscriptionId) {
-            response.put('error', 'Nenhuma assinatura ativa encontrada')
-            return response
-        }
-        if (plan.get('type') != 'premium') {
-            response.put('error', 'Voce ja esta no plano Standard')
-            return response
-        }
+        if (!subscriptionId) return [error: 'Nenhuma assinatura ativa encontrada']
+        if (plan.get('type') != 'premium') return [error: 'Voce ja esta no plano Standard']
 
-        // Get next due date
-        def subResp = Unirest.get(ASAAS_URL + '/subscriptions/' + subscriptionId).header('access_token', ASAAS_KEY).asString()
-        def subInfo = slurper.parseText(subResp.getBody().toString())
-        def nextDueDate = subInfo.nextDueDate
+        String subUrl = ASAAS_URL + '/subscriptions/' + subscriptionId
+        def subResp = Unirest.get(subUrl).header('access_token', ASAAS_KEY).asString()
+        Map subInfo = JsonUtil.fromJsonToMap(subResp.getBody().toString())
+        String nextDueDate = subInfo.get('nextDueDate')
 
-        // Cancel premium
-        Unirest.delete(ASAAS_URL + '/subscriptions/' + subscriptionId).header('access_token', ASAAS_KEY).asString()
+        Unirest.delete(subUrl).header('access_token', ASAAS_KEY).asString()
 
-        if (!customerId) {
-            response.put('error', 'Customer ID nao encontrado')
-            return response
-        }
+        if (!customerId) return [error: 'Customer ID nao encontrado']
 
-        // Create standard subscription
-        def newSubBody = groovy.json.JsonOutput.toJson([
+        String newSubBody = JsonUtil.toJson([
             customer: customerId,
             billingType: 'UNDEFINED',
             value: 29.90,
             cycle: 'MONTHLY',
             description: 'FitEvolve Standard',
             externalReference: playerId,
-            nextDueDate: nextDueDate ?: new Date().format('yyyy-MM-dd')
+            nextDueDate: nextDueDate ?: new java.util.Date().format('yyyy-MM-dd')
         ])
         def newSubResp = Unirest.post(ASAAS_URL + '/subscriptions').header('access_token', ASAAS_KEY).header('Content-Type', 'application/json').body(newSubBody).asString()
-        def newSub = slurper.parseText(newSubResp.getBody().toString())
-        def newSubStatus = newSubResp.getStatus()
+        Map newSub = JsonUtil.fromJsonToMap(newSubResp.getBody().toString())
+        int newSubStatus = newSubResp.getStatus()
 
         if (newSubStatus == 200 || newSubStatus == 201) {
             plan.put('pending_plan', 'standard')
             plan.put('plan_status', 'pending_downgrade')
             plan.put('plan_downgrade_date', nextDueDate)
-            plan.put('asaas_subscription_id', newSub.id)
+            plan.put('asaas_subscription_id', newSub.get('id'))
             manager.getPlayerManager().insert(player)
-            response.put('success', true)
-            response.put('message', 'Downgrade agendado. Premium ativo ate ' + (nextDueDate ?: 'proximo ciclo') + '.')
-            response.put('downgradeDate', nextDueDate)
-            response.put('newSubscriptionId', newSub.id)
-        } else {
-            response.put('error', 'Erro ao criar assinatura Standard')
+            return [success: true, message: 'Downgrade agendado. Premium ativo ate ' + (nextDueDate ?: 'proximo ciclo') + '.', downgradeDate: nextDueDate, newSubscriptionId: newSub.get('id')]
         }
-        return response
+        return [error: 'Erro ao criar assinatura Standard']
 
     // --- REACTIVATE ---
     } else if (action == 'reactivate') {
-        def planType = payload.get('planType') ?: 'standard'
-        def couponCode = payload.get('couponCode')
+        String planType = payload.get('planType') ?: 'standard'
+        String couponCode = payload.get('couponCode')
 
-        if (!customerId) {
-            response.put('error', 'Customer ID nao encontrado. Faca uma nova assinatura.')
-            return response
-        }
+        if (!customerId) return [error: 'Customer ID nao encontrado. Faca uma nova assinatura.']
 
-        def value = planType == 'premium' ? 179.90 : 29.90
+        double value = planType == 'premium' ? 179.90 : 29.90
 
         if (couponCode) {
             def coupon = manager.getJongoConnection().getCollection('coupon__c')
                 .findOne('{_id: #, active: true}', couponCode.trim().toUpperCase()).as(Object.class)
             if (coupon) {
-                def maxUses = coupon.get('maxUses') != null ? ((Number) coupon.get('maxUses')).intValue() : 0
-                def currentUses = coupon.get('currentUses') != null ? ((Number) coupon.get('currentUses')).intValue() : 0
+                int maxUses = coupon.get('maxUses') != null ? ((Number) coupon.get('maxUses')).intValue() : 0
+                int currentUses = coupon.get('currentUses') != null ? ((Number) coupon.get('currentUses')).intValue() : 0
                 if (maxUses == 0 || currentUses < maxUses) {
-                    def discType = coupon.get('discountType')
-                    def discVal = ((Number) coupon.get('discountValue')).doubleValue()
+                    String discType = coupon.get('discountType')
+                    double discVal = ((Number) coupon.get('discountValue')).doubleValue()
                     if (discType == 'PERCENTAGE') {
                         value = Math.max(0, value - (value * discVal / 100))
                     } else {
                         value = Math.max(0, value - discVal)
                     }
-                    def incCmd = new HashMap()
-                    def incFields = new HashMap()
+                    def incCmd = new java.util.HashMap()
+                    def incFields = new java.util.HashMap()
                     incFields.put('currentUses', 1)
                     incCmd.put(d + 'inc', incFields)
                     manager.getJongoConnection().getCollection('coupon__c')
                         .update('{_id: #}', couponCode.trim().toUpperCase())
-                        .with(groovy.json.JsonOutput.toJson(incCmd))
+                        .with(JsonUtil.toJson(incCmd))
                 }
             }
         }
 
-        def nextDue = DateUtil.fromKeyword('+7d').format('yyyy-MM-dd')
-        def desc = 'FitEvolve ' + (planType == 'premium' ? 'Premium' : 'Standard')
+        String nextDue = DateUtil.fromKeyword('+7d').format('yyyy-MM-dd')
+        String desc = 'FitEvolve ' + (planType == 'premium' ? 'Premium' : 'Standard')
 
-        def newSubBody = groovy.json.JsonOutput.toJson([
+        String newSubBody = JsonUtil.toJson([
             customer: customerId,
             billingType: 'UNDEFINED',
             value: value,
@@ -162,8 +127,8 @@ public Object handle(Object payload) {
             nextDueDate: nextDue
         ])
         def newSubResp = Unirest.post(ASAAS_URL + '/subscriptions').header('access_token', ASAAS_KEY).header('Content-Type', 'application/json').body(newSubBody).asString()
-        def newSub = slurper.parseText(newSubResp.getBody().toString())
-        def newSubStatus = newSubResp.getStatus()
+        Map newSub = JsonUtil.fromJsonToMap(newSubResp.getBody().toString())
+        int newSubStatus = newSubResp.getStatus()
 
         if (newSubStatus == 200 || newSubStatus == 201) {
             plan.put('type', planType)
@@ -171,31 +136,27 @@ public Object handle(Object payload) {
             plan.put('pending_plan', null)
             plan.put('plan_end_date', null)
             plan.put('plan_downgrade_date', null)
-            plan.put('asaas_subscription_id', newSub.id)
+            plan.put('asaas_subscription_id', newSub.get('id'))
             manager.getPlayerManager().insert(player)
 
-            // Get invoice URL
-            def invoiceUrl = null
-            if (newSub.id) {
-                def payResp = Unirest.get(ASAAS_URL + '/subscriptions/' + newSub.id + '/payments').header('access_token', ASAAS_KEY).asString()
-                def payData = slurper.parseText(payResp.getBody().toString())
-                if (payData.data && payData.data.size() > 0) {
-                    invoiceUrl = payData.data.get(0).invoiceUrl
+            String invoiceUrl = null
+            String newSubId = newSub.get('id')
+            if (newSubId != null) {
+                def payResp = Unirest.get(ASAAS_URL + '/subscriptions/' + newSubId + '/payments').header('access_token', ASAAS_KEY).asString()
+                Map payData = JsonUtil.fromJsonToMap(payResp.getBody().toString())
+                def dataList = payData.get('data')
+                if (dataList != null && dataList.size() > 0) {
+                    invoiceUrl = ((Map) dataList.get(0)).get('invoiceUrl')
                 }
             }
 
-            response.put('success', true)
-            response.put('message', 'Assinatura reativada com sucesso!')
-            response.put('invoiceUrl', invoiceUrl)
-            response.put('subscriptionId', newSub.id)
-        } else {
-            response.put('error', 'Erro ao criar assinatura')
+            return [success: true, message: 'Assinatura reativada com sucesso!', invoiceUrl: invoiceUrl, subscriptionId: newSubId]
         }
-        return response
+        return [error: 'Erro ao criar assinatura']
 
     // --- STATUS ---
     } else if (action == 'status') {
-        def result = new HashMap()
+        Map result = new java.util.HashMap()
         result.put('plan', plan.get('type') ?: 'standard')
         result.put('status', plan.get('plan_status') ?: 'active')
         result.put('endDate', plan.get('plan_end_date'))
@@ -204,20 +165,18 @@ public Object handle(Object payload) {
         result.put('subscriptionId', subscriptionId)
         result.put('customerId', customerId)
 
-        if (subscriptionId) {
-            def subResp = Unirest.get(ASAAS_URL + '/subscriptions/' + subscriptionId).header('access_token', ASAAS_KEY).asString()
-            def subInfo = slurper.parseText(subResp.getBody().toString())
-            result.put('nextDueDate', subInfo.nextDueDate)
-            result.put('asaasStatus', subInfo.status)
-            result.put('value', subInfo.value)
+        if (subscriptionId != null) {
+            String url = ASAAS_URL + '/subscriptions/' + subscriptionId
+            def resp = Unirest.get(url).header('access_token', ASAAS_KEY).asString()
+            Map subInfo = JsonUtil.fromJsonToMap(resp.getBody().toString())
+            result.put('nextDueDate', subInfo.get('nextDueDate'))
+            result.put('asaasStatus', subInfo.get('status'))
+            result.put('value', subInfo.get('value'))
         }
 
-        response.put('success', true)
-        response.put('subscription', result)
-        return response
+        return [success: true, subscription: result]
 
     } else {
-        response.put('error', 'Acao invalida. Use: cancel, downgrade, reactivate, status')
-        return response
+        return [error: 'Acao invalida. Use: cancel, downgrade, reactivate, status']
     }
 }
