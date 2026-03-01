@@ -36,13 +36,19 @@ public Object handle(Object payload) {
             .with(JsonUtil.toJson(setCmd))
     }
 
+    // Helper: parse Unirest response body safely (may be byte[] or String)
+    def parseBody = { rawBody ->
+        def bodyStr = (rawBody instanceof byte[]) ? new String((byte[]) rawBody, "UTF-8") : rawBody.toString()
+        return slurper.parseText(bodyStr)
+    }
+
     // Helper: call Asaas API
     def asaasGet = { String path ->
         def resp = Unirest.get(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
             .header("Content-Type", "application/json")
             .asString()
-        return [status: resp.getStatus(), body: slurper.parseText(resp.getBody())]
+        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
     }
     def asaasPost = { String path, Map bodyData ->
         def resp = Unirest.post(ASAAS_URL + path)
@@ -50,14 +56,14 @@ public Object handle(Object payload) {
             .header("Content-Type", "application/json")
             .body(JsonUtil.toJson(bodyData))
             .asString()
-        return [status: resp.getStatus(), body: slurper.parseText(resp.getBody())]
+        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
     }
     def asaasDelete = { String path ->
         def resp = Unirest.delete(ASAAS_URL + path)
             .header("access_token", ASAAS_KEY)
             .header("Content-Type", "application/json")
             .asString()
-        return [status: resp.getStatus(), body: slurper.parseText(resp.getBody())]
+        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
     }
 
     // --- CANCEL ---
