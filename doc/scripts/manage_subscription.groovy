@@ -14,39 +14,35 @@ public Object handle(Object payload) {
         return response
     }
 
-    // Use aggregate to read player as clean JSON (avoids Jongo BSON binary issues)
-    def pipeline = '[{"' + d + 'match":{"_id":"' + playerId + '"}},{"' + d + 'project":{"extra":1}}]'
-    def playerResults = manager.getJongoConnection().getCollection("player")
-        .aggregate(pipeline).as(HashMap.class)
-    if (!playerResults.hasNext()) {
+    // Read player using PlayerManager
+    def player = manager.getPlayerManager().findById(playerId)
+    if (!player) {
         response.put("error", "Player nao encontrado")
         return response
     }
-    def playerDoc = playerResults.next()
-    def extra = playerDoc.get("extra") ?: new HashMap()
-    def plan = (extra.get("plan") != null) ? extra.get("plan") : new HashMap()
-    def customerId = plan.get("asaas_customer_id") ?: extra.get("asaas_customer_id")
-    def subscriptionId = plan.get("asaas_subscription_id") ?: extra.get("asaas_subscription_id")
 
-    // Helper: update player fields via Jongo
-    def updatePlayer = { Map fields ->
-        def setFields = new HashMap()
-        fields.each { k, v -> setFields.put(k, v) }
-        def setCmd = new HashMap()
-        setCmd.put(d + "set", setFields)
-        def jsonStr = groovy.json.JsonOutput.toJson(setCmd)
-        manager.getJongoConnection().getCollection("player")
-            .update("{_id: #}", playerId)
-            .with(jsonStr)
+    // Access public fields directly
+    if (player.extra == null) player.extra = new HashMap()
+    def plan = player.extra.get("plan")
+    if (plan == null) {
+        plan = new HashMap()
+        player.extra.put("plan", plan)
+    }
+    def customerId = plan.get("asaas_customer_id")
+    def subscriptionId = plan.get("asaas_subscription_id")
+
+    // Helper: save player (insert = upsert)
+    def savePlayer = {
+        manager.getPlayerManager().insert(player)
     }
 
-    // Helper: parse Unirest response body safely
+    // Helper: parse Unirest response body
     def parseBody = { rawBody ->
-        def cls = rawBody.getClass().getName()
-        if (cls.startsWith("[")) {
+        try {
             return slurper.parseText(new String(rawBody, "UTF-8"))
+        } catch (Exception e) {
+            return slurper.parseText(rawBody.toString())
         }
-        return slurper.parseText(rawBody.toString())
     }
 
     // Helper: call Asaas API
@@ -85,11 +81,10 @@ public Object handle(Object payload) {
         def result = asaasDelete("/subscriptions/" + subscriptionId)
         if (result.status == 200 || result.status == 204) {
             def endDate = nextDueDate ?: new Date().format("yyyy-MM-dd")
-            updatePlayer([
-                "extra.plan.plan_status": "canceled",
-                "extra.plan.plan_end_date": endDate,
-                "extra.plan.asaas_subscription_id": null
-            ])
+            plan.put("plan_status", "canceled")
+            plan.put("plan_end_date", endDate)
+            plan.put("asaas_subscription_id", null)
+            savePlayer()
             response.put("success", true)
             response.put("message", "Assinatura cancelada. Acesso mantido ate " + endDate + ".")
             response.put("planEndDate", endDate)
@@ -133,12 +128,11 @@ public Object handle(Object payload) {
         ])
 
         if (newSub.status == 200 || newSub.status == 201) {
-            updatePlayer([
-                "extra.plan.pending_plan": "standard",
-                "extra.plan.plan_status": "pending_downgrade",
-                "extra.plan.plan_downgrade_date": nextDueDate,
-                "extra.plan.asaas_subscription_id": newSub.body.id
-            ])
+            plan.put("pending_plan", "standard")
+            plan.put("plan_status", "pending_downgrade")
+            plan.put("plan_downgrade_date", nextDueDate)
+            plan.put("asaas_subscription_id", newSub.body.id)
+            savePlayer()
             response.put("success", true)
             response.put("message", "Downgrade agendado. Premium ativo ate " + (nextDueDate ?: "proximo ciclo") + ".")
             response.put("downgradeDate", nextDueDate)
@@ -201,14 +195,13 @@ public Object handle(Object payload) {
         ])
 
         if (newSub.status == 200 || newSub.status == 201) {
-            updatePlayer([
-                "extra.plan.type": planType,
-                "extra.plan.plan_status": "active",
-                "extra.plan.pending_plan": null,
-                "extra.plan.plan_end_date": null,
-                "extra.plan.plan_downgrade_date": null,
-                "extra.plan.asaas_subscription_id": newSub.body.id
-            ])
+            plan.put("type", planType)
+            plan.put("plan_status", "active")
+            plan.put("pending_plan", null)
+            plan.put("plan_end_date", null)
+            plan.put("plan_downgrade_date", null)
+            plan.put("asaas_subscription_id", newSub.body.id)
+            savePlayer()
 
             // Get invoice URL
             def invoiceUrl = null
