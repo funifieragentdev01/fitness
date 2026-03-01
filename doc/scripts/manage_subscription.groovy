@@ -15,7 +15,7 @@ public Object handle(Object payload) {
     }
 
     def playerIt = manager.getJongoConnection().getCollection("player")
-        .find("{_id: #}", playerId).as(HashMap.class)
+        .find("{_id: #}", playerId).projection("{password: 0}").as(HashMap.class)
     if (!playerIt.hasNext()) {
         response.put("error", "Player nao encontrado")
         return response
