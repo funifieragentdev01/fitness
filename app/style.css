@@ -1403,3 +1403,26 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .plans-payment-info p { margin: 4px 0; }
 .plans-payment-info i { margin: 0 4px; }
 @media (min-width: 600px) { .plans-container { flex-direction: row; } .plan-card { flex: 1; } }
+
+/* Plan Status Card */
+.plan-status-card { background: var(--card-bg, #1E1E1E); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--border, #333); }
+.plan-status-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.plan-status-icon { font-size: 36px; }
+.plan-status-info h3 { margin: 0; font-size: 18px; color: var(--text, #fff); }
+.plan-status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-top: 4px; }
+.status-active { background: rgba(0,200,83,0.15); color: #00C853; }
+.status-canceled { background: rgba(255,82,82,0.15); color: #FF5252; }
+.status-pending { background: rgba(255,193,7,0.15); color: #FFC107; }
+.plan-status-details { border-top: 1px solid var(--border, #333); padding-top: 12px; }
+.plan-status-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.plan-status-row span:first-child { color: var(--text-muted, #aaa); }
+.plan-status-row span:last-child { color: var(--text, #fff); font-weight: 500; }
+.text-warning { color: #FFC107 !important; }
+.plan-management-actions { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.plan-management-note { text-align: center; color: var(--text-muted, #aaa); font-size: 13px; margin-top: 8px; }
+.btn-danger-outline { color: #FF5252 !important; border-color: #FF5252 !important; }
+.btn-danger-outline:hover { background: rgba(255,82,82,0.1); }
+.reactivate-section { background: var(--card-bg, #1E1E1E); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--accent, #00C853); }
+.reactivate-section h3 { margin: 0 0 8px; color: var(--text, #fff); }
+.reactivate-note { color: var(--text-muted, #aaa); font-size: 14px; margin-bottom: 16px; }
+.reactivate-options { display: flex; flex-direction: column; gap: 10px; }

@@ -11,8 +11,75 @@
             <span>{{envLabel}}</span>
         </div>
 
+        <!-- Current Plan Status Card -->
+        <div class="plan-status-card" ng-if="hasSubscription">
+            <div class="plan-status-header">
+                <span class="plan-status-icon">{{isPremium ? '👑' : '⭐'}}</span>
+                <div class="plan-status-info">
+                    <h3>{{isPremium ? 'Premium' : 'Standard'}}</h3>
+                    <span class="plan-status-badge" ng-class="planStatusClass">{{planStatusLabel}}</span>
+                </div>
+            </div>
+            <div class="plan-status-details">
+                <div class="plan-status-row" ng-if="subStatus.nextDueDate && planStatus === 'active'">
+                    <span>Próxima cobrança</span>
+                    <span>{{formatDate(subStatus.nextDueDate)}}</span>
+                </div>
+                <div class="plan-status-row" ng-if="subStatus.value && planStatus === 'active'">
+                    <span>Valor</span>
+                    <span>R$ {{subStatus.value | number:2}}/mês</span>
+                </div>
+                <div class="plan-status-row" ng-if="planStatus === 'canceled' && planEndDate">
+                    <span>Acesso até</span>
+                    <span class="text-warning">{{formatDate(planEndDate)}}</span>
+                </div>
+                <div class="plan-status-row" ng-if="planStatus === 'pending_downgrade' && downgradeDate">
+                    <span>Downgrade em</span>
+                    <span class="text-warning">{{formatDate(downgradeDate)}}</span>
+                </div>
+            </div>
+
+            <!-- Management Actions -->
+            <div class="plan-management-actions">
+                <!-- Downgrade (Premium only, active) -->
+                <button class="btn btn-outline btn-block btn-sm" ng-if="isPremium && planStatus === 'active'"
+                        ng-click="confirmDowngrade()" ng-disabled="actionLoading">
+                    <i class="fas fa-arrow-down"></i> Mudar para Standard
+                </button>
+                <!-- Cancel (active or pending_downgrade) -->
+                <button class="btn btn-outline btn-block btn-sm btn-danger-outline"
+                        ng-if="planStatus === 'active' || planStatus === 'pending_downgrade'"
+                        ng-click="confirmCancel()" ng-disabled="actionLoading">
+                    <i class="fas fa-times"></i> Cancelar assinatura
+                </button>
+                <!-- Reactivate (canceled) -->
+                <button class="btn btn-primary btn-block" ng-if="planStatus === 'canceled'"
+                        ng-click="showReactivate = true" ng-disabled="actionLoading">
+                    <i class="fas fa-redo"></i> Reativar assinatura
+                </button>
+            </div>
+            <p class="plan-management-note" ng-if="actionLoading">
+                <i class="fas fa-spinner fa-spin"></i> Processando...
+            </p>
+        </div>
+
+        <!-- Reactivation Plan Selection -->
+        <div class="reactivate-section" ng-if="showReactivate">
+            <h3>Reativar Assinatura</h3>
+            <p class="reactivate-note">Escolha seu plano para reativar. 7 dias grátis incluídos!</p>
+            <div class="reactivate-options">
+                <button class="btn btn-primary btn-block" ng-click="reactivate('standard')" ng-disabled="actionLoading">
+                    Reativar Standard ⭐ — R$ 29,90/mês
+                </button>
+                <button class="btn btn-primary btn-block btn-premium" ng-click="reactivate('premium')" ng-disabled="actionLoading">
+                    Reativar Premium 👑 — R$ 179,90/mês
+                </button>
+                <button class="btn btn-outline btn-block btn-sm" ng-click="showReactivate = false">Voltar</button>
+            </div>
+        </div>
+
         <!-- Coupon Section -->
-        <div class="coupon-section">
+        <div class="coupon-section" ng-if="!hasSubscription || showReactivate">
             <div class="coupon-input-row">
                 <input type="text" class="coupon-input" ng-model="couponCode"
                        placeholder="Tem um cupom? Digite aqui"
@@ -34,10 +101,11 @@
             </div>
         </div>
 
-        <div class="plans-container">
+        <!-- Plan Cards (show when no subscription or choosing new) -->
+        <div class="plans-container" ng-if="!hasSubscription">
             <!-- Standard Card -->
             <div class="plan-card" ng-class="{'plan-active': !isPremium}">
-                <div class="plan-badge" ng-if="!isPremium">Plano Atual</div>
+                <div class="plan-badge" ng-if="!isPremium && hasSubscription">Plano Atual</div>
                 <div class="plan-header">
                     <h3>⭐ Standard</h3>
                     <div class="plan-price">
@@ -64,7 +132,7 @@
 
             <!-- Premium Card -->
             <div class="plan-card plan-premium" ng-class="{'plan-active': isPremium}">
-                <div class="plan-badge premium-badge" ng-if="isPremium">Plano Atual 👑</div>
+                <div class="plan-badge premium-badge" ng-if="isPremium && hasSubscription">Plano Atual 👑</div>
                 <div class="plan-badge premium-badge" ng-if="!isPremium">Recomendado</div>
                 <div class="plan-header">
                     <h3>👑 Premium</h3>

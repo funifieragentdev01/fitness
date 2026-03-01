@@ -98,6 +98,50 @@ angular.module('fitness').factory('PaymentService', function($http, $rootScope, 
         },
 
         /**
+         * Manage subscription (cancel, downgrade, reactivate, status)
+         * @param action - 'cancel' | 'downgrade' | 'reactivate' | 'status'
+         * @param planType - required for reactivate
+         * @param couponCode - optional for reactivate
+         */
+        manageSubscription: function(action, planType, couponCode) {
+            var playerId = AuthService.getUser();
+            return $http.post(PUB_URL + '/manage_subscription', {
+                playerId: playerId,
+                action: action,
+                planType: planType || null,
+                couponCode: couponCode || null
+            }).then(function(res) { return res.data; });
+        },
+
+        /**
+         * Get subscription status
+         */
+        getSubscriptionStatus: function() {
+            return service.manageSubscription('status');
+        },
+
+        /**
+         * Cancel subscription
+         */
+        cancelSubscription: function() {
+            return service.manageSubscription('cancel');
+        },
+
+        /**
+         * Downgrade from Premium to Standard
+         */
+        downgradeSubscription: function() {
+            return service.manageSubscription('downgrade');
+        },
+
+        /**
+         * Reactivate a canceled subscription
+         */
+        reactivateSubscription: function(planType, couponCode) {
+            return service.manageSubscription('reactivate', planType, couponCode);
+        },
+
+        /**
          * Get environment label
          */
         getEnvLabel: function() {

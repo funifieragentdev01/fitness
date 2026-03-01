@@ -85,7 +85,13 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
         },
         deleteAccount: function() {
             var userId = service.getUser();
-            return $http.delete(API + '/v3/player/' + userId, service.authHeader()).then(function() {
+            // Cancel subscription first (best effort), then delete player
+            var PUB_URL = API + '/v3/pub/' + API_KEY;
+            return $http.post(PUB_URL + '/manage_subscription', {
+                playerId: userId, action: 'cancel'
+            }).catch(function() { /* ignore errors */ }).then(function() {
+                return $http.delete(API + '/v3/player/' + userId, service.authHeader());
+            }).then(function() {
                 Object.keys(localStorage).forEach(function(k) {
                     if (k.indexOf('fitness') === 0 || k.indexOf('fitevolve') === 0) localStorage.removeItem(k);
                 });
