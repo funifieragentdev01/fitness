@@ -36,40 +36,30 @@ public Object handle(Object payload) {
         manager.getPlayerManager().insert(player)
     }
 
-    // Helper: call Asaas API using URL connection (no library dependency issues)
-    def asaasCall = { String method, String path, String bodyJson = null ->
-        def url = new java.net.URL(ASAAS_URL + path)
-        def conn = url.openConnection()
-        conn.setRequestMethod(method)
-        conn.setRequestProperty("access_token", ASAAS_KEY)
-        conn.setRequestProperty("Content-Type", "application/json")
-        conn.setConnectTimeout(4000)
-        conn.setReadTimeout(4000)
-        if (bodyJson != null) {
-            conn.setDoOutput(true)
-            def os = conn.getOutputStream()
-            os.write(bodyJson.getBytes("UTF-8"))
-            os.close()
-        }
-        def statusCode = conn.getResponseCode()
-        def is = (statusCode >= 200 && statusCode < 400) ? conn.getInputStream() : conn.getErrorStream()
-        def bodyStr = ""
-        if (is != null) {
-            def reader = new BufferedReader(new java.io.InputStreamReader(is, "UTF-8"))
-            def sb = new StringBuffer()
-            def line
-            while ((line = reader.readLine()) != null) {
-                sb.append(line)
-            }
-            reader.close()
-            bodyStr = sb.toString()
-        }
-        def body = bodyStr.length() > 0 ? slurper.parseText(bodyStr) : [:]
-        return [status: statusCode, body: body]
+    // Helper: call Asaas API using Unirest
+    def asaasGet = { String path ->
+        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.get(ASAAS_URL + path)
+            .header("access_token", ASAAS_KEY)
+            .asString()
+        String bodyStr = resp.getBody()
+        return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
     }
-    def asaasGet = { String path -> asaasCall("GET", path) }
-    def asaasPost = { String path, Map bodyData -> asaasCall("POST", path, groovy.json.JsonOutput.toJson(bodyData)) }
-    def asaasDelete = { String path -> asaasCall("DELETE", path) }
+    def asaasPost = { String path, Map bodyData ->
+        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.post(ASAAS_URL + path)
+            .header("access_token", ASAAS_KEY)
+            .header("Content-Type", "application/json")
+            .body(groovy.json.JsonOutput.toJson(bodyData))
+            .asString()
+        String bodyStr = resp.getBody()
+        return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
+    }
+    def asaasDelete = { String path ->
+        com.mashape.unirest.http.HttpResponse<String> resp = Unirest.delete(ASAAS_URL + path)
+            .header("access_token", ASAAS_KEY)
+            .asString()
+        String bodyStr = resp.getBody()
+        return [status: resp.getStatus(), body: slurper.parseText(bodyStr)]
+    }
 
     // --- CANCEL ---
     if (action == "cancel") {
