@@ -1,7 +1,8 @@
 <div id="register" class="screen register-screen">
     <div class="register-content">
         <div class="register-header">
-            <h1>Criar Conta 🎉</h1>
+            <img src="img/logo-hero.png" alt="Orvya" style="width:64px;height:64px;margin-bottom:8px">
+            <h1 style="font-family:'Futura',sans-serif;letter-spacing:2px">Criar Conta</h1>
             <p>Comece sua jornada de evolução</p>
         </div>
         <form ng-submit="register()" class="register-form">
@@ -21,7 +22,7 @@
                 <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#" ng-click="openTerms($event)">termos de uso</a></label>
             </div>
             <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
-                <span ng-if="!loading">Criar conta 🚀</span>
+                <span ng-if="!loading">Criar conta</span>
                 <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Criando...</span>
             </button>
         </form>
