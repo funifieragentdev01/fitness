@@ -1,4 +1,4 @@
-/* ========== CoachFit AI — Mobile-First CSS v5 ========== */
+/* ========== Orvya — Mobile-First CSS v5 ========== */
 
 :root {
     --primary: #1A1A1A;
@@ -92,8 +92,8 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
     text-align: left;
 }
 .landing-logo-row { display: flex; align-items: center; gap: 10px; }
-.landing-logo-icon { font-size: 28px; }
-.landing-logo-text { font-size: 22px; font-weight: 800; }
+.landing-logo-img { width: 36px; height: 36px; object-fit: contain; }
+.landing-logo-text { font-family: 'Futura', 'Futura-Bold', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 2px; }
 .landing-headline {
     font-size: 32px;
     font-weight: 800;
