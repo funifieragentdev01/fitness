@@ -28,8 +28,8 @@ public Object handle(Object payload) {
         plan = new HashMap()
         player.extra.put("plan", plan)
     }
-    def customerId = plan.get("asaas_customer_id")
-    def subscriptionId = plan.get("asaas_subscription_id")
+    def customerId = plan.get("asaas_customer_id") ?: player.extra.get("asaas_customer_id")
+    def subscriptionId = plan.get("asaas_subscription_id") ?: player.extra.get("asaas_subscription_id")
 
     // Helper: save player (insert = upsert)
     def savePlayer = {
@@ -231,8 +231,7 @@ public Object handle(Object payload) {
         result.put("downgradeDate", plan.get("plan_downgrade_date"))
         result.put("subscriptionId", subscriptionId)
         result.put("customerId", customerId)
-        // Debug: show raw extra contents
-        result.put("_debug_extra_keys", new ArrayList(player.extra.keySet()))
+        // end status
 
         if (subscriptionId) {
             def subInfo = asaasGet("/subscriptions/" + subscriptionId)
