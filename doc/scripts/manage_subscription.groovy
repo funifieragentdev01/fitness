@@ -36,33 +36,34 @@ public Object handle(Object payload) {
         manager.getPlayerManager().insert(player)
     }
 
-    // Helper: parse Unirest response body (getBody() returns String from asString())
-    def parseBody = { rawBody ->
-        return slurper.parseText(rawBody.toString())
-    }
-
-    // Helper: call Asaas API
+    // Helper: call Asaas API using Apache HttpClient (avoids Unirest byte[]/String issues)
     def asaasGet = { String path ->
-        def resp = Unirest.get(ASAAS_URL + path)
-            .header("access_token", ASAAS_KEY)
-            .header("Content-Type", "application/json")
-            .asString()
-        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
+        def client = HttpClientBuilder.create().build()
+        def req = new HttpGet(ASAAS_URL + path)
+        req.setHeader("access_token", ASAAS_KEY)
+        req.setHeader("Content-Type", "application/json")
+        def resp = client.execute(req)
+        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
+        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
     }
     def asaasPost = { String path, Map bodyData ->
-        def resp = Unirest.post(ASAAS_URL + path)
-            .header("access_token", ASAAS_KEY)
-            .header("Content-Type", "application/json")
-            .body(groovy.json.JsonOutput.toJson(bodyData))
-            .asString()
-        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
+        def client = HttpClientBuilder.create().build()
+        def req = new HttpPost(ASAAS_URL + path)
+        req.setHeader("access_token", ASAAS_KEY)
+        req.setHeader("Content-Type", "application/json")
+        req.setEntity(new org.apache.http.entity.StringEntity(groovy.json.JsonOutput.toJson(bodyData), "UTF-8"))
+        def resp = client.execute(req)
+        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
+        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
     }
     def asaasDelete = { String path ->
-        def resp = Unirest.delete(ASAAS_URL + path)
-            .header("access_token", ASAAS_KEY)
-            .header("Content-Type", "application/json")
-            .asString()
-        return [status: resp.getStatus(), body: parseBody(resp.getBody())]
+        def client = HttpClientBuilder.create().build()
+        def req = new org.apache.http.client.methods.HttpDelete(ASAAS_URL + path)
+        req.setHeader("access_token", ASAAS_KEY)
+        req.setHeader("Content-Type", "application/json")
+        def resp = client.execute(req)
+        def bodyStr = IOUtils.toString(resp.getEntity().getContent(), "UTF-8")
+        return [status: resp.getStatusLine().getStatusCode(), body: slurper.parseText(bodyStr)]
     }
 
     // --- CANCEL ---
