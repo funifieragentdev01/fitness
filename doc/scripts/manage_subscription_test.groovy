@@ -1,10 +1,28 @@
 public Object handle(Object payload) {
-    def d = String.valueOf((char)0x24)
-    def key = d + 'aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmY0MjRhYjkwLWE3ZjgtNGE0OS04MTQzLTg4MWQ2NTE4Mzc3NTo6JGFhY2hfMmNlYTI4M2QtYmNkYS00OTEyLTkyY2EtNjk3ZTVjNDAwMTQ0'
-    def resp = Unirest.get('https://api-sandbox.asaas.com/v3/subscriptions?limit=1').header('access_token', key).asString()
+    def playerId = payload.get('playerId') ?: 'test_payment_e2e'
+    def player = manager.getPlayerManager().findById(playerId)
+    if (!player) return [error: 'not found']
+    
     Map result = new HashMap()
-    result.put('status', resp.getStatus())
-    result.put('bodyClass', resp.getBody().getClass().getName())
-    result.put('body', resp.getBody().toString())
+    result.put('extra_class', player.extra.getClass().getName())
+    
+    player.extra.each { k, v ->
+        String valClass = v != null ? v.getClass().getName() : 'null'
+        String valStr = v != null ? v.toString() : 'null'
+        result.put('extra_' + k + '_class', valClass)
+        result.put('extra_' + k + '_value', valStr.length() > 50 ? valStr.substring(0, 50) : valStr)
+    }
+    
+    def plan = player.extra.get('plan')
+    if (plan != null) {
+        result.put('plan_class', plan.getClass().getName())
+        if (plan.getClass().getName().contains('Map')) {
+            plan.each { k, v ->
+                String valClass = v != null ? v.getClass().getName() : 'null'
+                result.put('plan_' + k + '_class', valClass)
+            }
+        }
+    }
+    
     return result
 }
