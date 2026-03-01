@@ -1,7 +1,10 @@
 <div id="dashboard" class="screen dashboard-screen">
     <div class="top-bar">
         <div class="top-bar-left"><span class="greeting">Olá, {{player.name.split(' ')[0]}}! 👋</span></div>
-        <div class="top-bar-right"><span class="level-badge">{{playerLevel.level || 'Iniciante'}}</span></div>
+        <div class="top-bar-right">
+            <span class="plan-badge-mini" ng-class="{'premium': isPremium}" ng-click="goTo('plans')">{{isPremium ? '👑 Premium' : '⭐ Standard'}}</span>
+            <span class="level-badge">{{playerLevel.level || 'Iniciante'}}</span>
+        </div>
     </div>
     <div class="xp-card">
         <div class="xp-header">
