@@ -326,6 +326,25 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 }
             }
         }));
+
+        // Trigger initial greeting — coach speaks first
+        setTimeout(function() {
+            if (dc && dc.readyState === 'open') {
+                var playerName = (coachSessionData && coachSessionData.player_name) ? coachSessionData.player_name.split(' ')[0] : 'amigo';
+                dc.send(JSON.stringify({
+                    type: 'conversation.item.create',
+                    item: {
+                        type: 'message',
+                        role: 'user',
+                        content: [{
+                            type: 'input_text',
+                            text: 'Oi Coach! Acabei de ligar. Me cumprimente pelo nome (' + playerName + ') em portugues e pergunte como pode me ajudar hoje.'
+                        }]
+                    }
+                }));
+                dc.send(JSON.stringify({ type: 'response.create' }));
+            }
+        }, 500);
     }
 
     function handleRealtimeEvent(event) {
@@ -435,10 +454,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         threeScene = new THREE.Scene();
         threeScene.background = new THREE.Color(0x0a0a0a);
 
-        // Camera — framing head and shoulders
-        threeCamera = new THREE.PerspectiveCamera(25, w / h, 0.1, 100);
-        threeCamera.position.set(0, 1.45, 1.0);
-        threeCamera.lookAt(0, 1.4, 0);
+        // Camera — framing head and shoulders (RPM avatars are ~1.7m tall, head at ~1.6)
+        threeCamera = new THREE.PerspectiveCamera(20, w / h, 0.1, 100);
+        threeCamera.position.set(0, 1.35, 1.2);
+        threeCamera.lookAt(0, 1.35, 0);
 
         // Renderer
         threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -466,13 +485,26 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
             avatarModel = gltf.scene;
             threeScene.add(avatarModel);
 
-            // Find morph targets for lip sync
+            // Find ALL meshes with morph targets for lip sync
+            var morphMeshes = [];
             avatarModel.traverse(function(child) {
                 if (child.isMesh && child.morphTargetDictionary) {
-                    morphTargets = child;
-                    console.log('[Coach] Morph targets found:', Object.keys(child.morphTargetDictionary));
+                    morphMeshes.push(child);
+                    console.log('[Coach] Morph targets on "' + child.name + '":', Object.keys(child.morphTargetDictionary).join(', '));
+                }
+                // Also find the head bone for subtle movement
+                if (child.isBone && (child.name === 'Head' || child.name === 'head')) {
+                    console.log('[Coach] Head bone found:', child.name);
                 }
             });
+            // Use the mesh with the most morph targets (usually the face/head)
+            if (morphMeshes.length > 0) {
+                morphMeshes.sort(function(a, b) {
+                    return Object.keys(b.morphTargetDictionary).length - Object.keys(a.morphTargetDictionary).length;
+                });
+                morphTargets = morphMeshes[0];
+                console.log('[Coach] Using morph mesh:', morphTargets.name, 'with', Object.keys(morphTargets.morphTargetDictionary).length, 'targets');
+            }
 
             // Animation mixer for idle
             if (gltf.animations && gltf.animations.length > 0) {

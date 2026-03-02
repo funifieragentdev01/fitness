@@ -1496,7 +1496,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 /* ========== Coach — Video Avatar ========== */
 .coach-video-screen .call-content { padding-top: 0; }
 .video-avatar-container {
-    width: 100%; max-width: 400px; height: 350px;
+    width: 100%; max-width: 400px; height: 45vh; min-height: 300px;
     border-radius: 16px; overflow: hidden;
     background: #0a0a0a; position: relative;
     margin-bottom: 16px;
