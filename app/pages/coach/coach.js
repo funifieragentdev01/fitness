@@ -1,6 +1,6 @@
 angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, $location, AiService, ApiService, PlanService) {
-    $scope.coachLocked = !PlanService.canAccessCoach();
     $scope.isPremium = PlanService.isPremium();
+    $scope.coachLocked = false; // Chat always accessible; voice/video gated in enterMode
     $scope.mode = 'select';
     $scope.callStatus = 'idle'; // idle, connecting, connected
     $scope.callStatusText = '';
