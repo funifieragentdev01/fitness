@@ -272,13 +272,41 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         if (!dc || dc.readyState !== 'open') return;
 
         var instructions = buildSystemPrompt();
+
+        // Inject server-side player data if available
+        if (coachSessionData) {
+            if (coachSessionData.profile) {
+                var p = coachSessionData.profile;
+                instructions += '\n\nDADOS DO PERFIL DO USUARIO (do banco de dados):';
+                instructions += '\nNome: ' + (coachSessionData.player_name || '');
+                instructions += '\nIdade: ' + (p.age || '?') + ' anos';
+                instructions += '\nSexo: ' + (p.sex === 'M' ? 'Masculino' : 'Feminino');
+                instructions += '\nAltura: ' + (p.height || '?') + ' cm';
+                instructions += '\nPeso: ' + (p.weight || '?') + ' kg';
+                instructions += '\nObjetivo: ' + (p.goal || '?');
+                instructions += '\nEquipamento: ' + (p.equipment || '?');
+                instructions += '\nNivel de atividade: ' + (p.activity_level || '?');
+                instructions += '\nDias de treino: ' + (p.training_days ? p.training_days.join(', ') : '?');
+                instructions += '\nRestricoes alimentares: ' + (p.restrictions ? p.restrictions.join(', ') : 'nenhuma');
+                instructions += '\nOrcamento: ' + (p.budget || '?');
+            }
+            if (coachSessionData.latest_checkin) {
+                var ck = coachSessionData.latest_checkin;
+                instructions += '\n\nULTIMO CHECK-IN CORPORAL:';
+                instructions += '\nPeso: ' + (ck.weight || '?') + ' kg';
+                if (ck.body_fat) instructions += '\nGordura corporal: ' + ck.body_fat + '%';
+                if (ck.analysis) instructions += '\nAnalise: ' + ck.analysis;
+            }
+        }
+
         instructions += '\n\nREGRAS DE VOZ (OBRIGATORIO):';
-        instructions += '\n- SEMPRE fale em PORTUGUES BRASILEIRO. Nunca fale em ingles.';
-        instructions += '\n- Comece se apresentando brevemente em portugues.';
-        instructions += '\n- Respostas curtas (2-3 frases). Seja conversacional.';
+        instructions += '\n- SEMPRE fale em PORTUGUES BRASILEIRO. Nunca fale em ingles ou qualquer outro idioma.';
+        instructions += '\n- Comece se apresentando brevemente: "Oi [nome], aqui e a Coach Orvya! Como posso te ajudar?"';
+        instructions += '\n- Respostas curtas (2-3 frases). Seja conversacional e natural.';
         instructions += '\n- Evite listas longas. Seja direto.';
-        instructions += '\n- Use o nome do jogador.';
-        instructions += '\n- Responda perguntas sobre peso, altura, dieta e treino usando os dados do perfil acima.';
+        instructions += '\n- Use o nome do usuario naturalmente.';
+        instructions += '\n- Quando perguntarem sobre peso, altura, dieta ou treino, USE OS DADOS DO PERFIL acima.';
+        instructions += '\n- Voce tem acesso aos dados reais do usuario. Nao diga que nao sabe.';
 
         dc.send(JSON.stringify({
             type: 'session.update',
