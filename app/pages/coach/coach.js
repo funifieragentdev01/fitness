@@ -25,6 +25,14 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
     var avatarMixer = null, avatarModel = null, morphTargets = null;
     var animationFrame = null;
 
+    $scope.goBack = function() {
+        if ($scope.mode === 'chat') {
+            $scope.mode = 'select';
+        } else {
+            $location.path('/dashboard');
+        }
+    };
+
     // ===================== MODE SELECTION =====================
 
     $scope.enterMode = function(mode) {
@@ -86,8 +94,9 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
     function buildSystemPrompt() {
         var parts = [];
-        parts.push('Você é o Coach Orvya, personal trainer e nutricionista virtual premium.');
-        parts.push('Tom: direto, motivador, confiante. Fale como um personal de alto nível.');
+        parts.push('Você é a Coach Orvya, personal trainer e nutricionista virtual premium.');
+        parts.push('IDIOMA: SEMPRE fale em PORTUGUES BRASILEIRO. Nunca fale em ingles ou outro idioma.');
+        parts.push('Tom: direto, motivador, confiante. Fale como uma personal de alto nível.');
         parts.push('Use o nome do usuário naturalmente. Respostas curtas e práticas.');
         parts.push('Jogador: ' + ($rootScope.player.name || 'Usuário'));
         parts.push('Nível: ' + ($rootScope.playerLevel ? $rootScope.playerLevel.level : 'Iniciante'));
@@ -263,12 +272,13 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         if (!dc || dc.readyState !== 'open') return;
 
         var instructions = buildSystemPrompt();
-        instructions += '\n\nREGRAS DE VOZ:';
+        instructions += '\n\nREGRAS DE VOZ (OBRIGATORIO):';
+        instructions += '\n- SEMPRE fale em PORTUGUES BRASILEIRO. Nunca fale em ingles.';
+        instructions += '\n- Comece se apresentando brevemente em portugues.';
         instructions += '\n- Respostas curtas (2-3 frases). Seja conversacional.';
-        instructions += '\n- Fale em português brasileiro natural.';
         instructions += '\n- Evite listas longas. Seja direto.';
         instructions += '\n- Use o nome do jogador.';
-        instructions += '\n- Comece se apresentando brevemente.';
+        instructions += '\n- Responda perguntas sobre peso, altura, dieta e treino usando os dados do perfil acima.';
 
         dc.send(JSON.stringify({
             type: 'session.update',
@@ -397,10 +407,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         threeScene = new THREE.Scene();
         threeScene.background = new THREE.Color(0x0a0a0a);
 
-        // Camera
-        threeCamera = new THREE.PerspectiveCamera(30, w / h, 0.1, 100);
-        threeCamera.position.set(0, 1.55, 0.8);
-        threeCamera.lookAt(0, 1.5, 0);
+        // Camera — framing head and shoulders
+        threeCamera = new THREE.PerspectiveCamera(25, w / h, 0.1, 100);
+        threeCamera.position.set(0, 1.45, 1.0);
+        threeCamera.lookAt(0, 1.4, 0);
 
         // Renderer
         threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -424,7 +434,7 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
         // Load GLB
         var loader = new THREE.GLTFLoader();
-        loader.load('models/coach-avatar.glb', function(gltf) {
+        loader.load('models/coach-avatar-female.glb', function(gltf) {
             avatarModel = gltf.scene;
             threeScene.add(avatarModel);
 
@@ -461,36 +471,68 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
         if (avatarMixer) avatarMixer.update(delta);
 
-        // Simple lip sync based on coachSpeaking flag
+        // Lip sync + idle animations
         if (morphTargets && morphTargets.morphTargetDictionary) {
             var dict = morphTargets.morphTargetDictionary;
             var influences = morphTargets.morphTargetInfluences;
 
-            if ($scope.coachSpeaking) {
-                // Animate jaw/mouth open using viseme-like blendshapes
-                var t = Date.now() * 0.008;
-                var jawVal = (Math.sin(t) * 0.5 + 0.5) * 0.6;
-                var mouthVal = (Math.sin(t * 1.3 + 1) * 0.5 + 0.5) * 0.4;
+            // Get audio volume from analyzer
+            var volume = 0;
+            if (audioAnalyzer && $scope.coachSpeaking) {
+                var dataArray = new Uint8Array(audioAnalyzer.frequencyBinCount);
+                audioAnalyzer.getByteFrequencyData(dataArray);
+                var sum = 0;
+                for (var i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                volume = sum / dataArray.length / 255; // 0-1 normalized
+            }
 
-                // RPM blendshape names (ARKit standard)
+            if ($scope.coachSpeaking) {
+                // Audio-driven lip sync
+                var t = Date.now() * 0.01;
+                var jawVal = volume > 0.01 ? volume * 0.8 : (Math.sin(t) * 0.5 + 0.5) * 0.5;
+                var mouthVal = volume > 0.01 ? volume * 0.6 : (Math.sin(t * 1.3 + 1) * 0.5 + 0.5) * 0.3;
+                var smileVal = 0.1 + Math.sin(t * 0.3) * 0.05;
+
+                // RPM/ARKit blendshape names
                 if (dict.jawOpen !== undefined) influences[dict.jawOpen] = jawVal;
                 if (dict.mouthOpen !== undefined) influences[dict.mouthOpen] = jawVal;
                 if (dict.viseme_aa !== undefined) influences[dict.viseme_aa] = jawVal * 0.7;
                 if (dict.viseme_O !== undefined) influences[dict.viseme_O] = mouthVal;
                 if (dict.viseme_E !== undefined) influences[dict.viseme_E] = mouthVal * 0.5;
-            } else {
-                // Reset to neutral
-                if (dict.jawOpen !== undefined) influences[dict.jawOpen] *= 0.9;
-                if (dict.mouthOpen !== undefined) influences[dict.mouthOpen] *= 0.9;
-                if (dict.viseme_aa !== undefined) influences[dict.viseme_aa] *= 0.9;
-                if (dict.viseme_O !== undefined) influences[dict.viseme_O] *= 0.9;
-                if (dict.viseme_E !== undefined) influences[dict.viseme_E] *= 0.9;
+                if (dict.mouthSmile !== undefined) influences[dict.mouthSmile] = smileVal;
+                if (dict.mouthSmileLeft !== undefined) influences[dict.mouthSmileLeft] = smileVal;
+                if (dict.mouthSmileRight !== undefined) influences[dict.mouthSmileRight] = smileVal;
 
-                // Subtle idle blink
-                var blink = Math.sin(Date.now() * 0.003) > 0.98 ? 1 : 0;
-                if (dict.eyeBlinkLeft !== undefined) influences[dict.eyeBlinkLeft] = blink;
-                if (dict.eyeBlinkRight !== undefined) influences[dict.eyeBlinkRight] = blink;
+                // Subtle head movement while speaking
+                if (avatarModel) {
+                    avatarModel.rotation.y = Math.sin(t * 0.5) * 0.03;
+                    avatarModel.rotation.x = Math.sin(t * 0.3) * 0.01;
+                }
+            } else {
+                // Smooth return to neutral
+                var decay = 0.85;
+                if (dict.jawOpen !== undefined) influences[dict.jawOpen] *= decay;
+                if (dict.mouthOpen !== undefined) influences[dict.mouthOpen] *= decay;
+                if (dict.viseme_aa !== undefined) influences[dict.viseme_aa] *= decay;
+                if (dict.viseme_O !== undefined) influences[dict.viseme_O] *= decay;
+                if (dict.viseme_E !== undefined) influences[dict.viseme_E] *= decay;
+                if (dict.mouthSmile !== undefined) influences[dict.mouthSmile] *= decay;
+                if (dict.mouthSmileLeft !== undefined) influences[dict.mouthSmileLeft] *= decay;
+                if (dict.mouthSmileRight !== undefined) influences[dict.mouthSmileRight] *= decay;
+
+                // Idle: subtle breathing and head movement
+                if (avatarModel) {
+                    var idle = Date.now() * 0.001;
+                    avatarModel.rotation.y = Math.sin(idle * 0.4) * 0.02;
+                    avatarModel.position.y = Math.sin(idle * 0.8) * 0.002;
+                }
             }
+
+            // Blinking (both speaking and idle)
+            var blinkCycle = Date.now() % 4000;
+            var blink = (blinkCycle > 3800 && blinkCycle < 3950) ? 1 : 0;
+            if (dict.eyeBlinkLeft !== undefined) influences[dict.eyeBlinkLeft] = blink;
+            if (dict.eyeBlinkRight !== undefined) influences[dict.eyeBlinkRight] = blink;
         }
 
         if (threeRenderer && threeScene && threeCamera) {
