@@ -1,6 +1,6 @@
 angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, $location, AiService, ApiService, PlanService) {
     $scope.coachLocked = !PlanService.canAccessCoach();
-    $scope.isPremium = PlanService.getCurrentPlan() === 'premium';
+    $scope.isPremium = PlanService.isPremium();
     $scope.mode = 'select';
     $scope.callStatus = 'idle'; // idle, connecting, connected
     $scope.callStatusText = '';
