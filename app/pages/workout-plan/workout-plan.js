@@ -1,4 +1,4 @@
-angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService, FeedbackService, PlanService) {
+angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, AuthService, FeedbackService, PlanService, DataSyncService) {
     $scope.showWorkoutAdjust = false;
     $scope.workoutAdjustFeedback = null;
     $scope.workoutForm = { adjustText: '' };
@@ -59,6 +59,7 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
         AiService.generateWorkoutPlan($rootScope.profileData).then(function(plan) {
             $rootScope.workoutPlan = plan;
             localStorage.setItem('fitness_workoutplan', JSON.stringify(plan));
+            DataSyncService.syncField('fitness_workoutplan');
             PlanService.recordChange('workoutPlan');
             $rootScope.loading = false;
         }).catch(function() { $rootScope.loading = false; });
@@ -124,6 +125,7 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
                 $rootScope.workoutPlan.days = result.days;
                 $rootScope.workoutPlan.date = new Date().toLocaleDateString('pt-BR');
                 localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
+                DataSyncService.syncField('fitness_workoutplan');
                 PlanService.recordChange('workoutPlan');
             }
             $rootScope.loading = false;

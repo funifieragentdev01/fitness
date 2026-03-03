@@ -18,6 +18,10 @@
                 <label>Senha</label>
                 <input type="password" ng-model="reg.password" placeholder="Mínimo 6 caracteres" required>
             </div>
+            <div class="form-group">
+                <label>Confirmar senha</label>
+                <input type="password" ng-model="reg.confirmPassword" placeholder="Repita a senha" required>
+            </div>
             <div class="form-group checkbox-group">
                 <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#" ng-click="openTerms($event)">termos de uso</a></label>
             </div>

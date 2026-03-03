@@ -261,11 +261,14 @@ app.run(function($rootScope, $location, $sce, AuthService) {
             // Check onboarding
             var userId = AuthService.getUser();
             var ApiService = angular.element(document.body).injector().get('ApiService');
+            var DataSyncService = angular.element(document.body).injector().get('DataSyncService');
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $rootScope.profileData = res.data;
-                    var cachedMeal = localStorage.getItem('fitness_mealplan');
-                    var cachedWorkout = localStorage.getItem('fitness_workoutplan');
+                    // Load synced data from DB → localStorage (cross-device support)
+                    DataSyncService.loadFromDB();
+                    var cachedMeal = localStorage.getItem('fitness_mealplan') || (res.data.mealplan ? JSON.stringify(res.data.mealplan) : null);
+                    var cachedWorkout = localStorage.getItem('fitness_workoutplan') || (res.data.workoutplan ? JSON.stringify(res.data.workoutplan) : null);
                     if (cachedMeal && cachedWorkout) {
                         if ($location.path() === '/landing' || $location.path() === '/') {
                             $location.path('/dashboard');

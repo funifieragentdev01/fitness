@@ -92,11 +92,22 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
             }).catch(function() { /* ignore errors */ }).then(function() {
                 return $http.delete(API + '/v3/player/' + userId, service.authHeader());
             }).then(function() {
+                // Clear ALL app data from localStorage
+                var keysToRemove = [];
                 Object.keys(localStorage).forEach(function(k) {
-                    if (k.indexOf('fitness') === 0 || k.indexOf('fitevolve') === 0) localStorage.removeItem(k);
+                    if (k.indexOf('fitness') === 0 || k.indexOf('fitevolve') === 0 || k.indexOf('water_') === 0) {
+                        keysToRemove.push(k);
+                    }
                 });
+                keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
                 token = null;
                 $rootScope.player = {};
+                $rootScope.profileData = null;
+                $rootScope.mealPlan = null;
+                $rootScope.workoutPlan = null;
+                $rootScope.challenge90 = null;
+                $rootScope.manualMeasures = null;
+                $rootScope.latestBodyAnalysis = null;
             });
         }
     };

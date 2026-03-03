@@ -41,8 +41,21 @@
             <div class="data-row" ng-if="profileData.training_time"><span>Horário:</span><span>{{formatTime(profileData.training_time)}}</span></div>
         </div>
         <div class="profile-data" ng-if="latestBodyAnalysis" style="margin-top:12px">
-            <h3 style="margin-bottom:8px;font-size:15px">📊 Última Análise Corporal</h3>
+            <h3 style="margin-bottom:8px;font-size:15px">Última Análise Corporal</h3>
             <div class="analysis-formatted" ng-bind-html="formatAnalysis(latestBodyAnalysis)"></div>
+        </div>
+        <div class="profile-data" ng-if="latestLaudoAnalysis" style="margin-top:12px">
+            <h3 style="margin-bottom:8px;font-size:15px">Último Laudo de Bioimpedância</h3>
+            <div class="analysis-formatted" ng-bind-html="formatAnalysis(latestLaudoAnalysis)"></div>
+        </div>
+        <div class="profile-data" ng-if="consolidatedMeasures && hasMeasures()" style="margin-top:12px">
+            <h3 style="margin-bottom:8px;font-size:15px">Medidas Consolidadas</h3>
+            <div class="measures-table">
+                <div class="data-row" ng-repeat="(key, val) in consolidatedMeasures" ng-if="val != null && val !== ''">
+                    <span>{{measureLabel(key)}}</span>
+                    <span>{{val}} {{measureUnit(key)}}</span>
+                </div>
+            </div>
         </div>
         <div class="profile-actions">
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('plans')"><i class="fas fa-crown profile-action-icon" style="color:#FFD700"></i> Gerenciar Plano</button>

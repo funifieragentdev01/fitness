@@ -14,11 +14,6 @@
             </div>
 
             <div class="form-group">
-                <label>Peso atual (kg)</label>
-                <input type="number" ng-model="checkin.weight" placeholder="Ex: 78.5" step="0.1" min="30" max="300">
-            </div>
-
-            <div class="form-group">
                 <label>Fotos corporais</label>
                 <div class="body-photos-grid">
                     <div class="body-photo-box">
@@ -44,6 +39,11 @@
                 </div>
                 <input type="file" id="checkinPhotoFrontInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('front', this)">
                 <input type="file" id="checkinPhotoSideInput" accept="image/*" capture="environment" style="display:none" onchange="angular.element(this).scope().onCheckinPhotoType('side', this)">
+            </div>
+
+            <div class="form-group">
+                <label>Peso atual (kg)</label>
+                <input type="number" ng-model="checkin.weight" placeholder="Ex: 78.5" step="0.1" min="30" max="300">
             </div>
 
             <!-- Primary action: Analyze if has photos, otherwise just save -->

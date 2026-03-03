@@ -7,6 +7,7 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
     $scope.register = function() {
         if (!$scope.reg.terms) { $scope.error = 'Aceite os termos de uso.'; return; }
         if ($scope.reg.password.length < 6) { $scope.error = 'Senha deve ter no mínimo 6 caracteres.'; return; }
+        if ($scope.reg.password !== $scope.reg.confirmPassword) { $scope.error = 'As senhas não coincidem.'; return; }
         $scope.loading = true;
         $scope.error = '';
         $scope.success = '';

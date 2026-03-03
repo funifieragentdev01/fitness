@@ -106,8 +106,11 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
 
         updatePlayerExtra: function(extra) {
             var userId = AuthService.getUser();
+            var p = $rootScope.player || {};
             return $http.post(API + '/v3/player', {
                 _id: userId,
+                name: p.name || undefined,
+                email: p.email || undefined,
                 extra: extra
             }, AuthService.authHeader());
         },

@@ -9,14 +9,70 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
         $scope.isPremium = PlanService.isPremium();
     });
 
+    $scope.latestLaudoAnalysis = null;
+    $scope.consolidatedMeasures = null;
+
+    var MEASURE_LABELS = {
+        peso: 'Peso', altura: 'Altura', imc: 'IMC', gordura_pct: 'Gordura corporal',
+        peso_gordo: 'Massa gorda', peso_magro: 'Massa magra', massa_muscular: 'Massa muscular',
+        massa_ossea: 'Massa óssea', agua_corporal_pct: 'Água corporal', taxa_metabolica_basal: 'Taxa metabólica basal',
+        idade_metabolica: 'Idade metabólica', gordura_visceral: 'Gordura visceral',
+        cintura: 'Cintura', quadril: 'Quadril', abdomen: 'Abdômen', coxas: 'Coxas',
+        panturrilhas: 'Panturrilhas', braco_relaxado: 'Braço relaxado', braco_contraido: 'Braço contraído',
+        deltoides: 'Deltoides', torax: 'Tórax', antebraco: 'Antebraço', pescoco: 'Pescoço',
+        dobra_subescapular: 'Dobra subescapular', dobra_tricipital: 'Dobra tricipital',
+        dobra_toracica: 'Dobra torácica', dobra_axilar: 'Dobra axilar',
+        dobra_suprailiaca: 'Dobra suprailíaca', dobra_abdominal: 'Dobra abdominal',
+        dobra_coxas: 'Dobra coxas', dobra_panturrilhas: 'Dobra panturrilhas',
+        testosterona: 'Testosterona', colesterol_total: 'Colesterol total',
+        hdl: 'HDL', ldl: 'LDL', triglicerides: 'Triglicérides',
+        glicemia: 'Glicemia', hemoglobina: 'Hemoglobina'
+    };
+    var MEASURE_UNITS = {
+        peso: 'kg', altura: 'cm', gordura_pct: '%', peso_gordo: 'kg', peso_magro: 'kg',
+        massa_muscular: 'kg', massa_ossea: 'kg', agua_corporal_pct: '%',
+        taxa_metabolica_basal: 'kcal', gordura_visceral: '',
+        cintura: 'cm', quadril: 'cm', abdomen: 'cm', coxas: 'cm', panturrilhas: 'cm',
+        braco_relaxado: 'cm', braco_contraido: 'cm', deltoides: 'cm', torax: 'cm',
+        antebraco: 'cm', pescoco: 'cm',
+        dobra_subescapular: 'mm', dobra_tricipital: 'mm', dobra_toracica: 'mm',
+        dobra_axilar: 'mm', dobra_suprailiaca: 'mm', dobra_abdominal: 'mm',
+        dobra_coxas: 'mm', dobra_panturrilhas: 'mm',
+        testosterona: 'ng/dL', colesterol_total: 'mg/dL', hdl: 'mg/dL', ldl: 'mg/dL',
+        triglicerides: 'mg/dL', glicemia: 'mg/dL', hemoglobina: 'g/dL'
+    };
+
+    $scope.measureLabel = function(key) { return MEASURE_LABELS[key] || key; };
+    $scope.measureUnit = function(key) { return MEASURE_UNITS[key] || ''; };
+    $scope.hasMeasures = function() {
+        if (!$scope.consolidatedMeasures) return false;
+        return Object.keys($scope.consolidatedMeasures).some(function(k) {
+            return $scope.consolidatedMeasures[k] != null && $scope.consolidatedMeasures[k] !== '';
+        });
+    };
+
     function loadProfileData() {
         if (!userId) return;
         ApiService.loadProfile(userId).then(function(res) {
             if (res.data && res.data._id) {
                 $rootScope.profileData = res.data;
-                $rootScope.latestBodyAnalysis = localStorage.getItem('fitness_body_analysis') || null;
+                $rootScope.latestBodyAnalysis = res.data.body_analysis || localStorage.getItem('fitness_body_analysis') || null;
+                $scope.latestLaudoAnalysis = res.data.laudo_analysis || null;
+                $scope.consolidatedMeasures = res.data.measures || null;
                 $scope.profilePhoto = res.data.photo_url || null;
-                $scope.aiGoal = res.data.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
+                $scope.aiGoal = res.data.ai_goal || res.data.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
+            }
+        }).catch(function() {});
+
+        // Also load latest body_checkin for laudo feedback
+        ApiService.loadWeightHistory(userId).then(function(res) {
+            if (Array.isArray(res.data) && res.data.length > 0) {
+                for (var i = 0; i < res.data.length; i++) {
+                    if (res.data[i].laudo_feedback && !$scope.latestLaudoAnalysis) {
+                        $scope.latestLaudoAnalysis = res.data[i].laudo_feedback;
+                        break;
+                    }
+                }
             }
         }).catch(function() {});
     }

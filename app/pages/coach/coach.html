@@ -57,6 +57,10 @@
                     <div class="msg-bubble"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>
                 </div>
             </div>
+            <!-- Debug prompt (only for testers) -->
+            <div ng-if="debugPrompt" style="padding:4px 12px">
+                <textarea readonly style="width:100%;height:120px;font-size:10px;background:#111;color:#0f0;border:1px solid #333;border-radius:8px;padding:8px;font-family:monospace;resize:vertical;box-sizing:border-box">{{debugPrompt}}</textarea>
+            </div>
             <div class="chat-input">
                 <input type="text" ng-model="chat.input" placeholder="Pergunte ao seu coach..." ng-keydown="$event.keyCode === 13 && sendChat()">
                 <button ng-click="sendChat()" ng-disabled="!chat.input || chatLoading"><i class="fas fa-paper-plane"></i></button>
@@ -76,6 +80,10 @@
             <p class="call-status">{{callStatusText}}</p>
             <div class="call-transcript" ng-if="transcript">
                 <p class="transcript-text">{{transcript}}</p>
+            </div>
+            <!-- Debug prompt (only for testers) -->
+            <div ng-if="debugPrompt" style="margin:8px 16px;max-height:200px;overflow-y:auto">
+                <textarea readonly style="width:100%;height:180px;font-size:10px;background:#111;color:#0f0;border:1px solid #333;border-radius:8px;padding:8px;font-family:monospace;resize:vertical">{{debugPrompt}}</textarea>
             </div>
             <div class="call-controls">
                 <button class="call-btn" ng-class="{'call-btn-active': isMuted}" ng-click="toggleMute()">
@@ -108,6 +116,10 @@
             <p class="call-status">{{callStatusText}}</p>
             <div class="call-transcript" ng-if="transcript">
                 <p class="transcript-text">{{transcript}}</p>
+            </div>
+            <!-- Debug prompt (only for testers) -->
+            <div ng-if="debugPrompt" style="margin:8px 16px;max-height:200px;overflow-y:auto">
+                <textarea readonly style="width:100%;height:180px;font-size:10px;background:#111;color:#0f0;border:1px solid #333;border-radius:8px;padding:8px;font-family:monospace;resize:vertical">{{debugPrompt}}</textarea>
             </div>
             <div class="call-controls">
                 <button class="call-btn" ng-class="{'call-btn-active': isMuted}" ng-click="toggleMute()">

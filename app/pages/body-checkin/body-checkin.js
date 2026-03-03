@@ -1,4 +1,4 @@
-angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService, PlanService) {
+angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService, PlanService, DataSyncService) {
     $scope.checkin = {};
     $scope.checkinHistory = [];
     $scope.step = 1;
@@ -110,6 +110,12 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
             localStorage.setItem('fitness_body_analysis', $scope.analysisResult);
             $rootScope.latestBodyAnalysis = $scope.analysisResult;
         }
+        // Save laudo to profile too
+        if ($scope.laudoResult && $rootScope.profileData) {
+            $rootScope.profileData.laudo_analysis = $scope.laudoResult;
+        }
+        // Sync to Funifier DB
+        DataSyncService.syncAll();
         doSaveCheckin();
     };
 
@@ -148,7 +154,10 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     weight: parseFloat($scope.checkin.weight),
                     photo_front_url: photoUrls.front,
                     photo_side_url: photoUrls.side,
-                    created: ApiService.bsonDate()
+                    created: ApiService.bsonDate(),
+                    measures: angular.copy($scope.manualMeasures) || {},
+                    ai_feedback: $scope.analysisResult || null,
+                    laudo_feedback: $scope.laudoResult || null
                 };
                 if ($scope.fromChallenge && $scope.challengeCheckpoint) {
                     data.challenge_day = $scope.challengeCheckpoint;
@@ -163,6 +172,17 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     ApiService.logAction('update_weight', { weight: parseFloat($scope.checkin.weight) });
                     if ($rootScope.profileData) {
                         $rootScope.profileData.weight = parseFloat($scope.checkin.weight);
+                        // Consolidate all measures into profile (accumulated across checkins)
+                        if (!$rootScope.profileData.measures) $rootScope.profileData.measures = {};
+                        var currentMeasures = $scope.manualMeasures || {};
+                        Object.keys(currentMeasures).forEach(function(k) {
+                            if (currentMeasures[k] != null && currentMeasures[k] !== '') {
+                                $rootScope.profileData.measures[k] = currentMeasures[k];
+                            }
+                        });
+                        // Save latest feedbacks
+                        if ($scope.analysisResult) $rootScope.profileData.body_analysis = $scope.analysisResult;
+                        if ($scope.laudoResult) $rootScope.profileData.laudo_analysis = $scope.laudoResult;
                         var profileUpdate = angular.copy($rootScope.profileData);
                         profileUpdate._id = userId;
                         ApiService.saveProfile(profileUpdate);

@@ -1,4 +1,4 @@
-angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootScope, $location, $timeout, $interval, $routeParams, AuthService, ApiService, AiService) {
+angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootScope, $location, $timeout, $interval, $routeParams, AuthService, ApiService, AiService, DataSyncService) {
     $scope.onboardingStep = parseInt($routeParams.step) || 1;
     $scope.redefineGoalMode = !!$routeParams.step;
     $scope.onboardingTotalSteps = 9;
@@ -49,7 +49,7 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
     if ($scope.redefineGoalMode && $rootScope.profileData) {
         $scope.onboarding = buildOnboardingFromProfile($rootScope.profileData);
         // Load existing goal
-        $scope.aiGoal = $rootScope.profileData.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
+        $scope.aiGoal = $rootScope.profileData.ai_goal || $rootScope.profileData.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
         if (!$scope.aiGoal) {
             $scope.goalLoading = true;
             AiService.generateAIGoal($scope.onboarding).then(function(goal) {
@@ -169,9 +169,10 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
         if ($rootScope.profileData) {
             var profileUpdate = angular.copy($rootScope.profileData);
             profileUpdate._id = AuthService.getUser();
-            profileUpdate.aiGoal = $scope.aiGoal;
+            profileUpdate.ai_goal = $scope.aiGoal;
+            delete profileUpdate.aiGoal;
             ApiService.saveProfile(profileUpdate);
-            $rootScope.profileData.aiGoal = $scope.aiGoal;
+            $rootScope.profileData.ai_goal = $scope.aiGoal;
         }
         $location.path('/profile').search({});
     };
@@ -223,11 +224,13 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
             return { id: m.id, label: m.label, time: (typeof m.time === 'object' && m.time) ? formatTime(m.time) : m.time };
         });
         data.meal_times = mealTimes;
+        delete data.meal_routine; // don't store template in DB
         delete data.body_photo_front;
         delete data.body_photo_side;
         delete data.space_photo;
         if ($scope.aiGoal) {
-            data.aiGoal = $scope.aiGoal;
+            data.ai_goal = $scope.aiGoal; // standardize field name
+            delete data.aiGoal; // remove duplicate
             localStorage.setItem('fitness_ai_goal', JSON.stringify($scope.aiGoal));
         }
 
@@ -239,6 +242,8 @@ angular.module('fitness').controller('OnboardingCtrl', function($scope, $rootSco
                 $interval.cancel(msgInterval);
                 $interval.cancel(progressInterval);
                 $scope.generatingProgress = 100;
+                // Sync all data to Funifier DB
+                DataSyncService.syncAll();
                 $timeout(function() { $scope.onboardingStep = 9; }, 800);
             }
         }

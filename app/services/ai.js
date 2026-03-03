@@ -316,7 +316,7 @@ angular.module('fitness').factory('AiService', function($http) {
         },
 
         analyzeBioReport: function(photo) {
-            var measureFields = 'peso, altura, gordura_pct, peso_gordo, peso_magro, massa_muscular, cintura, quadril, abdomen, coxas, panturrilhas, braco_relaxado, braco_contraido, deltoides, torax, dobra_subescapular, dobra_tricipital, dobra_toracica, dobra_axilar, dobra_suprailiaca, dobra_abdominal, dobra_coxas, dobra_panturrilhas';
+            var measureFields = 'peso, altura, imc, gordura_pct, peso_gordo, peso_magro, massa_muscular, massa_ossea, agua_corporal_pct, taxa_metabolica_basal, idade_metabolica, gordura_visceral, cintura, quadril, abdomen, coxas, panturrilhas, braco_relaxado, braco_contraido, deltoides, torax, antebraco, pescoco, dobra_subescapular, dobra_tricipital, dobra_toracica, dobra_axilar, dobra_suprailiaca, dobra_abdominal, dobra_coxas, dobra_panturrilhas, testosterona, colesterol_total, hdl, ldl, triglicerides, glicemia, hemoglobina';
 
             return $http.post(OPENAI_API + '/chat/completions', {
                 model: 'gpt-4o',

@@ -1,4 +1,4 @@
-angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, PlanService) {
+angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope, $location, ApiService, AiService, PlanService, DataSyncService) {
     $scope.showMealAdjust = false;
     $scope.mealAdjustFeedback = null;
     $scope.mealForm = { adjustText: '' };
@@ -70,6 +70,7 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
         AiService.generateMealPlan($rootScope.profileData).then(function(plan) {
             $rootScope.mealPlan = plan;
             localStorage.setItem('fitness_mealplan', JSON.stringify(plan));
+            DataSyncService.syncField('fitness_mealplan');
             PlanService.recordChange('mealPlan');
             $rootScope.loading = false;
             updateNextMeal();
@@ -102,6 +103,7 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
                 if (result.total_calories) $rootScope.mealPlan.total_calories = result.total_calories;
                 $rootScope.mealPlan.date = new Date().toLocaleDateString('pt-BR');
                 localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
+                DataSyncService.syncField('fitness_mealplan');
                 PlanService.recordChange('mealPlan');
             }
             $rootScope.loading = false;

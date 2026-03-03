@@ -21,7 +21,7 @@ public Object handle(Object payload) {
 
     def jongo = manager.getJongoConnection()
 
-    // Get profile from profile__c (uses _id = playerId)
+    // Get FULL profile from profile__c (includes synced data: mealplan, workoutplan, etc.)
     try {
         def profile = jongo.getCollection("profile__c")
             .findOne("{_id: #}", playerId.toString())
@@ -33,7 +33,7 @@ public Object handle(Object payload) {
         result.put("profile_error", e.getMessage())
     }
 
-    // Get latest body checkin (uses player field)
+    // Get latest body checkin
     try {
         def it = jongo.getCollection("body_checkin__c")
             .find("{player: #}", playerId.toString())
@@ -44,10 +44,10 @@ public Object handle(Object payload) {
             result.put("latest_checkin", it.next())
         }
     } catch (Exception e) {
-        // Try with _id
+        def dollar = String.valueOf((char)0x24)
         try {
             def it2 = jongo.getCollection("body_checkin__c")
-                .find("{_id: {" + String.valueOf((char)0x24) + "regex: #}}", playerId.toString())
+                .find("{_id: {" + dollar + "regex: #}}", playerId.toString())
                 .sort("{_created: -1}")
                 .limit(1)
                 .as(java.util.Map.class)
