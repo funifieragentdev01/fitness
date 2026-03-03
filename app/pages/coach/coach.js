@@ -212,9 +212,7 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                         type: 'realtime',
                         model: data.model || 'gpt-realtime-mini',
                         instructions: fullInstructions,
-                        voice: data.voice || 'coral',
-                        input_audio_transcription: { model: 'gpt-4o-transcribe' },
-                        turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 500 }
+                        audio: { output: { voice: data.voice || 'coral' } }
                     }
                 })
             });
