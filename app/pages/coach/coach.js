@@ -1,4 +1,4 @@
-angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, $location, AiService, ApiService, PlanService, AuthService) {
+angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $timeout, $http, $location, AiService, ApiService, PlanService, AuthService) {
     $scope.isPremium = PlanService.isPremium();
     $scope.coachLocked = false; // Chat always accessible; voice/video gated in enterMode
     $scope.mode = 'select';
@@ -15,6 +15,34 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
     $scope.chatLoading = false;
     $scope.debugPrompt = null;
     var isTestMode = $rootScope.player && $rootScope.player.extra && $rootScope.player.extra.teste === true;
+
+    $scope.callHistory = [];
+
+    // Load call history
+    (function loadCallHistory() {
+        var userId = AuthService.getUser();
+        if (!userId) return;
+        $http({
+            method: 'GET',
+            url: CONFIG.API + '/v3/database/checkin__c?strict=true&_filter=' + encodeURIComponent(JSON.stringify({ userId: userId, mode: { $exists: true } })) + '&_sort=-created&_limit=20',
+            headers: { 'Authorization': 'Bearer ' + AuthService.getToken() }
+        }).then(function(res) {
+            if (Array.isArray(res.data)) {
+                $scope.callHistory = res.data.map(function(c) {
+                    var dur = c.duration_seconds || 0;
+                    var mins = Math.floor(dur / 60);
+                    var secs = dur % 60;
+                    var started = c.started && c.started.$date ? new Date(c.started.$date) : new Date(c._created || 0);
+                    return {
+                        mode: c.mode,
+                        date: started.toLocaleDateString('pt-BR') + ' ' + started.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        duration: mins + 'min ' + secs + 's',
+                        transcript: c.transcript || []
+                    };
+                });
+            }
+        }).catch(function() {});
+    })();
 
     // WebRTC state
     var pc = null;
@@ -409,16 +437,87 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         return instructions;
     }
 
+    // ===================== VOICE TOOLS DEFINITION =====================
+
+    var voiceTools = [
+        {
+            type: 'function',
+            name: 'update_meal_plan',
+            description: 'Regenera o plano alimentar do usuario com base em um pedido ou ajuste. Use quando o usuario pedir para mudar a dieta, trocar alimentos, ajustar calorias, etc.',
+            parameters: { type: 'object', properties: { feedback: { type: 'string', description: 'O que o usuario quer mudar no plano alimentar' } }, required: ['feedback'] }
+        },
+        {
+            type: 'function',
+            name: 'update_workout_plan',
+            description: 'Regenera o plano de treino do usuario com base em um pedido ou ajuste. Use quando o usuario pedir para mudar exercicios, dias, intensidade, etc.',
+            parameters: { type: 'object', properties: { feedback: { type: 'string', description: 'O que o usuario quer mudar no plano de treino' } }, required: ['feedback'] }
+        },
+        {
+            type: 'function',
+            name: 'update_goal',
+            description: 'Atualiza a meta do usuario. Use quando o usuario disser que quer mudar seu objetivo (ex: perder peso, ganhar massa, etc).',
+            parameters: { type: 'object', properties: { new_goal: { type: 'string', description: 'A nova meta do usuario em texto livre' } }, required: ['new_goal'] }
+        },
+        {
+            type: 'function',
+            name: 'add_measures',
+            description: 'Registra novas medidas corporais informadas pelo usuario. Use quando o usuario disser medidas como peso, cintura, braco, gordura, etc.',
+            parameters: { type: 'object', properties: {
+                peso: { type: 'number', description: 'Peso em kg' },
+                gordura_pct: { type: 'number', description: 'Percentual de gordura' },
+                massa_muscular: { type: 'number', description: 'Massa muscular em kg' },
+                cintura: { type: 'number', description: 'Cintura em cm' },
+                quadril: { type: 'number', description: 'Quadril em cm' },
+                braco: { type: 'number', description: 'Braco em cm' },
+                coxas: { type: 'number', description: 'Coxas em cm' },
+                torax: { type: 'number', description: 'Torax em cm' },
+                panturrilhas: { type: 'number', description: 'Panturrilhas em cm' }
+            }}
+        },
+        {
+            type: 'function',
+            name: 'log_water',
+            description: 'Registra agua ingerida pelo usuario. Use quando o usuario disser que bebeu agua.',
+            parameters: { type: 'object', properties: { ml: { type: 'number', description: 'Quantidade em ml (padrao 250ml se nao especificado)' } } }
+        },
+        {
+            type: 'function',
+            name: 'log_meal',
+            description: 'Registra uma refeicao feita pelo usuario. Use quando o usuario disser que comeu algo.',
+            parameters: { type: 'object', properties: { meal_name: { type: 'string', description: 'Nome da refeicao (ex: almoco, lanche)' }, foods: { type: 'string', description: 'O que comeu' } }, required: ['foods'] }
+        }
+    ];
+
+    // ===================== CALL HISTORY STATE =====================
+
+    var callStartTime = null;
+    var callTranscriptLog = []; // {role, text, time}
+
     function sendSessionUpdate() {
         if (!dc || dc.readyState !== 'open') {
             console.warn('[Coach] sendSessionUpdate: dc not ready');
             return;
         }
 
-        // Instructions already set via ephemeral key.
-        // Also send session.update as backup (belt and suspenders).
+        // Track call start
+        callStartTime = new Date();
+        callTranscriptLog = [];
+
+        // Send session.update with tools + backup instructions
         var instructions = buildVoiceInstructions();
-        console.log('[Coach] Sending session.update backup, instructions length:', instructions.length);
+
+        // Add tool usage instructions
+        instructions += '\n\n=== FERRAMENTAS DISPONIVEIS ===';
+        instructions += '\nVoce tem ferramentas para MODIFICAR dados do usuario durante a conversa:';
+        instructions += '\n- update_meal_plan: quando pedirem para mudar a dieta';
+        instructions += '\n- update_workout_plan: quando pedirem para mudar o treino';
+        instructions += '\n- update_goal: quando pedirem para mudar a meta';
+        instructions += '\n- add_measures: quando informarem novas medidas corporais';
+        instructions += '\n- log_water: quando disserem que beberam agua';
+        instructions += '\n- log_meal: quando disserem que comeram algo';
+        instructions += '\nUse as ferramentas PROATIVAMENTE quando o usuario mencionar algo relevante.';
+
+        console.log('[Coach] Sending session.update with tools, instructions length:', instructions.length);
 
         dc.send(JSON.stringify({
             type: 'session.update',
@@ -426,6 +525,7 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 modalities: ['text', 'audio'],
                 instructions: instructions,
                 voice: 'coral',
+                tools: voiceTools,
                 input_audio_transcription: {
                     model: 'gpt-4o-transcribe'
                 },
@@ -458,6 +558,178 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         }, 1200);
     }
 
+    // ===================== TOOL EXECUTION =====================
+
+    function executeVoiceTool(callId, fnName, args) {
+        console.log('[Coach] Tool call:', fnName, args);
+        var userId = AuthService.getUser();
+        var result = { success: false, message: '' };
+
+        try {
+            switch (fnName) {
+                case 'add_measures':
+                    // Save measures to profile
+                    var measures = $rootScope.profileData ? angular.copy($rootScope.profileData.measures || {}) : {};
+                    Object.keys(args).forEach(function(k) {
+                        if (args[k] != null) measures[k] = args[k];
+                    });
+                    if (args.peso) {
+                        // Also save as body checkin
+                        ApiService.saveBodyCheckin({
+                            userId: userId,
+                            weight: args.peso,
+                            measures: args,
+                            created: ApiService.bsonDate(),
+                            source: 'voice_coach'
+                        });
+                    }
+                    if ($rootScope.profileData) {
+                        $rootScope.profileData.measures = measures;
+                        if (args.peso) $rootScope.profileData.weight = args.peso;
+                        var pu = angular.copy($rootScope.profileData);
+                        pu._id = userId;
+                        ApiService.saveProfile(pu);
+                    }
+                    localStorage.setItem('fitness_measures', JSON.stringify(measures));
+                    result = { success: true, message: 'Medidas salvas: ' + Object.keys(args).filter(function(k) { return args[k] != null; }).join(', ') };
+                    break;
+
+                case 'log_water':
+                    var ml = args.ml || 250;
+                    var today = new Date().toISOString().slice(0, 10);
+                    var waterKey = 'water_' + today;
+                    var waterData = JSON.parse(localStorage.getItem(waterKey) || '{"total":0,"logs":[]}');
+                    waterData.total += ml;
+                    waterData.logs.push({ ml: ml, time: new Date().toISOString() });
+                    localStorage.setItem(waterKey, JSON.stringify(waterData));
+                    // Also save to checkin__c
+                    ApiService.saveCheckinDoc({
+                        _id: userId + '_water_' + today,
+                        userId: userId,
+                        type: 'water',
+                        total_ml: waterData.total,
+                        logs: waterData.logs,
+                        date: ApiService.bsonDate(),
+                        created: ApiService.bsonDate()
+                    });
+                    result = { success: true, message: 'Registrado ' + ml + 'ml de agua. Total hoje: ' + waterData.total + 'ml' };
+                    break;
+
+                case 'log_meal':
+                    var mealToday = new Date().toISOString().slice(0, 10);
+                    var mealKey = 'water_meal_' + mealToday; // reuse water pattern
+                    ApiService.saveCheckinDoc({
+                        _id: userId + '_meal_' + mealToday + '_' + Date.now(),
+                        userId: userId,
+                        type: 'meal',
+                        meal_name: args.meal_name || 'refeicao',
+                        foods: args.foods,
+                        date: ApiService.bsonDate(),
+                        created: ApiService.bsonDate(),
+                        source: 'voice_coach'
+                    });
+                    result = { success: true, message: 'Refeicao registrada: ' + args.foods };
+                    break;
+
+                case 'update_meal_plan':
+                    // Use AiService to adjust meal plan
+                    $scope.callStatusText = 'Ajustando dieta...';
+                    AiService.adjustMealPlan($rootScope.mealPlan || {}, args.feedback, $rootScope.profileData || {}).then(function(adj) {
+                        if (adj.meals) {
+                            if (!$rootScope.mealPlan) $rootScope.mealPlan = {};
+                            $rootScope.mealPlan.meals = adj.meals;
+                            if (adj.total_calories) $rootScope.mealPlan.total_calories = adj.total_calories;
+                            localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
+                            angular.element(document.body).injector().get('DataSyncService').syncField('fitness_mealplan');
+                        }
+                        sendToolResult(callId, { success: true, message: 'Plano alimentar atualizado com sucesso! ' + (adj.feedback || '') });
+                    }).catch(function() {
+                        sendToolResult(callId, { success: false, message: 'Nao consegui atualizar o plano alimentar agora.' });
+                    });
+                    return; // async - don't send result yet
+
+                case 'update_workout_plan':
+                    $scope.callStatusText = 'Ajustando treino...';
+                    AiService.adjustWorkoutPlan($rootScope.workoutPlan || {}, args.feedback, $rootScope.profileData || {}).then(function(adj) {
+                        if (adj.days) {
+                            if (!$rootScope.workoutPlan) $rootScope.workoutPlan = {};
+                            $rootScope.workoutPlan.days = adj.days;
+                            localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
+                            angular.element(document.body).injector().get('DataSyncService').syncField('fitness_workoutplan');
+                        }
+                        sendToolResult(callId, { success: true, message: 'Plano de treino atualizado! ' + (adj.feedback || '') });
+                    }).catch(function() {
+                        sendToolResult(callId, { success: false, message: 'Nao consegui atualizar o plano de treino agora.' });
+                    });
+                    return; // async
+
+                case 'update_goal':
+                    if ($rootScope.profileData) {
+                        $rootScope.profileData.ai_goal = { summary: args.new_goal, timestamp: new Date().toISOString() };
+                        var goalProfile = angular.copy($rootScope.profileData);
+                        goalProfile._id = userId;
+                        ApiService.saveProfile(goalProfile);
+                        localStorage.setItem('fitness_ai_goal', JSON.stringify($rootScope.profileData.ai_goal));
+                    }
+                    result = { success: true, message: 'Meta atualizada para: ' + args.new_goal };
+                    break;
+
+                default:
+                    result = { success: false, message: 'Ferramenta desconhecida: ' + fnName };
+            }
+        } catch (e) {
+            result = { success: false, message: 'Erro: ' + e.message };
+        }
+
+        sendToolResult(callId, result);
+    }
+
+    function sendToolResult(callId, result) {
+        if (!dc || dc.readyState !== 'open') return;
+        console.log('[Coach] Tool result:', callId, result);
+        dc.send(JSON.stringify({
+            type: 'conversation.item.create',
+            item: {
+                type: 'function_call_output',
+                call_id: callId,
+                output: JSON.stringify(result)
+            }
+        }));
+        dc.send(JSON.stringify({ type: 'response.create' }));
+        $scope.$apply(function() { $scope.callStatusText = 'Conectado'; });
+    }
+
+    // ===================== CALL HISTORY SAVE =====================
+
+    function saveCallHistory(mode) {
+        if (!callStartTime) return;
+        var duration = Math.round((new Date() - callStartTime) / 1000);
+        if (duration < 3) return; // ignore very short calls
+
+        var userId = AuthService.getUser();
+        var callId = userId + '_call_' + callStartTime.toISOString().replace(/[:.]/g, '-');
+
+        var callData = {
+            _id: callId,
+            userId: userId,
+            mode: mode,
+            started: ApiService.bsonDate(callStartTime),
+            ended: ApiService.bsonDate(),
+            duration_seconds: duration,
+            transcript: callTranscriptLog,
+            created: ApiService.bsonDate()
+        };
+
+        ApiService.saveCheckinDoc(callData).then(function() {
+            console.log('[Coach] Call history saved:', callId, duration + 's');
+        }).catch(function(err) {
+            console.warn('[Coach] Failed to save call history:', err);
+        });
+
+        // Log action
+        ApiService.logAction('coach_call_end', { mode: mode, duration: duration });
+    }
+
     function handleRealtimeEvent(event) {
         switch (event.type) {
             case 'response.audio_transcript.delta':
@@ -468,6 +740,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 break;
 
             case 'response.audio_transcript.done':
+                // Log coach transcript
+                if (event.transcript) {
+                    callTranscriptLog.push({ role: 'coach', text: event.transcript, time: new Date().toISOString() });
+                }
                 $scope.$apply(function() {
                     $scope.coachSpeaking = false;
                 });
@@ -495,7 +771,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 break;
 
             case 'conversation.item.input_audio_transcription.completed':
-                // User's speech transcribed — could show in UI
+                // User's speech transcribed — log it
+                if (event.transcript) {
+                    callTranscriptLog.push({ role: 'user', text: event.transcript, time: new Date().toISOString() });
+                }
                 break;
 
             case 'response.audio.delta':
@@ -504,6 +783,18 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                     $scope.coachSpeaking = true;
                     $scope.callStatusText = 'Falando...';
                 });
+                break;
+
+            case 'response.function_call_arguments.done':
+                // Tool call from the AI
+                console.log('[Coach] Function call:', event.name, event.arguments);
+                try {
+                    var toolArgs = JSON.parse(event.arguments || '{}');
+                    executeVoiceTool(event.call_id, event.name, toolArgs);
+                } catch(e) {
+                    console.error('[Coach] Tool parse error:', e);
+                    sendToolResult(event.call_id, { success: false, message: 'Erro ao processar ferramenta' });
+                }
                 break;
 
             case 'error':
@@ -529,6 +820,11 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
     };
 
     function endCallInternal() {
+        // Save call history before cleanup
+        if (callStartTime && $scope.mode) {
+            saveCallHistory($scope.mode);
+            callStartTime = null;
+        }
         if (dc) { try { dc.close(); } catch(e) {} dc = null; }
         if (pc) { try { pc.close(); } catch(e) {} pc = null; }
         if (localStream) {
