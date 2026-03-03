@@ -18,6 +18,16 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
     $scope.callHistory = [];
 
+    // Ensure plans are loaded in rootScope (needed for voice tools)
+    if (!$rootScope.mealPlan) {
+        var cachedMeal = localStorage.getItem('fitness_mealplan');
+        if (cachedMeal) try { $rootScope.mealPlan = JSON.parse(cachedMeal); } catch(e) {}
+    }
+    if (!$rootScope.workoutPlan) {
+        var cachedWorkout = localStorage.getItem('fitness_workoutplan');
+        if (cachedWorkout) try { $rootScope.workoutPlan = JSON.parse(cachedWorkout); } catch(e) {}
+    }
+
     // Load call history
     (function loadCallHistory() {
         var userId = AuthService.getUser();
@@ -240,6 +250,7 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                         type: 'realtime',
                         model: data.model || 'gpt-realtime-mini',
                         instructions: fullInstructions,
+                        tools: voiceTools,
                         audio: { output: { voice: data.voice || 'coral' } }
                     }
                 })
@@ -633,32 +644,40 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
 
                 case 'update_meal_plan':
                     // Use AiService to adjust meal plan
-                    $scope.callStatusText = 'Ajustando dieta...';
+                    console.log('[Coach Tool] update_meal_plan, current plan:', !!$rootScope.mealPlan);
+                    try { $scope.$apply(function() { $scope.callStatusText = 'Ajustando dieta...'; }); } catch(e) {}
                     AiService.adjustMealPlan($rootScope.mealPlan || {}, args.feedback, $rootScope.profileData || {}).then(function(adj) {
+                        console.log('[Coach Tool] Meal plan adjusted:', !!adj.meals, adj.feedback);
                         if (adj.meals) {
                             if (!$rootScope.mealPlan) $rootScope.mealPlan = {};
                             $rootScope.mealPlan.meals = adj.meals;
                             if (adj.total_calories) $rootScope.mealPlan.total_calories = adj.total_calories;
+                            $rootScope.mealPlan.date = new Date().toLocaleDateString('pt-BR');
                             localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
-                            angular.element(document.body).injector().get('DataSyncService').syncField('fitness_mealplan');
+                            try { angular.element(document.body).injector().get('DataSyncService').syncField('fitness_mealplan'); } catch(e) {}
                         }
-                        sendToolResult(callId, { success: true, message: 'Plano alimentar atualizado com sucesso! ' + (adj.feedback || '') });
-                    }).catch(function() {
+                        sendToolResult(callId, { success: true, message: 'Plano alimentar atualizado! ' + (adj.feedback || '') });
+                    }).catch(function(err) {
+                        console.error('[Coach Tool] Meal plan error:', err);
                         sendToolResult(callId, { success: false, message: 'Nao consegui atualizar o plano alimentar agora.' });
                     });
                     return; // async - don't send result yet
 
                 case 'update_workout_plan':
-                    $scope.callStatusText = 'Ajustando treino...';
+                    console.log('[Coach Tool] update_workout_plan, current plan:', !!$rootScope.workoutPlan);
+                    try { $scope.$apply(function() { $scope.callStatusText = 'Ajustando treino...'; }); } catch(e) {}
                     AiService.adjustWorkoutPlan($rootScope.workoutPlan || {}, args.feedback, $rootScope.profileData || {}).then(function(adj) {
+                        console.log('[Coach Tool] Workout plan adjusted:', !!adj.days, adj.feedback);
                         if (adj.days) {
                             if (!$rootScope.workoutPlan) $rootScope.workoutPlan = {};
                             $rootScope.workoutPlan.days = adj.days;
+                            $rootScope.workoutPlan.date = new Date().toLocaleDateString('pt-BR');
                             localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
-                            angular.element(document.body).injector().get('DataSyncService').syncField('fitness_workoutplan');
+                            try { angular.element(document.body).injector().get('DataSyncService').syncField('fitness_workoutplan'); } catch(e) {}
                         }
                         sendToolResult(callId, { success: true, message: 'Plano de treino atualizado! ' + (adj.feedback || '') });
-                    }).catch(function() {
+                    }).catch(function(err) {
+                        console.error('[Coach Tool] Workout plan error:', err);
                         sendToolResult(callId, { success: false, message: 'Nao consegui atualizar o plano de treino agora.' });
                     });
                     return; // async
@@ -786,8 +805,9 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 break;
 
             case 'response.function_call_arguments.done':
-                // Tool call from the AI
-                console.log('[Coach] Function call:', event.name, event.arguments);
+                // Tool call from the AI — this means the tool IS registered and being used
+                console.log('[Coach] Function call received:', event.name, event.arguments);
+                $scope.$apply(function() { $scope.callStatusText = 'Executando: ' + event.name + '...'; });
                 try {
                     var toolArgs = JSON.parse(event.arguments || '{}');
                     executeVoiceTool(event.call_id, event.name, toolArgs);
