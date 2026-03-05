@@ -24,6 +24,9 @@
                 <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Começar Trial Grátis</button>
                 <button class="btn btn-glass btn-lg" ng-click="goTo('login')">Já tenho conta</button>
             </div>
+            <button class="btn btn-install-pwa" ng-if="canInstall && !isInstalled" ng-click="installApp()">
+                <i class="fas fa-download"></i> Instalar App
+            </button>
         </div>
     </div>
 
@@ -319,6 +322,9 @@
         <h2>Pronto pra transformar?</h2>
         <p>Comece agora com seu coach de nutrição e treino pessoal com inteligência artificial.</p>
         <button class="btn btn-primary btn-lg" ng-click="goTo('register')">Começar Trial Grátis</button>
+        <button class="btn btn-install-pwa" ng-if="canInstall && !isInstalled" ng-click="installApp()" style="margin-top:12px">
+            <i class="fas fa-download"></i> Instalar App
+        </button>
         <p class="landing-disclaimer">7 dias grátis. Não substitui acompanhamento profissional de saúde.</p>
     </div>
 

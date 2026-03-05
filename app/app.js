@@ -8,6 +8,16 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+// PWA Install prompt — capture event globally
+var deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+});
+window.addEventListener('appinstalled', function() {
+    deferredInstallPrompt = null;
+});
+
 app.config(function($routeProvider, $locationProvider) {
     $routeProvider
         .when('/landing', { templateUrl: 'pages/landing/landing.html', controller: 'LandingCtrl' })
