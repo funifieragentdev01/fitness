@@ -32,7 +32,7 @@ public Object handle(Object payload) {
         return response;
     }
 
-    // Verify token audience matches our client ID
+    // Verify audience
     String expectedClientId = "141440257053-8mabofaof1ksc8d6r5qha79t4pf7tq8r.apps.googleusercontent.com";
     String aud = (String) googleData.get("aud");
     if (!expectedClientId.equals(aud)) {
@@ -46,12 +46,12 @@ public Object handle(Object payload) {
     def player = pm.findById(email);
     boolean isNewUser = (player == null);
 
-    // Internal password for Google users (deterministic, not guessable)
+    // Simple deterministic password (BCrypt with low cost for speed)
     String internalPwd = "goo_" + googleSub + "_orvya2026";
-    String hashedPwd = org.mindrot.jbcrypt.BCrypt.hashpw(internalPwd, org.mindrot.jbcrypt.BCrypt.gensalt());
+    // Use cost 4 (minimum) for speed - this is internal only
+    String hashedPwd = org.mindrot.jbcrypt.BCrypt.hashpw(internalPwd, org.mindrot.jbcrypt.BCrypt.gensalt(4));
 
     if (isNewUser) {
-        // Create new player
         def newPlayer = new Player();
         newPlayer._id = email;
         newPlayer.name = name;
@@ -75,7 +75,6 @@ public Object handle(Object payload) {
         newPlayer.extra = extra;
         pm.insert(newPlayer);
     } else {
-        // Player exists -- update Google info
         Map extra = player.extra;
         if (extra == null) extra = new HashMap();
         if (extra.get("authProvider") == null) {
@@ -88,7 +87,7 @@ public Object handle(Object payload) {
         pm.insert(player);
     }
 
-    // 3. Get Funifier auth token
+    // 3. Get Funifier auth token via internal API call
     String apiKey = manager.getApiKey();
     Map authPayload = new HashMap();
     authPayload.put("apiKey", apiKey);
@@ -104,7 +103,7 @@ public Object handle(Object payload) {
 
     if (authRes.getStatus() != 200) {
         response.put("status", "ERROR");
-        response.put("message", "Erro ao gerar token de acesso");
+        response.put("message", "Erro auth: " + authRes.getStatus() + " " + authRes.getBody());
         return response;
     }
 

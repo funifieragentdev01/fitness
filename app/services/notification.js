@@ -19,9 +19,9 @@ angular.module('fitness').factory('NotificationService', function($http, $rootSc
     }
 
     var service = {
-        // Check if push is supported
+        // Check if notifications are supported (local or push)
         isSupported: function() {
-            return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+            return 'Notification' in window || ('serviceWorker' in navigator && 'PushManager' in window);
         },
 
         // Get current permission state
@@ -43,17 +43,20 @@ angular.module('fitness').factory('NotificationService', function($http, $rootSc
             });
         },
 
-        // Subscribe to web push via service worker
+        // Subscribe to web push via service worker (if available)
         subscribePush: function() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                return Promise.resolve('local-only');
+            }
             return navigator.serviceWorker.ready.then(function(registration) {
+                if (!registration.pushManager) return 'local-only';
                 return registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: urlBase64ToUint8Array(VAPID_KEY)
                 }).then(function(subscription) {
-                    // Send subscription to backend
                     return service.saveSubscription(subscription);
                 });
-            });
+            }).catch(function() { return 'local-only'; });
         },
 
         // Save push subscription to Funifier

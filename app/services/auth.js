@@ -92,7 +92,9 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
                     localStorage.setItem('fitness_user', res.data.username);
                     return res;
                 }
-                throw new Error(res.data.message || 'Erro no login com Google');
+                // Endpoint returned but with error status
+                var errMsg = (res.data && res.data.message) || 'Erro no login com Google';
+                return Promise.reject({ data: { message: errMsg } });
             });
         },
         deleteAccount: function() {
