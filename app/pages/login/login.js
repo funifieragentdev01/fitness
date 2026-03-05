@@ -49,13 +49,23 @@ angular.module('fitness').controller('LoginCtrl', function($scope, $location, Au
     }
 
     function handleGoogleResponse(response) {
-        $scope.$apply(function() {
+        console.log('[Google Login] response:', response);
+        if (!response || !response.credential) {
+            console.error('[Google Login] No credential in response');
+            $scope.$applyAsync(function() {
+                $scope.error = 'Google nao retornou credenciais. Tente novamente.';
+            });
+            return;
+        }
+        $scope.$applyAsync(function() {
             $scope.loading = true;
             $scope.error = '';
             AuthService.loginWithGoogle(response.credential).then(function() {
                 navigateAfterLogin();
             }).catch(function(err) {
-                $scope.error = (err.data && err.data.message) || 'Erro no login com Google.';
+                console.error('[Google Login] Error:', err);
+                var msg = (err && err.data && err.data.message) || (err && err.message) || 'Erro no login com Google.';
+                $scope.error = msg;
                 $scope.loading = false;
             });
         });

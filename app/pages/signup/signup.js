@@ -33,30 +33,36 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
 
     // Google Sign-Up (same flow as login — endpoint handles create-or-login)
     function handleGoogleResponse(response) {
-        $scope.$apply(function() {
+        console.log('[Google Signup] response:', response);
+        if (!response || !response.credential) {
+            console.error('[Google Signup] No credential in response');
+            $scope.$applyAsync(function() {
+                $scope.error = 'Google nao retornou credenciais. Tente novamente.';
+            });
+            return;
+        }
+        $scope.$applyAsync(function() {
             $scope.loading = true;
             $scope.error = '';
             AuthService.loginWithGoogle(response.credential).then(function() {
-                // Navigate after Google login
-                AuthService.loadPlayer().then(function() {
-                    var userId = AuthService.getUser();
-                    ApiService.loadProfile(userId).then(function(res) {
-                        if (res.data && res.data._id) {
-                            $scope.$root.profileData = res.data;
-                            var cachedMeal = localStorage.getItem('fitness_mealplan');
-                            var cachedWorkout = localStorage.getItem('fitness_workoutplan');
-                            $location.path(cachedMeal && cachedWorkout ? '/dashboard' : '/onboarding');
-                        } else {
-                            $location.path('/onboarding');
-                        }
-                        $scope.loading = false;
-                    }).catch(function() {
-                        $location.path('/onboarding');
-                        $scope.loading = false;
-                    });
-                });
+                return AuthService.loadPlayer();
+            }).then(function() {
+                var userId = AuthService.getUser();
+                return ApiService.loadProfile(userId);
+            }).then(function(res) {
+                if (res.data && res.data._id) {
+                    $scope.$root.profileData = res.data;
+                    var cachedMeal = localStorage.getItem('fitness_mealplan');
+                    var cachedWorkout = localStorage.getItem('fitness_workoutplan');
+                    $location.path(cachedMeal && cachedWorkout ? '/dashboard' : '/onboarding');
+                } else {
+                    $location.path('/onboarding');
+                }
+                $scope.loading = false;
             }).catch(function(err) {
-                $scope.error = (err.data && err.data.message) || 'Erro no cadastro com Google.';
+                console.error('[Google Signup] Error:', err);
+                var msg = (err && err.data && err.data.message) || (err && err.message) || 'Erro no cadastro com Google.';
+                $scope.error = msg;
                 $scope.loading = false;
             });
         });
