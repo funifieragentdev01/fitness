@@ -83,6 +83,18 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
                 return res.data;
             });
         },
+        loginWithGoogle: function(idToken) {
+            var PUB_URL = API + '/v3/pub/' + API_KEY + '/google_login';
+            return $http.post(PUB_URL, { id_token: idToken }).then(function(res) {
+                if (res.data && res.data.access_token) {
+                    token = res.data.access_token;
+                    localStorage.setItem('fitness_token', token);
+                    localStorage.setItem('fitness_user', res.data.username);
+                    return res;
+                }
+                throw new Error(res.data.message || 'Erro no login com Google');
+            });
+        },
         deleteAccount: function() {
             var userId = service.getUser();
             // Cancel subscription first (best effort), then delete player

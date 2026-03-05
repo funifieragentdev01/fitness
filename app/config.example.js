@@ -8,6 +8,8 @@ var CONFIG = {
     APP_NAME: 'Orvya',
     APP_TAGLINE: 'Evolua no seu ritmo.',
     VERSION: '0.1.0',
+    // Google OAuth
+    GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
     // Asaas Payment Gateway
     ASAAS_ENV: 'sandbox' // 'sandbox' or 'production'
 };

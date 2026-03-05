@@ -1,4 +1,4 @@
-angular.module('fitness').controller('SignupCtrl', function($scope, $location, $timeout, AuthService) {
+angular.module('fitness').controller('SignupCtrl', function($scope, $location, $timeout, AuthService, ApiService) {
     $scope.reg = {};
     $scope.loading = false;
     $scope.error = '';
@@ -19,7 +19,7 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
             password: $scope.reg.password
         }).then(function(res) {
             if (res.data && res.data.status === 'OK') {
-                $scope.success = 'Conta criada! Faça login para começar. 🎉';
+                $scope.success = 'Conta criada! Faça login para começar.';
                 $timeout(function() { $location.path('/login'); }, 1500);
             } else {
                 $scope.error = res.data.message || 'Erro ao criar conta.';
@@ -28,6 +28,65 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
         }).catch(function() {
             $scope.error = 'Erro ao criar conta. Tente novamente.';
             $scope.loading = false;
+        });
+    };
+
+    // Google Sign-Up (same flow as login — endpoint handles create-or-login)
+    function handleGoogleResponse(response) {
+        $scope.$apply(function() {
+            $scope.loading = true;
+            $scope.error = '';
+            AuthService.loginWithGoogle(response.credential).then(function() {
+                // Navigate after Google login
+                AuthService.loadPlayer().then(function() {
+                    var userId = AuthService.getUser();
+                    ApiService.loadProfile(userId).then(function(res) {
+                        if (res.data && res.data._id) {
+                            $scope.$root.profileData = res.data;
+                            var cachedMeal = localStorage.getItem('fitness_mealplan');
+                            var cachedWorkout = localStorage.getItem('fitness_workoutplan');
+                            $location.path(cachedMeal && cachedWorkout ? '/dashboard' : '/onboarding');
+                        } else {
+                            $location.path('/onboarding');
+                        }
+                        $scope.loading = false;
+                    }).catch(function() {
+                        $location.path('/onboarding');
+                        $scope.loading = false;
+                    });
+                });
+            }).catch(function(err) {
+                $scope.error = (err.data && err.data.message) || 'Erro no cadastro com Google.';
+                $scope.loading = false;
+            });
+        });
+    }
+
+    $scope.signupWithGoogle = function() {
+        if (!window.google || !window.google.accounts) {
+            $scope.error = 'Google Sign-In carregando. Tente novamente em instantes.';
+            return;
+        }
+        google.accounts.id.initialize({
+            client_id: CONFIG.GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+            auto_select: false
+        });
+        google.accounts.id.prompt(function(notification) {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                var container = document.getElementById('google-btn-container-signup');
+                if (container) {
+                    container.innerHTML = '';
+                    google.accounts.id.renderButton(container, {
+                        type: 'standard', size: 'large', theme: 'filled_black',
+                        text: 'signup_with', shape: 'rectangular', width: 300
+                    });
+                    setTimeout(function() {
+                        var btn = container.querySelector('[role=button]') || container.querySelector('div[tabindex]');
+                        if (btn) btn.click();
+                    }, 200);
+                }
+            }
         });
     };
 

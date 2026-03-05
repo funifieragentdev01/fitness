@@ -629,6 +629,13 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .btn-close:hover { color: var(--text); }
 .btn-registered { background: rgba(255,107,0,0.15); border: 1px solid var(--accent); color: var(--accent); cursor: default; }
 .btn-youtube { background: rgba(255,107,0,0.1); border: 1px solid rgba(255,107,0,0.3); color: var(--accent); font-size: 12px; padding: 6px 10px; border-radius: 6px; }
+.btn-google { background: #fff; color: #3c4043; border: 1px solid #dadce0; font-weight: 500; font-size: 15px; }
+.btn-google:hover { background: #f7f8f8; border-color: #c6c6c6; }
+.btn-google:disabled { opacity: 0.5; }
+.btn-google svg { flex-shrink: 0; }
+.divider-or { display: flex; align-items: center; margin: 16px 0; gap: 12px; }
+.divider-or::before, .divider-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.divider-or span { color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* ========== Alerts ========== */
 .alert { padding: 12px 16px; border-radius: var(--radius-sm); margin-top: 16px; font-size: 14px; text-align: center; }
