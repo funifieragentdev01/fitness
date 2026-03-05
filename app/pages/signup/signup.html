@@ -23,7 +23,7 @@
                 <input type="password" ng-model="reg.confirmPassword" placeholder="Repita a senha" required>
             </div>
             <div class="form-group checkbox-group">
-                <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="#" ng-click="openTerms($event)">termos de uso</a></label>
+                <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="" ng-click="openTerms($event)">termos de uso</a></label>
             </div>
             <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
                 <span ng-if="!loading">Criar conta</span>
@@ -33,8 +33,8 @@
         <div class="divider-or"><span>ou</span></div>
         <div id="google-btn-container-signup" style="display:flex;justify-content:center;min-height:44px"></div>
         <div class="register-footer">
-            <p>Já tem conta? <a href="#" ng-click="goTo('login')">Entrar</a></p>
-            <p style="margin-top:8px"><a href="#" ng-click="goTo('splash')" style="color:var(--text-muted);font-size:13px">← Voltar</a></p>
+            <p>Já tem conta? <a href="" ng-click="goTo('login')">Entrar</a></p>
+            <p style="margin-top:8px"><a href="" ng-click="goTo('splash')" style="color:var(--text-muted);font-size:13px">← Voltar</a></p>
         </div>
         <div class="alert alert-error" ng-if="error">{{error}}</div>
         <div class="alert alert-success" ng-if="success">{{success}}</div>
