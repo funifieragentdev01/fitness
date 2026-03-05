@@ -1,4 +1,4 @@
-angular.module('fitness').controller('SignupCtrl', function($scope, $location, $timeout, AuthService, ApiService) {
+angular.module('fitness').controller('SignupCtrl', function($scope, $location, $timeout, AuthService, ApiService, DataSyncService) {
     $scope.reg = {};
     $scope.loading = false;
     $scope.error = '';
@@ -48,16 +48,19 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
                 return AuthService.loadPlayer();
             }).then(function() {
                 var userId = AuthService.getUser();
-                return ApiService.loadProfile(userId);
-            }).then(function(res) {
-                if (res.data && res.data._id) {
-                    $scope.$root.profileData = res.data;
-                    var cachedMeal = localStorage.getItem('fitness_mealplan');
-                    var cachedWorkout = localStorage.getItem('fitness_workoutplan');
-                    $location.path(cachedMeal && cachedWorkout ? '/dashboard' : '/onboarding');
-                } else {
-                    $location.path('/onboarding');
-                }
+                return ApiService.loadProfile(userId).then(function(res) {
+                    if (res.data && res.data._id) {
+                        $scope.$root.profileData = res.data;
+                        return DataSyncService.loadFromDB().then(function() {
+                            var hasMeal = res.data.mealplan || localStorage.getItem('fitness_mealplan');
+                            var hasWorkout = res.data.workoutplan || localStorage.getItem('fitness_workoutplan');
+                            $location.path(hasMeal && hasWorkout ? '/dashboard' : '/onboarding');
+                        });
+                    } else {
+                        $location.path('/onboarding');
+                    }
+                });
+            }).then(function() {
                 $scope.loading = false;
             }).catch(function(err) {
                 console.error('[Google Signup] Error:', err);

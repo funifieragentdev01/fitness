@@ -49,6 +49,8 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
                 password: credentials.password
             }).then(function(res) {
                 token = res.data.access_token;
+                // Clear previous user data if switching users
+                service.clearUserDataIfDifferent(credentials.username);
                 localStorage.setItem('fitness_token', token);
                 localStorage.setItem('fitness_user', credentials.username);
                 return res;
@@ -88,6 +90,7 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
             return $http.post(PUB_URL, { id_token: idToken }).then(function(res) {
                 if (res.data && res.data.access_token) {
                     token = res.data.access_token;
+                    service.clearUserDataIfDifferent(res.data.username);
                     localStorage.setItem('fitness_token', token);
                     localStorage.setItem('fitness_user', res.data.username);
                     return res;
@@ -123,6 +126,30 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
                 $rootScope.manualMeasures = null;
                 $rootScope.latestBodyAnalysis = null;
             });
+        }
+        // Clear user-specific localStorage when switching to a different user
+        clearUserDataIfDifferent: function(newUser) {
+            var previousUser = localStorage.getItem('fitness_user');
+            if (previousUser && previousUser !== newUser) {
+                console.log('[Auth] User changed from', previousUser, 'to', newUser, '— clearing local data');
+                var userDataKeys = [
+                    'fitness_body_analysis', 'fitness_measures', 'fitness_ai_goal',
+                    'fitness_mealplan', 'fitness_workoutplan', 'fitness_challenge90',
+                    'fitness_analysis_logs', 'fitness_push_subscribed', 'fitness_notif_prefs'
+                ];
+                userDataKeys.forEach(function(k) { localStorage.removeItem(k); });
+                // Clear water keys
+                Object.keys(localStorage).forEach(function(k) {
+                    if (k.indexOf('water_') === 0) { localStorage.removeItem(k); }
+                });
+                // Reset rootScope state
+                $rootScope.profileData = null;
+                $rootScope.mealPlan = null;
+                $rootScope.workoutPlan = null;
+                $rootScope.challenge90 = null;
+                $rootScope.manualMeasures = {};
+                $rootScope.latestBodyAnalysis = null;
+            }
         }
     };
     return service;

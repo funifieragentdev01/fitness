@@ -88,7 +88,8 @@ app.run(function($rootScope, $location, $sce, AuthService) {
         $location.path('/plans');
     };
 
-    // Load saved state
+    // Load saved state — these will be overwritten by DataSyncService.loadFromDB() after login
+    // Only load here for immediate rendering before DB fetch completes
     try { $rootScope.challenge90 = JSON.parse(localStorage.getItem('fitness_challenge90')); } catch(e) {}
     try { var m = JSON.parse(localStorage.getItem('fitness_measures')); if (m) $rootScope.manualMeasures = m; } catch(e) {}
     $rootScope.latestBodyAnalysis = localStorage.getItem('fitness_body_analysis') || null;
@@ -275,29 +276,30 @@ app.run(function($rootScope, $location, $sce, AuthService) {
     // Init: auto-login if token exists
     if (AuthService.isLoggedIn()) {
         AuthService.loadPlayer().then(function(player) {
-            // Check onboarding
             var userId = AuthService.getUser();
             var ApiService = angular.element(document.body).injector().get('ApiService');
             var DataSyncService = angular.element(document.body).injector().get('DataSyncService');
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $rootScope.profileData = res.data;
-                    // Load synced data from DB
-                    DataSyncService.loadFromDB();
-                    // Schedule notification reminders if enabled
-                    try {
-                        var NotifSvc = angular.element(document.body).injector().get('NotificationService');
-                        NotifSvc.scheduleReminders();
-                    } catch(e) {}
-                    var cachedMeal = localStorage.getItem('fitness_mealplan') || (res.data.mealplan ? JSON.stringify(res.data.mealplan) : null);
-                    var cachedWorkout = localStorage.getItem('fitness_workoutplan') || (res.data.workoutplan ? JSON.stringify(res.data.workoutplan) : null);
-                    if (cachedMeal && cachedWorkout) {
-                        if ($location.path() === '/landing' || $location.path() === '/') {
-                            $location.path('/dashboard');
+                    // Load synced data from DB → localStorage (DB is source of truth)
+                    return DataSyncService.loadFromDB().then(function() {
+                        // Schedule notification reminders if enabled
+                        try {
+                            var NotifSvc = angular.element(document.body).injector().get('NotificationService');
+                            NotifSvc.scheduleReminders();
+                        } catch(e) {}
+                        // Check onboarding using DB data first, then localStorage fallback
+                        var hasMealPlan = res.data.mealplan || localStorage.getItem('fitness_mealplan');
+                        var hasWorkoutPlan = res.data.workoutplan || localStorage.getItem('fitness_workoutplan');
+                        if (hasMealPlan && hasWorkoutPlan) {
+                            if ($location.path() === '/landing' || $location.path() === '/') {
+                                $location.path('/dashboard');
+                            }
+                        } else {
+                            $location.path('/onboarding');
                         }
-                    } else {
-                        $location.path('/onboarding');
-                    }
+                    });
                 } else {
                     $location.path('/onboarding');
                 }

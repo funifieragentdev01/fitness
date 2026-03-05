@@ -1,4 +1,4 @@
-angular.module('fitness').controller('LoginCtrl', function($scope, $location, AuthService, ApiService) {
+angular.module('fitness').controller('LoginCtrl', function($scope, $location, AuthService, ApiService, DataSyncService) {
     $scope.credentials = {};
     $scope.loading = false;
     $scope.error = '';
@@ -10,13 +10,18 @@ angular.module('fitness').controller('LoginCtrl', function($scope, $location, Au
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $scope.$root.profileData = res.data;
-                    var cachedMeal = localStorage.getItem('fitness_mealplan');
-                    var cachedWorkout = localStorage.getItem('fitness_workoutplan');
-                    $location.path(cachedMeal && cachedWorkout ? '/dashboard' : '/onboarding');
+                    // Load from DB first (source of truth), then decide navigation
+                    DataSyncService.loadFromDB().then(function() {
+                        var hasMeal = res.data.mealplan || localStorage.getItem('fitness_mealplan');
+                        var hasWorkout = res.data.workoutplan || localStorage.getItem('fitness_workoutplan');
+                        $location.path(hasMeal && hasWorkout ? '/dashboard' : '/onboarding');
+                        $scope.loading = false;
+                        $scope.$applyAsync();
+                    });
                 } else {
                     $location.path('/onboarding');
+                    $scope.loading = false;
                 }
-                $scope.loading = false;
             }).catch(function() {
                 $location.path('/onboarding');
                 $scope.loading = false;

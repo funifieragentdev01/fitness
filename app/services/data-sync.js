@@ -1,6 +1,6 @@
 // DataSyncService — syncs localStorage data to Funifier DB (profile__c)
 // Ensures data persists across devices and is available to Coach
-angular.module('fitness').factory('DataSyncService', function($http, AuthService, ApiService) {
+angular.module('fitness').factory('DataSyncService', function($http, $rootScope, AuthService, ApiService) {
 
     // Map: localStorage key → profile__c field name
     var SYNC_MAP = {
@@ -70,7 +70,8 @@ angular.module('fitness').factory('DataSyncService', function($http, AuthService
         },
 
         // Load from DB → populate localStorage (call on login)
-        // If DB is empty but localStorage has data, auto-sync UP to DB
+        // DB is ALWAYS source of truth — overwrites localStorage
+        // Only syncs UP if DB is missing data AND localStorage has it for the SAME user
         loadFromDB: function() {
             var userId = AuthService.getUser();
             if (!userId) return Promise.resolve();
@@ -82,19 +83,30 @@ angular.module('fitness').factory('DataSyncService', function($http, AuthService
                 var needsSync = false;
                 angular.forEach(SYNC_MAP, function(dbField, localKey) {
                     if (profile[dbField] !== undefined && profile[dbField] !== null) {
-                        // DB has data → populate localStorage
+                        // DB has data → ALWAYS overwrite localStorage
                         var val = profile[dbField];
                         localStorage.setItem(localKey, typeof val === 'string' ? val : JSON.stringify(val));
                         console.log('[DataSync] Loaded from DB:', localKey);
-                    } else if (localStorage.getItem(localKey)) {
-                        // localStorage has data but DB doesn't → need to sync up
-                        needsSync = true;
+                    } else {
+                        // DB doesn't have this field
+                        var localVal = localStorage.getItem(localKey);
+                        if (localVal) {
+                            // localStorage has data but DB doesn't → sync up
+                            needsSync = true;
+                        }
                     }
                 });
 
-                // Auto-sync localStorage → DB if DB is missing data
+                // Update $rootScope with loaded data
+                try { $rootScope.challenge90 = JSON.parse(localStorage.getItem('fitness_challenge90')); } catch(e) {}
+                try { var m = JSON.parse(localStorage.getItem('fitness_measures')); if (m) $rootScope.manualMeasures = m; } catch(e) {}
+                $rootScope.latestBodyAnalysis = localStorage.getItem('fitness_body_analysis') || null;
+                try { $rootScope.mealPlan = JSON.parse(localStorage.getItem('fitness_mealplan')); } catch(e) {}
+                try { $rootScope.workoutPlan = JSON.parse(localStorage.getItem('fitness_workoutplan')); } catch(e) {}
+
+                // Auto-sync localStorage → DB if DB is missing some data
                 if (needsSync) {
-                    console.log('[DataSync] DB missing data, syncing localStorage → DB...');
+                    console.log('[DataSync] DB missing some fields, syncing localStorage → DB...');
                     service.syncAll();
                 }
 
