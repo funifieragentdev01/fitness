@@ -68,33 +68,30 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
         });
     }
 
-    $scope.signupWithGoogle = function() {
-        if (!window.google || !window.google.accounts) {
-            $scope.error = 'Google Sign-In carregando. Tente novamente em instantes.';
-            return;
-        }
+    // Render official Google button directly (works reliably on mobile)
+    function initGoogleButton() {
+        if (!window.google || !window.google.accounts) return;
         google.accounts.id.initialize({
             client_id: CONFIG.GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse,
             auto_select: false
         });
-        google.accounts.id.prompt(function(notification) {
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                var container = document.getElementById('google-btn-container-signup');
-                if (container) {
-                    container.innerHTML = '';
-                    google.accounts.id.renderButton(container, {
-                        type: 'standard', size: 'large', theme: 'filled_black',
-                        text: 'signup_with', shape: 'rectangular', width: 300
-                    });
-                    setTimeout(function() {
-                        var btn = container.querySelector('[role=button]') || container.querySelector('div[tabindex]');
-                        if (btn) btn.click();
-                    }, 200);
-                }
-            }
-        });
-    };
+        var container = document.getElementById('google-btn-container-signup');
+        if (container) {
+            google.accounts.id.renderButton(container, {
+                type: 'standard', size: 'large', theme: 'filled_black',
+                text: 'signup_with', shape: 'rectangular', width: 300, locale: 'pt-BR'
+            });
+        }
+    }
+
+    var gsiInterval = setInterval(function() {
+        if (window.google && window.google.accounts) {
+            initGoogleButton();
+            clearInterval(gsiInterval);
+        }
+    }, 200);
+    $scope.$on('$destroy', function() { clearInterval(gsiInterval); });
 
     $scope.goTo = function(view) {
         $location.path('/' + (view === 'register' ? 'signup' : view === 'splash' ? 'landing' : view));
