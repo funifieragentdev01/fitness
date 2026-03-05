@@ -1,0 +1,8 @@
+file 'norm_clip1-couch.mp4'
+file 'norm_clip2-crying.mp4'
+file 'norm_clip3-committed.mp4'
+file 'norm_clip4-app-food.mp4'
+file 'norm_clip5-food.mp4'
+file 'norm_clip6-app-treino.mp4'
+file 'norm_clip7-gym.mp4'
+file 'norm_clip8-endcard.mp4'
