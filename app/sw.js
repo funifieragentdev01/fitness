@@ -1,5 +1,5 @@
 // Orvya Service Worker v1
-var CACHE_NAME = 'orvya-v2';
+var CACHE_NAME = 'orvya-v3';
 var STATIC_ASSETS = [
   '/',
   '/index.html',
