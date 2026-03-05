@@ -1,0 +1,24 @@
+{
+  "name": "Orvya — Coach de Nutrição e Treino com IA",
+  "short_name": "Orvya",
+  "description": "Seu coach pessoal de nutrição e treino, 100% movido por inteligência artificial.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#F26B1D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

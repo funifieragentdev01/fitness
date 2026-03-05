@@ -1,6 +1,13 @@
 // Fitness App — Module definition, routes, shared helpers
 var app = angular.module('fitness', ['ngSanitize', 'ngRoute']);
 
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+    });
+}
+
 app.config(function($routeProvider, $locationProvider) {
     $routeProvider
         .when('/landing', { templateUrl: 'pages/landing/landing.html', controller: 'LandingCtrl' })
