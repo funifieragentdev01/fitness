@@ -1,5 +1,5 @@
 // AuthService — token management, login, register, logout
-angular.module('fitness').factory('AuthService', function($http, $rootScope) {
+angular.module('fitness').factory('AuthService', function($http, $rootScope, $q) {
     var API = CONFIG.API;
     var API_KEY = CONFIG.API_KEY;
     var BASIC_TOKEN = CONFIG.BASIC_TOKEN;
@@ -94,7 +94,7 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope) {
                 }
                 // Endpoint returned but with error status
                 var errMsg = (res.data && res.data.message) || 'Erro no login com Google';
-                return Promise.reject({ data: { message: errMsg } });
+                return $q.reject({ data: { message: errMsg } });
             });
         },
         deleteAccount: function() {

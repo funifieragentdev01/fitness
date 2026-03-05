@@ -58,12 +58,15 @@
             </div>
         </div>
         <!-- Notification Settings -->
-        <div class="profile-data" style="margin-top:12px" ng-if="notifSupported">
+        <div class="profile-data" style="margin-top:12px">
             <h3 style="margin-bottom:12px;font-size:15px"><i class="fas fa-bell" style="color:var(--accent)"></i> Notificacoes</h3>
+            <div ng-if="!notifSupported" class="notif-denied-msg">
+                <p style="font-size:13px;color:var(--text-muted)"><i class="fas fa-info-circle"></i> Notificacoes nao disponiveis neste navegador. Use Chrome ou instale o app (PWA) para ativar.</p>
+            </div>
             <div ng-if="notifPermission === 'denied'" class="notif-denied-msg">
                 <p style="font-size:13px;color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Notificacoes bloqueadas. Ative nas configuracoes do navegador.</p>
             </div>
-            <div ng-if="notifPermission !== 'denied'">
+            <div ng-if="notifSupported && notifPermission !== 'denied'">
                 <div class="notif-toggle-row">
                     <span>Ativar notificacoes</span>
                     <label class="toggle-switch">
