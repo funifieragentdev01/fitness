@@ -16,8 +16,22 @@
             🧪 Modo Teste — todos os checkpoints e testemunho estão abertos
         </div>
 
-        <!-- Status Card -->
-        <div class="challenge90-status-card">
+        <!-- Join Offer (when not active) -->
+        <div ng-if="!challenge90 || !challenge90.active" style="text-align:center;padding:24px 0">
+            <div style="font-size:56px;margin-bottom:16px">🏆</div>
+            <h3 style="font-size:20px;margin-bottom:8px">Transformação Real em 90 Dias</h3>
+            <p style="color:var(--text-muted);margin-bottom:20px">Comprometa-se com 90 dias de evolução. Tire fotos no início e no final, e veja sua transformação!</p>
+            <div style="text-align:left;margin-bottom:24px;max-width:300px;margin-left:auto;margin-right:auto">
+                <div class="challenge-benefit"><i class="fas fa-camera"></i> Foto antes e depois</div>
+                <div class="challenge-benefit"><i class="fas fa-chart-line"></i> Acompanhamento de progresso</div>
+                <div class="challenge-benefit"><i class="fas fa-trophy"></i> Badge exclusivo ao completar</div>
+                <div class="challenge-benefit"><i class="fas fa-star"></i> Publique seu resultado na Home</div>
+            </div>
+            <button class="btn btn-primary btn-block" ng-click="joinChallenge()">Aceitar Desafio</button>
+        </div>
+
+        <!-- Status Card (when active) -->
+        <div class="challenge90-status-card" ng-if="challenge90 && challenge90.active">
             <div class="challenge90-big-day">Dia {{challenge90.currentDay || 1}}<span>/90</span></div>
             <div class="progress-bar" style="margin:16px 0">
                 <div class="progress-fill challenge90-fill" ng-style="{'width': ((challenge90.currentDay || 1) / 90 * 100) + '%'}"></div>

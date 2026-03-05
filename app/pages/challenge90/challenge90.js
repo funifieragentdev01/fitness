@@ -87,6 +87,10 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
         });
     }
 
+    $scope.joinChallenge = function() {
+        $rootScope.joinChallenge90();
+    };
+
     $scope.goToCheckin = function(checkpointDay) {
         // Find current checkpoint day if not specified
         if (!checkpointDay && $rootScope.challenge90 && $rootScope.challenge90.checkpoints) {
