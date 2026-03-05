@@ -10,6 +10,8 @@ var CONFIG = {
     VERSION: '0.1.0',
     // Google OAuth
     GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+    // Web Push VAPID
+    VAPID_PUBLIC_KEY: 'YOUR_VAPID_PUBLIC_KEY',
     // Asaas Payment Gateway
     ASAAS_ENV: 'sandbox' // 'sandbox' or 'production'
 };

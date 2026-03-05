@@ -272,8 +272,13 @@ app.run(function($rootScope, $location, $sce, AuthService) {
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $rootScope.profileData = res.data;
-                    // Load synced data from DB → localStorage (cross-device support)
+                    // Load synced data from DB
                     DataSyncService.loadFromDB();
+                    // Schedule notification reminders if enabled
+                    try {
+                        var NotifSvc = angular.element(document.body).injector().get('NotificationService');
+                        NotifSvc.scheduleReminders();
+                    } catch(e) {}
                     var cachedMeal = localStorage.getItem('fitness_mealplan') || (res.data.mealplan ? JSON.stringify(res.data.mealplan) : null);
                     var cachedWorkout = localStorage.getItem('fitness_workoutplan') || (res.data.workoutplan ? JSON.stringify(res.data.workoutplan) : null);
                     if (cachedMeal && cachedWorkout) {

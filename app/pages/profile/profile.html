@@ -57,6 +57,62 @@
                 </div>
             </div>
         </div>
+        <!-- Notification Settings -->
+        <div class="profile-data" style="margin-top:12px" ng-if="notifSupported">
+            <h3 style="margin-bottom:12px;font-size:15px"><i class="fas fa-bell" style="color:var(--accent)"></i> Notificacoes</h3>
+            <div ng-if="notifPermission === 'denied'" class="notif-denied-msg">
+                <p style="font-size:13px;color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Notificacoes bloqueadas. Ative nas configuracoes do navegador.</p>
+            </div>
+            <div ng-if="notifPermission !== 'denied'">
+                <div class="notif-toggle-row">
+                    <span>Ativar notificacoes</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" ng-model="notifPrefs.enabled" ng-change="toggleNotifications()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div ng-if="notifPrefs.enabled" class="notif-options">
+                    <div class="notif-toggle-row">
+                        <span>Lembrete de treino</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ng-model="notifPrefs.workout" ng-change="saveNotifPrefs()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-time-row" ng-if="notifPrefs.workout">
+                        <input type="time" ng-model="notifPrefs.workoutTime" ng-change="saveNotifPrefs()">
+                    </div>
+                    <div class="notif-toggle-row">
+                        <span>Lembrete de refeicao</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ng-model="notifPrefs.meals" ng-change="saveNotifPrefs()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-time-row" ng-if="notifPrefs.meals">
+                        <input type="time" ng-model="notifPrefs.mealsTime" ng-change="saveNotifPrefs()">
+                    </div>
+                    <div class="notif-toggle-row">
+                        <span>Lembrete de agua (a cada 2h)</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ng-model="notifPrefs.water" ng-change="saveNotifPrefs()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-toggle-row">
+                        <span>Check-in diario</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ng-model="notifPrefs.checkin" ng-change="saveNotifPrefs()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="notif-time-row" ng-if="notifPrefs.checkin">
+                        <input type="time" ng-model="notifPrefs.checkinTime" ng-change="saveNotifPrefs()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="profile-actions">
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('plans')"><i class="fas fa-crown profile-action-icon" style="color:#FFD700"></i> Gerenciar Plano</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('body-checkin')"><i class="fas fa-camera profile-action-icon"></i> Check-in Corporal</button>

@@ -1,5 +1,5 @@
 // Orvya Service Worker v1
-var CACHE_NAME = 'orvya-v1';
+var CACHE_NAME = 'orvya-v2';
 var STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -57,15 +57,19 @@ self.addEventListener('fetch', function(event) {
   );
 });
 
-// Push notification handler (for future use)
+// Push notification handler
 self.addEventListener('push', function(event) {
-  var data = event.data ? event.data.json() : {};
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch(e) {}
   var title = data.title || 'Orvya';
   var options = {
     body: data.body || '',
     icon: '/img/icon-192.png',
     badge: '/img/icon-192.png',
-    data: data.url || '/'
+    tag: data.tag || 'orvya-push',
+    vibrate: [200, 100, 200],
+    actions: data.actions || [],
+    data: { url: data.url || '/' }
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -73,7 +77,25 @@ self.addEventListener('push', function(event) {
 // Notification click handler
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || '/';
+
+  // Handle action clicks
+  if (event.action === 'open') {
+    url = event.notification.data.url || '/';
+  }
+
   event.waitUntil(
-    clients.openWindow(event.notification.data || '/')
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      // Focus existing window if available
+      for (var i = 0; i < clientList.length; i++) {
+        if (clientList[i].url.indexOf('fitness-funifier.netlify.app') !== -1 ||
+            clientList[i].url.indexOf('orvya.app') !== -1 ||
+            clientList[i].url.indexOf('localhost') !== -1) {
+          clientList[i].focus();
+          return clientList[i].navigate(url);
+        }
+      }
+      return clients.openWindow(url);
+    })
   );
 });

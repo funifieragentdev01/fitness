@@ -1,4 +1,4 @@
-angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
+angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService, NotificationService) {
     var userId = AuthService.getUser();
     $scope.profilePhoto = null;
     $scope.aiGoal = null;
@@ -142,6 +142,35 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     $scope.logout = function() {
         AuthService.logout();
         $location.path('/login');
+    };
+
+    // Notification settings
+    $scope.notifSupported = NotificationService.isSupported();
+    $scope.notifPermission = NotificationService.getPermission();
+    $scope.notifPrefs = NotificationService.getPreferences();
+
+    $scope.toggleNotifications = function() {
+        if ($scope.notifPrefs.enabled) {
+            NotificationService.requestPermission().then(function(result) {
+                $scope.notifPermission = NotificationService.getPermission();
+                if ($scope.notifPermission === 'granted') {
+                    NotificationService.savePreferences($scope.notifPrefs);
+                    NotificationService.showLocal('Orvya', 'Notificacoes ativadas! Vamos juntos nessa jornada.');
+                } else {
+                    $scope.notifPrefs.enabled = false;
+                }
+                $scope.$applyAsync();
+            }).catch(function() {
+                $scope.notifPrefs.enabled = false;
+                $scope.$applyAsync();
+            });
+        } else {
+            NotificationService.savePreferences($scope.notifPrefs);
+        }
+    };
+
+    $scope.saveNotifPrefs = function() {
+        NotificationService.savePreferences($scope.notifPrefs);
     };
 
     $scope.confirmDeleteAccount = function() {
