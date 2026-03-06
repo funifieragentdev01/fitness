@@ -213,6 +213,15 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     $scope.notifPermission = NotificationService.getPermission();
     // Load notification prefs (localStorage is already populated by loadFromDB on login)
     $scope.notifPrefs = NotificationService.getPreferences();
+    // AngularJS input[type="time"] requires Date objects, not strings
+    ['workoutTime', 'mealsTime', 'checkinTime'].forEach(function(key) {
+        var val = $scope.notifPrefs[key];
+        if (typeof val === 'string' && /^\d{2}:\d{2}$/.test(val)) {
+            var parts = val.split(':');
+            var d = new Date(1970, 0, 1, parseInt(parts[0]), parseInt(parts[1]), 0);
+            $scope.notifPrefs[key] = d;
+        }
+    });
 
     $scope.toggleNotifications = function() {
         if ($scope.notifPrefs.enabled) {
