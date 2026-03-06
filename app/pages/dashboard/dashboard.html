@@ -18,15 +18,42 @@
         </div>
     </div>
 
-    <!-- 90-Day Challenge Card -->
-    <div ng-show="challenge90 && challenge90.active" class="section" style="margin-bottom:16px">
-        <div class="challenge90-dashboard-card" ng-click="goTo('challenge90')">
+    <!-- 90-Day Challenge Banner -->
+    <div class="section" style="margin-bottom:16px">
+        <!-- Not accepted: attractive banner with challenge image -->
+        <div ng-if="!challenge90 || !challenge90.active" class="dashboard-banner challenge-banner" ng-click="goTo('challenge90')">
+            <img src="images/challenge-couple.png" class="banner-bg-img" alt="">
+            <div class="banner-overlay">
+                <div class="banner-content">
+                    <span class="banner-title">🏆 Desafio 90 Dias</span>
+                    <span class="banner-desc">Transforme seu corpo em 90 dias. Aceite o desafio!</span>
+                </div>
+                <i class="fas fa-chevron-right banner-arrow"></i>
+            </div>
+        </div>
+        <!-- Accepted: progress card -->
+        <div ng-if="challenge90 && challenge90.active" class="challenge90-dashboard-card" ng-click="goTo('challenge90')">
             <div class="challenge90-header">
                 <span class="challenge90-title">🏆 Desafio 90 Dias</span>
                 <span class="challenge90-day">Dia {{challenge90.currentDay}}/90</span>
             </div>
             <div class="progress-bar"><div class="progress-fill challenge90-fill" ng-style="{'width': (challenge90.currentDay / 90 * 100) + '%'}"></div></div>
             <div class="challenge90-footer"><span>Próximo check-in: Dia {{challenge90.nextCheckpoint}}</span><i class="fas fa-chevron-right"></i></div>
+        </div>
+    </div>
+
+    <!-- Coach Banner -->
+    <div class="section" style="margin-bottom:16px">
+        <div class="dashboard-banner coach-banner" ng-click="isPremiumFn() ? goTo('coach') : openUpgrade('O Coach IA é exclusivo do plano Premium. Converse com sua personal trainer virtual!')">
+            <img src="images/coach-banner.jpg" class="banner-bg-img" alt="">
+            <div class="banner-overlay">
+                <div class="banner-content">
+                    <span class="banner-title">🧠 Coach IA</span>
+                    <span class="banner-desc">Sua personal trainer virtual. Tire dúvidas, peça orientações.</span>
+                </div>
+                <span class="premium-badge banner-badge" ng-if="!isPremiumFn()">PREMIUM</span>
+                <i class="fas fa-chevron-right banner-arrow" ng-if="isPremiumFn()"></i>
+            </div>
         </div>
     </div>
 
@@ -42,32 +69,14 @@
         </div>
     </div>
 
-    <div class="section">
-        <h2 class="section-title">Hoje</h2>
-        <div class="action-grid">
-            <div class="action-card" ng-click="goTo('meal-plan')"><div class="action-icon action-icon-flat"><i class="fas fa-utensils"></i></div><span>Nutrição</span></div>
-            <div class="action-card" ng-click="goTo('workout-plan')"><div class="action-icon action-icon-flat"><i class="fas fa-dumbbell"></i></div><span>Treino</span></div>
-            <div class="action-card" ng-click="goTo('water')"><div class="action-icon action-icon-flat"><i class="fas fa-tint"></i></div><span>Água</span><small>{{waterMl || 0}}ml</small></div>
-            <div class="action-card" ng-class="{'action-locked': !isPremium}" ng-click="goTo('coach')"><div class="action-icon action-icon-flat" ng-class="{'icon-locked': !isPremium}"><i class="fas fa-brain"></i></div><span>Coach</span><span class="premium-badge" ng-if="!isPremium">PREMIUM</span></div>
-        </div>
-    </div>
-
-    <div class="section">
+    <!-- Active Challenges (Funifier only, no 90-day duplicate) -->
+    <div class="section" ng-if="activeChallenges.length">
         <h2 class="section-title">Desafios Ativos</h2>
         <div class="challenge-list">
-            <div class="challenge-card challenge-90" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true" style="border-left:3px solid var(--energy);cursor:pointer">
-                <div class="challenge-info"><span class="challenge-name">🏆 Desafio 90 Dias — Transformação</span><span class="challenge-reward" style="color:var(--energy)">Especial</span></div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Comprometa-se com 90 dias de evolução. Toque para saber mais!</div>
-            </div>
-            <div class="challenge-card challenge-90 active" ng-if="challenge90 && challenge90.active" style="border-left:3px solid var(--accent)">
-                <div class="challenge-info"><span class="challenge-name">🏆 Desafio 90 Dias</span><span class="challenge-reward">Dia {{challenge90.day || 0}}/90</span></div>
-                <div class="challenge-progress"><div class="progress-bar small"><div class="progress-fill" ng-style="{'width': ((challenge90.day || 0) / 90 * 100) + '%'}"></div></div></div>
-            </div>
             <div class="challenge-card" ng-repeat="ch in activeChallenges">
                 <div class="challenge-info"><span class="challenge-name">{{ch.challenge}}</span><span class="challenge-reward">+{{ch.points[0].total}} XP</span></div>
                 <div class="challenge-progress"><div class="progress-bar small"><div class="progress-fill" ng-style="{'width': (ch.progress || 0) + '%'}"></div></div></div>
             </div>
-            <p ng-if="!activeChallenges.length" class="empty-state">Nenhum desafio ativo. Bora completar ações! 💪</p>
         </div>
     </div>
 
