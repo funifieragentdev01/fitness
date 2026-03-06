@@ -55,9 +55,10 @@ angular.module('fitness').factory('ApiService', function($http, AuthService) {
         },
         loadWeightHistory: function(userId) {
             return $http({
-                method: 'GET',
-                url: API + '/v3/database/body_checkin__c?strict=true&_filter=' + encodeURIComponent(JSON.stringify({ userId: userId })) + '&_sort=-created&_limit=20',
-                headers: { 'Authorization': 'Bearer ' + AuthService.getToken() }
+                method: 'POST',
+                url: API + '/v3/database/body_checkin__c/aggregate?q=' + encodeURIComponent('userId:"' + userId + '"') + '&strict=true',
+                headers: { 'Authorization': 'Bearer ' + AuthService.getToken(), 'Range': 'items=0-19' },
+                data: [{ $sort: { created: -1 } }]
             });
         },
         uploadImage: function(base64Data, filename) {

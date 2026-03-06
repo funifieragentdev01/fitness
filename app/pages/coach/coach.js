@@ -33,9 +33,10 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         var userId = AuthService.getUser();
         if (!userId) return;
         $http({
-            method: 'GET',
-            url: CONFIG.API + '/v3/database/checkin__c?strict=true&_filter=' + encodeURIComponent(JSON.stringify({ userId: userId, mode: { $exists: true } })) + '&_sort=-created&_limit=20',
-            headers: { 'Authorization': 'Bearer ' + AuthService.getToken() }
+            method: 'POST',
+            url: CONFIG.API + '/v3/database/checkin__c/aggregate?q=' + encodeURIComponent('userId:"' + userId + '", mode:{$exists:true}') + '&strict=true',
+            headers: { 'Authorization': 'Bearer ' + AuthService.getToken(), 'Range': 'items=0-19' },
+            data: [{ $sort: { created: -1 } }]
         }).then(function(res) {
             if (Array.isArray(res.data)) {
                 $scope.callHistory = res.data.map(function(c) {

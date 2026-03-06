@@ -85,7 +85,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
                 console.log('[Profile] body_checkin userIds:', results.map(function(r) { return r.userId; }));
             }
             for (var i = 0; i < results.length; i++) {
-                // Double-check userId matches (Funifier _filter may not enforce correctly)
+                // Defense-in-depth: verify userId matches
                 if (results[i].userId !== userId) {
                     console.warn('[Profile] Skipping checkin from wrong user:', results[i].userId);
                     continue;

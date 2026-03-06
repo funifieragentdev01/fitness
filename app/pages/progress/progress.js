@@ -28,7 +28,7 @@ angular.module('fitness').controller('ProgressCtrl', function($scope, $rootScope
 
     ApiService.loadWeightHistory(userId).then(function(res) {
         if (Array.isArray(res.data)) {
-            // Filter client-side to ensure only this user's data (Funifier _filter may not enforce)
+            // Defense-in-depth: client-side userId filter
             var myData = res.data.filter(function(w) { return w.userId === userId; });
             $scope.weightHistory = myData.map(function(w) {
                 return { date: ApiService.readDate(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
