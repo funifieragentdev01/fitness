@@ -3,25 +3,25 @@ angular.module('fitness').controller('LoginCtrl', function($scope, $location, Au
     $scope.loading = false;
     $scope.error = '';
 
-    // Post-login navigation (shared by email and Google login)
+    // Post-login navigation: load DB data FIRST, then decide
     function navigateAfterLogin() {
         AuthService.loadPlayer().then(function() {
             var userId = AuthService.getUser();
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $scope.$root.profileData = res.data;
-                    // Load from DB first (source of truth), then decide navigation
-                    DataSyncService.loadFromDB().then(function() {
-                        var hasMeal = res.data.mealplan || localStorage.getItem('fitness_mealplan');
-                        var hasWorkout = res.data.workoutplan || localStorage.getItem('fitness_workoutplan');
-                        $location.path(hasMeal && hasWorkout ? '/dashboard' : '/onboarding');
-                        $scope.loading = false;
-                        $scope.$applyAsync();
-                    });
+                }
+                // Load all synced data from DB → localStorage → $rootScope
+                return DataSyncService.loadFromDB();
+            }).then(function() {
+                // Now check onboarding using DB-loaded data
+                if (DataSyncService.hasCompletedOnboarding()) {
+                    $location.path('/dashboard');
                 } else {
                     $location.path('/onboarding');
-                    $scope.loading = false;
                 }
+                $scope.loading = false;
+                $scope.$applyAsync();
             }).catch(function() {
                 $location.path('/onboarding');
                 $scope.loading = false;

@@ -1,4 +1,4 @@
-angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService) {
+angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService, DataSyncService) {
     $scope.challengeLocked = false; // Desafio 90 dias disponível para todos os planos
     if ($scope.challengeLocked) {
         $rootScope.openUpgrade('O Desafio 90 Dias é exclusivo do plano Premium. Faça upgrade e transforme seu corpo!');
@@ -26,6 +26,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
                 });
             }
             localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
+            DataSyncService.syncField('fitness_challenge90');
         }
     }
 
@@ -55,6 +56,7 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
             }
         }
         localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
+        DataSyncService.syncField('fitness_challenge90');
     }
 
     // Extract first and last photos from checkpoints
@@ -86,10 +88,6 @@ angular.module('fitness').controller('Challenge90Ctrl', function($scope, $rootSc
             }
         });
     }
-
-    $scope.joinChallenge = function() {
-        $rootScope.joinChallenge90();
-    };
 
     $scope.goToCheckin = function(checkpointDay) {
         // Find current checkpoint day if not specified

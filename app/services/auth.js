@@ -41,7 +41,35 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
         authHeader: function() {
             return { headers: { 'Authorization': 'Bearer ' + token } };
         },
+        // Clear all user-specific localStorage keys AND $rootScope (prevents data leak between users)
+        clearUserData: function() {
+            var keysToRemove = [];
+            Object.keys(localStorage).forEach(function(k) {
+                if ((k.indexOf('fitness_') === 0 && k !== 'fitness_token' && k !== 'fitness_user') || k.indexOf('water_') === 0) {
+                    keysToRemove.push(k);
+                }
+            });
+            keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
+            // Also clear ALL $rootScope cached data
+            $rootScope.player = {};
+            $rootScope.profileData = null;
+            $rootScope.mealPlan = null;
+            $rootScope.workoutPlan = null;
+            $rootScope.challenge90 = null;
+            $rootScope.manualMeasures = {};
+            $rootScope.latestBodyAnalysis = null;
+            $rootScope.bodyAnalysisResult = null;
+            $rootScope.bioReportPhoto = null;
+            $rootScope.measureCat = {};
+            console.log('[Auth] Cleared ' + keysToRemove.length + ' localStorage keys + $rootScope data');
+        },
         login: function(credentials) {
+            // If switching users, clear old user's cached data
+            var previousUser = localStorage.getItem('fitness_user');
+            if (previousUser && previousUser !== credentials.username) {
+                console.log('[Auth] User changed: ' + previousUser + ' → ' + credentials.username);
+                service.clearUserData();
+            }
             return $http.post(API + '/v3/auth/token', {
                 apiKey: API_KEY,
                 grant_type: 'password',
@@ -49,8 +77,6 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
                 password: credentials.password
             }).then(function(res) {
                 token = res.data.access_token;
-                // Clear previous user data if switching users
-                service.clearUserDataIfDifferent(credentials.username);
                 localStorage.setItem('fitness_token', token);
                 localStorage.setItem('fitness_user', credentials.username);
                 return res;
@@ -65,6 +91,8 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
             }, { headers: { 'Authorization': BASIC_TOKEN } });
         },
         logout: function() {
+            // Clear ALL user data from localStorage (not just token)
+            service.clearUserData();
             localStorage.removeItem('fitness_token');
             localStorage.removeItem('fitness_user');
             token = null;
@@ -72,6 +100,9 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
             $rootScope.profileData = null;
             $rootScope.mealPlan = null;
             $rootScope.workoutPlan = null;
+            $rootScope.challenge90 = null;
+            $rootScope.manualMeasures = {};
+            $rootScope.latestBodyAnalysis = null;
         },
         loadPlayer: function() {
             var userId = service.getUser();
@@ -89,8 +120,13 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
             var PUB_URL = API + '/v3/pub/' + API_KEY + '/google_login';
             return $http.post(PUB_URL, { id_token: idToken }).then(function(res) {
                 if (res.data && res.data.access_token) {
+                    // If switching users, clear old user's cached data
+                    var previousUser = localStorage.getItem('fitness_user');
+                    if (previousUser && previousUser !== res.data.username) {
+                        console.log('[Auth] User changed (Google): ' + previousUser + ' → ' + res.data.username);
+                        service.clearUserData();
+                    }
                     token = res.data.access_token;
-                    service.clearUserDataIfDifferent(res.data.username);
                     localStorage.setItem('fitness_token', token);
                     localStorage.setItem('fitness_user', res.data.username);
                     return res;
@@ -126,30 +162,6 @@ angular.module('fitness').factory('AuthService', function($http, $rootScope, $q)
                 $rootScope.manualMeasures = null;
                 $rootScope.latestBodyAnalysis = null;
             });
-        }
-        // Clear user-specific localStorage when switching to a different user
-        clearUserDataIfDifferent: function(newUser) {
-            var previousUser = localStorage.getItem('fitness_user');
-            if (previousUser && previousUser !== newUser) {
-                console.log('[Auth] User changed from', previousUser, 'to', newUser, '— clearing local data');
-                var userDataKeys = [
-                    'fitness_body_analysis', 'fitness_measures', 'fitness_ai_goal',
-                    'fitness_mealplan', 'fitness_workoutplan', 'fitness_challenge90',
-                    'fitness_analysis_logs', 'fitness_push_subscribed', 'fitness_notif_prefs'
-                ];
-                userDataKeys.forEach(function(k) { localStorage.removeItem(k); });
-                // Clear water keys
-                Object.keys(localStorage).forEach(function(k) {
-                    if (k.indexOf('water_') === 0) { localStorage.removeItem(k); }
-                });
-                // Reset rootScope state
-                $rootScope.profileData = null;
-                $rootScope.mealPlan = null;
-                $rootScope.workoutPlan = null;
-                $rootScope.challenge90 = null;
-                $rootScope.manualMeasures = {};
-                $rootScope.latestBodyAnalysis = null;
-            }
         }
     };
     return service;

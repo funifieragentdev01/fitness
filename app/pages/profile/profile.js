@@ -1,6 +1,8 @@
-angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $location, AuthService, ApiService, PlanService, NotificationService) {
+angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope, $http, $location, AuthService, ApiService, PlanService, NotificationService, DataSyncService) {
     var userId = AuthService.getUser();
-    $scope.profilePhoto = null;
+    // Load profile photo from player.image or profile__c.photo_url
+    $scope.profilePhoto = ($rootScope.player && $rootScope.player.image && $rootScope.player.image.original) 
+        ? $rootScope.player.image.original.url : null;
     $scope.aiGoal = null;
     $scope.isPremium = PlanService.isPremium();
 
@@ -53,25 +55,45 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
 
     function loadProfileData() {
         if (!userId) return;
+        console.log('[Profile] Loading data for userId:', userId);
         ApiService.loadProfile(userId).then(function(res) {
+            console.log('[Profile] profile__c response:', res.data ? Object.keys(res.data) : 'null');
+            console.log('[Profile] body_analysis in DB:', !!(res.data && res.data.body_analysis));
+            console.log('[Profile] laudo_analysis in DB:', !!(res.data && res.data.laudo_analysis));
             if (res.data && res.data._id) {
                 $rootScope.profileData = res.data;
-                $rootScope.latestBodyAnalysis = res.data.body_analysis || localStorage.getItem('fitness_body_analysis') || null;
+                // Always use DB data only — never fall back to localStorage (prevents cross-user leak)
+                $rootScope.latestBodyAnalysis = res.data.body_analysis || null;
                 $scope.latestLaudoAnalysis = res.data.laudo_analysis || null;
                 $scope.consolidatedMeasures = res.data.measures || null;
                 $scope.profilePhoto = res.data.photo_url || null;
-                $scope.aiGoal = res.data.ai_goal || res.data.aiGoal || JSON.parse(localStorage.getItem('fitness_ai_goal') || 'null');
+                $scope.aiGoal = res.data.ai_goal || res.data.aiGoal || null;
+            } else {
+                // No profile in DB — clear everything
+                $rootScope.latestBodyAnalysis = null;
+                $scope.latestLaudoAnalysis = null;
+                $scope.consolidatedMeasures = null;
+                $scope.aiGoal = null;
             }
         }).catch(function() {});
 
-        // Also load latest body_checkin for laudo feedback
+        // Also load latest body_checkin for laudo feedback (filtered by userId)
         ApiService.loadWeightHistory(userId).then(function(res) {
-            if (Array.isArray(res.data) && res.data.length > 0) {
-                for (var i = 0; i < res.data.length; i++) {
-                    if (res.data[i].laudo_feedback && !$scope.latestLaudoAnalysis) {
-                        $scope.latestLaudoAnalysis = res.data[i].laudo_feedback;
-                        break;
-                    }
+            var results = Array.isArray(res.data) ? res.data : [];
+            console.log('[Profile] body_checkin__c count for', userId, ':', results.length);
+            if (results.length > 0) {
+                console.log('[Profile] body_checkin userIds:', results.map(function(r) { return r.userId; }));
+            }
+            for (var i = 0; i < results.length; i++) {
+                // Double-check userId matches (Funifier _filter may not enforce correctly)
+                if (results[i].userId !== userId) {
+                    console.warn('[Profile] Skipping checkin from wrong user:', results[i].userId);
+                    continue;
+                }
+                if (results[i].laudo_feedback && !$scope.latestLaudoAnalysis) {
+                    console.log('[Profile] Found laudo_feedback from checkin:', results[i]._id);
+                    $scope.latestLaudoAnalysis = results[i].laudo_feedback;
+                    break;
                 }
             }
         }).catch(function() {});
@@ -97,6 +119,32 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
         return String(time);
     };
 
+    // Name editing
+    $scope.editingName = false;
+    $scope.editName = '';
+    $scope.startEditName = function() {
+        $scope.editName = $rootScope.player.name || '';
+        $scope.editingName = true;
+    };
+    $scope.saveName = function() {
+        var newName = ($scope.editName || '').trim();
+        if (!newName) return;
+        $rootScope.player.name = newName;
+        $scope.editingName = false;
+        // Update player on server (include name + email + extra to not lose data)
+        var API = CONFIG.API;
+        $http.post(API + '/v3/player', {
+            _id: userId,
+            name: newName,
+            email: $rootScope.player.email || userId,
+            extra: $rootScope.player.extra || {}
+        }, AuthService.authHeader()).then(function() {
+            console.log('[Profile] Name updated to:', newName);
+        }).catch(function(err) {
+            console.error('[Profile] Failed to update name:', err);
+        });
+    };
+
     // Profile photo upload
     $scope.triggerProfilePhoto = function() {
         document.getElementById('profilePhotoInput').click();
@@ -115,12 +163,28 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
                             if (res.data && res.data.uploads && res.data.uploads[0]) {
                                 var url = res.data.uploads[0].url;
                                 $scope.profilePhoto = url;
-                                // Save URL in profile
+                                // Save URL in profile__c
                                 var profileUpdate = angular.copy($rootScope.profileData) || {};
                                 profileUpdate._id = userId;
                                 profileUpdate.photo_url = url;
                                 ApiService.saveProfile(profileUpdate);
                                 $rootScope.profileData.photo_url = url;
+                                // Save in player.image (correct Funifier structure)
+                                var imgEntry = { url: url, size: 0, width: 0, height: 0, depth: 0 };
+                                var imgObj = { small: angular.copy(imgEntry), medium: angular.copy(imgEntry), original: angular.copy(imgEntry) };
+                                var API = CONFIG.API;
+                                $http.post(API + '/v3/player', {
+                                    _id: userId,
+                                    name: $rootScope.player.name || '',
+                                    email: $rootScope.player.email || userId,
+                                    image: imgObj,
+                                    extra: $rootScope.player.extra || {}
+                                }, AuthService.authHeader()).then(function() {
+                                    console.log('[Profile] Photo saved to player.image');
+                                }).catch(function(err) {
+                                    console.error('[Profile] Failed to save photo to player:', err);
+                                });
+                                $rootScope.player.image = imgObj;
                             }
                         });
                 });
@@ -147,6 +211,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     // Notification settings
     $scope.notifSupported = NotificationService.isSupported();
     $scope.notifPermission = NotificationService.getPermission();
+    // Load notification prefs (localStorage is already populated by loadFromDB on login)
     $scope.notifPrefs = NotificationService.getPreferences();
 
     $scope.toggleNotifications = function() {
@@ -155,6 +220,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
                 $scope.notifPermission = NotificationService.getPermission();
                 if ($scope.notifPermission === 'granted') {
                     NotificationService.savePreferences($scope.notifPrefs);
+                    DataSyncService.syncField('fitness_notif_prefs');
                     NotificationService.showLocal('Orvya', 'Notificacoes ativadas! Vamos juntos nessa jornada.');
                 } else {
                     $scope.notifPrefs.enabled = false;
@@ -171,6 +237,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
 
     $scope.saveNotifPrefs = function() {
         NotificationService.savePreferences($scope.notifPrefs);
+        DataSyncService.syncField('fitness_notif_prefs');
     };
 
     $scope.confirmDeleteAccount = function() {

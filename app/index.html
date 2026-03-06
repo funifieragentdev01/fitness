@@ -20,7 +20,7 @@
 <body>
 
     <!-- Terms Modal (global) -->
-    <div class="modal-overlay" ng-if="showTerms" ng-click="closeTerms()">
+    <div class="modal-overlay" ng-show="showTerms" ng-click="closeTerms()">
         <div class="modal-content" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>Termos de Uso</h2>
@@ -50,7 +50,7 @@
     </div>
 
     <!-- Body Analysis Modal (global) -->
-    <div class="modal-overlay" ng-if="showBodyAnalysis" ng-click="closeBodyAnalysis()">
+    <div class="modal-overlay" ng-show="showBodyAnalysis" ng-click="closeBodyAnalysis()">
         <div class="modal-content modal-large" ng-click="$event.stopPropagation()">
             <div class="modal-header">
                 <h2>📊 Análise Corporal</h2>
@@ -132,6 +132,28 @@
                     </div>
                     <button class="btn btn-primary btn-block" ng-click="saveManualMeasures()" style="margin-top:16px">Salvar medidas 💾</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 90-Day Challenge Modal (global) -->
+    <div class="modal-overlay" ng-show="showChallengeOffer" ng-click="closeChallengeOffer()">
+        <div class="modal-content" ng-click="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>🏆 Desafio 90 Dias</h2>
+                <button class="btn-close" ng-click="closeChallengeOffer()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="text-align:center">
+                <div style="font-size:56px;margin-bottom:16px">🏆</div>
+                <h3 style="font-size:20px;margin-bottom:8px">Transformação Real em 90 Dias</h3>
+                <p style="color:var(--text-muted);margin-bottom:20px">Comprometa-se com 90 dias de evolução. Tire fotos no início e no final, e veja sua transformação!</p>
+                <div style="text-align:left;margin-bottom:24px">
+                    <div class="challenge-benefit"><i class="fas fa-camera"></i> Foto antes e depois</div>
+                    <div class="challenge-benefit"><i class="fas fa-chart-line"></i> Acompanhamento de progresso</div>
+                    <div class="challenge-benefit"><i class="fas fa-trophy"></i> Badge exclusivo ao completar</div>
+                    <div class="challenge-benefit"><i class="fas fa-star"></i> Publique seu resultado na Home</div>
+                </div>
+                <button class="btn btn-primary btn-block" ng-click="joinChallenge90()">Aceitar Desafio 💪</button>
             </div>
         </div>
     </div>

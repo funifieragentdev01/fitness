@@ -28,12 +28,14 @@ angular.module('fitness').controller('ProgressCtrl', function($scope, $rootScope
 
     ApiService.loadWeightHistory(userId).then(function(res) {
         if (Array.isArray(res.data)) {
-            $scope.weightHistory = res.data.map(function(w) {
+            // Filter client-side to ensure only this user's data (Funifier _filter may not enforce)
+            var myData = res.data.filter(function(w) { return w.userId === userId; });
+            $scope.weightHistory = myData.map(function(w) {
                 return { date: ApiService.readDate(w.created).toLocaleDateString('pt-BR'), weight: w.weight };
             });
 
             $scope.photoTimeline = [];
-            res.data.forEach(function(w) {
+            myData.forEach(function(w) {
                 var dateStr = ApiService.readDate(w.created).toLocaleDateString('pt-BR');
                 if (w.photo_front_url) {
                     $scope.photoTimeline.push({ url: w.photo_front_url, date: dateStr, type: 'Frente' });

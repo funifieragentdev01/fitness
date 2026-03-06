@@ -75,7 +75,7 @@ public Object handle(Object payload) {
             return response
         }
 
-        // Set extra fields (authProvider, plan) on the new player
+        // Set extra fields (authProvider, plan) and image on the new player
         def newPlayer = pm.findById(email)
         if (newPlayer != null) {
             Map extra = newPlayer.extra
@@ -95,6 +95,20 @@ public Object handle(Object payload) {
             extra.put("googleSub", googleSub)
             if (picture != null) { extra.put("googlePicture", picture) }
             newPlayer.extra = extra
+            // Set player.image with Google photo
+            if (picture != null) {
+                Map imgUrl = new HashMap()
+                imgUrl.put("url", picture)
+                imgUrl.put("size", 0)
+                imgUrl.put("width", 0)
+                imgUrl.put("height", 0)
+                imgUrl.put("depth", 0)
+                Map imgObj = new HashMap()
+                imgObj.put("small", imgUrl)
+                imgObj.put("medium", new HashMap(imgUrl))
+                imgObj.put("original", new HashMap(imgUrl))
+                newPlayer.image = imgObj
+            }
             pm.insert(newPlayer)
         }
     } else {
@@ -107,6 +121,20 @@ public Object handle(Object payload) {
         }
         if (picture != null) { extra.put("googlePicture", picture) }
         player.extra = extra
+        // Update player.image with Google photo
+        if (picture != null) {
+            Map imgUrl = new HashMap()
+            imgUrl.put("url", picture)
+            imgUrl.put("size", 0)
+            imgUrl.put("width", 0)
+            imgUrl.put("height", 0)
+            imgUrl.put("depth", 0)
+            Map imgObj = new HashMap()
+            imgObj.put("small", imgUrl)
+            imgObj.put("medium", new HashMap(imgUrl))
+            imgObj.put("original", new HashMap(imgUrl))
+            player.image = imgObj
+        }
         pm.insert(player)
 
         // Re-create via signup to update BCrypt password

@@ -88,8 +88,7 @@ app.run(function($rootScope, $location, $sce, AuthService) {
         $location.path('/plans');
     };
 
-    // Load saved state — these will be overwritten by DataSyncService.loadFromDB() after login
-    // Only load here for immediate rendering before DB fetch completes
+    // Load saved state
     try { $rootScope.challenge90 = JSON.parse(localStorage.getItem('fitness_challenge90')); } catch(e) {}
     try { var m = JSON.parse(localStorage.getItem('fitness_measures')); if (m) $rootScope.manualMeasures = m; } catch(e) {}
     $rootScope.latestBodyAnalysis = localStorage.getItem('fitness_body_analysis') || null;
@@ -268,6 +267,8 @@ app.run(function($rootScope, $location, $sce, AuthService) {
             photos: {}
         };
         localStorage.setItem('fitness_challenge90', JSON.stringify($rootScope.challenge90));
+        var DataSyncService = angular.element(document.body).injector().get('DataSyncService');
+        DataSyncService.syncField('fitness_challenge90');
         $rootScope.showChallengeOffer = false;
         ApiService.logAction('daily_challenge', { type: '90_day_challenge', action: 'join' });
         $location.path('/challenge90');
@@ -282,24 +283,21 @@ app.run(function($rootScope, $location, $sce, AuthService) {
             ApiService.loadProfile(userId).then(function(res) {
                 if (res.data && res.data._id) {
                     $rootScope.profileData = res.data;
-                    // Load synced data from DB → localStorage (DB is source of truth)
-                    return DataSyncService.loadFromDB().then(function() {
-                        // Schedule notification reminders if enabled
-                        try {
-                            var NotifSvc = angular.element(document.body).injector().get('NotificationService');
-                            NotifSvc.scheduleReminders();
-                        } catch(e) {}
-                        // Check onboarding using DB data first, then localStorage fallback
-                        var hasMealPlan = res.data.mealplan || localStorage.getItem('fitness_mealplan');
-                        var hasWorkoutPlan = res.data.workoutplan || localStorage.getItem('fitness_workoutplan');
-                        if (hasMealPlan && hasWorkoutPlan) {
-                            if ($location.path() === '/landing' || $location.path() === '/') {
-                                $location.path('/dashboard');
-                            }
-                        } else {
-                            $location.path('/onboarding');
-                        }
-                    });
+                }
+                // Load ALL synced data from DB → localStorage → $rootScope FIRST
+                return DataSyncService.loadFromDB();
+            }).then(function() {
+                // Schedule notification reminders if enabled
+                try {
+                    var NotifSvc = angular.element(document.body).injector().get('NotificationService');
+                    NotifSvc.scheduleReminders();
+                } catch(e) {}
+                // Now check onboarding using DB-loaded data
+                var DataSyncService = angular.element(document.body).injector().get('DataSyncService');
+                if (DataSyncService.hasCompletedOnboarding()) {
+                    if ($location.path() === '/landing' || $location.path() === '/') {
+                        $location.path('/dashboard');
+                    }
                 } else {
                     $location.path('/onboarding');
                 }

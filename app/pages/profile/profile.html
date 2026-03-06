@@ -10,7 +10,12 @@
                 <div class="profile-avatar-edit"><i class="fas fa-camera"></i></div>
             </div>
             <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="angular.element(this).scope().onProfilePhoto(this)">
-            <h3>{{player.name}}</h3>
+            <h3 ng-if="!editingName" ng-click="startEditName()">{{player.name}} <i class="fas fa-pen" style="font-size:12px;color:var(--text-muted);margin-left:4px;cursor:pointer"></i></h3>
+            <div ng-if="editingName" style="display:flex;gap:8px;align-items:center;margin:8px 0">
+                <input type="text" ng-model="$parent.editName" class="input" style="flex:1;text-align:center;font-size:16px;padding:8px" placeholder="Seu nome" maxlength="60">
+                <button class="btn" ng-click="saveName()" style="padding:8px 14px;min-width:40px;font-size:16px">✓</button>
+                <button class="btn btn-outline" ng-click="editingName=false" style="padding:8px 14px;min-width:40px;font-size:16px">✕</button>
+            </div>
             <span class="level-badge large">{{playerLevel.level || 'Iniciante'}}</span>
             <p class="profile-stat">▲ {{playerPoints.xp || 0}} XP | ⚡ {{playerPoints.energy || 0}} Energia</p>
             <div class="profile-plan-badge" ng-class="{'premium': isPremiumFn()}">
@@ -119,7 +124,7 @@
         <div class="profile-actions">
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('plans')"><i class="fas fa-crown profile-action-icon" style="color:#FFD700"></i> Gerenciar Plano</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('body-checkin')"><i class="fas fa-camera profile-action-icon"></i> Check-in Corporal</button>
-            <button class="btn btn-outline btn-block profile-action-btn" ng-if="!challenge90 || !challenge90.active" ng-click="goTo('challenge90')"><i class="fas fa-trophy profile-action-icon"></i> Desafio 90 Dias</button>
+            <button class="btn btn-outline btn-block profile-action-btn" ng-if="!challenge90 || !challenge90.active" ng-click="$root.showChallengeOffer = true"><i class="fas fa-trophy profile-action-icon"></i> Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-if="challenge90 && challenge90.active" ng-click="goTo('challenge90')"><i class="fas fa-trophy profile-action-icon"></i> Ver Desafio 90 Dias</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('progress')"><i class="fas fa-chart-line profile-action-icon"></i> Ver Evolução</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="redefineGoal()"><i class="fas fa-bullseye profile-action-icon"></i> Redefinir Meta</button>
