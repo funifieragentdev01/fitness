@@ -21,7 +21,7 @@
     <!-- 90-Day Challenge Banner -->
     <div class="section" style="margin-bottom:16px">
         <!-- Not accepted: attractive banner with challenge image -->
-        <div ng-if="!challenge90 || !challenge90.active" class="dashboard-banner challenge-banner" ng-click="goTo('challenge90')">
+        <div ng-if="!challenge90 || !challenge90.active" class="dashboard-banner challenge-banner" ng-click="$root.showChallengeOffer = true">
             <img src="images/challenge-couple.png" class="banner-bg-img" alt="">
             <div class="banner-overlay">
                 <div class="banner-content">
