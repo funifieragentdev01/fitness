@@ -236,7 +236,20 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     };
 
     $scope.saveNotifPrefs = function() {
-        NotificationService.savePreferences($scope.notifPrefs);
+        // Normalize time fields to "HH:MM" strings (AngularJS input[time] may produce Date objects)
+        var prefs = angular.copy($scope.notifPrefs);
+        ['workoutTime', 'mealsTime', 'checkinTime'].forEach(function(key) {
+            var val = prefs[key];
+            if (val instanceof Date) {
+                prefs[key] = val.getHours().toString().padStart(2, '0') + ':' + val.getMinutes().toString().padStart(2, '0');
+            } else if (typeof val === 'string' && val.indexOf('T') > -1) {
+                // ISO string like "1970-01-01T07:00:00.000Z"
+                var d = new Date(val);
+                prefs[key] = d.getUTCHours().toString().padStart(2, '0') + ':' + d.getUTCMinutes().toString().padStart(2, '0');
+            }
+        });
+        $scope.notifPrefs = prefs;
+        NotificationService.savePreferences(prefs);
         DataSyncService.syncField('fitness_notif_prefs');
     };
 
