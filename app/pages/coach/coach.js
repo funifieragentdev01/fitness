@@ -497,6 +497,12 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
             name: 'log_meal',
             description: 'Registra uma refeicao feita pelo usuario. Use quando o usuario disser que comeu algo.',
             parameters: { type: 'object', properties: { meal_name: { type: 'string', description: 'Nome da refeicao (ex: almoco, lanche)' }, foods: { type: 'string', description: 'O que comeu' } }, required: ['foods'] }
+        },
+        {
+            type: 'function',
+            name: 'end_call',
+            description: 'Encerra a ligacao quando o usuario disser tchau, que ja entendeu, que pode desligar, ou quando a conversa naturalmente terminar. Sempre se despeca antes de chamar esta funcao.',
+            parameters: { type: 'object', properties: {}, required: [] }
         }
     ];
 
@@ -527,7 +533,9 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
         instructions += '\n- add_measures: quando informarem novas medidas corporais';
         instructions += '\n- log_water: quando disserem que beberam agua';
         instructions += '\n- log_meal: quando disserem que comeram algo';
+        instructions += '\n- end_call: quando o usuario disser tchau ou a conversa terminar';
         instructions += '\nUse as ferramentas PROATIVAMENTE quando o usuario mencionar algo relevante.';
+        instructions += '\nQuando o usuario disser tchau, que ja entendeu, ou pedir para desligar, despeca-se e chame end_call.';
 
         console.log('[Coach] Sending session.update with tools, instructions length:', instructions.length);
 
@@ -806,15 +814,24 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 break;
 
             case 'response.function_call_arguments.done':
-                // Tool call from the AI — this means the tool IS registered and being used
+                // Tool call from the AI
                 console.log('[Coach] Function call received:', event.name, event.arguments);
-                $scope.$apply(function() { $scope.callStatusText = 'Executando: ' + event.name + '...'; });
-                try {
-                    var toolArgs = JSON.parse(event.arguments || '{}');
-                    executeVoiceTool(event.call_id, event.name, toolArgs);
-                } catch(e) {
-                    console.error('[Coach] Tool parse error:', e);
-                    sendToolResult(event.call_id, { success: false, message: 'Erro ao processar ferramenta' });
+                if (event.name === 'end_call') {
+                    console.log('[Coach] Coach requested end_call — ending in 2s');
+                    sendToolResult(event.call_id, { success: true });
+                    setTimeout(function() {
+                        $scope.endCall();
+                        $scope.$applyAsync();
+                    }, 2000);
+                } else {
+                    $scope.$apply(function() { $scope.callStatusText = 'Executando: ' + event.name + '...'; });
+                    try {
+                        var toolArgs = JSON.parse(event.arguments || '{}');
+                        executeVoiceTool(event.call_id, event.name, toolArgs);
+                    } catch(e) {
+                        console.error('[Coach] Tool parse error:', e);
+                        sendToolResult(event.call_id, { success: false, message: 'Erro ao processar ferramenta' });
+                    }
                 }
                 break;
 
