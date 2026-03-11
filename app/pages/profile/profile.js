@@ -9,6 +9,7 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
     // Refresh player data to ensure plan is up-to-date
     AuthService.loadPlayer().then(function() {
         $scope.isPremium = PlanService.isPremium();
+        loadAffiliateData();
     });
 
     $scope.latestLaudoAnalysis = null;
@@ -51,6 +52,72 @@ angular.module('fitness').controller('ProfileCtrl', function($scope, $rootScope,
         return Object.keys($scope.consolidatedMeasures).some(function(k) {
             return $scope.consolidatedMeasures[k] != null && $scope.consolidatedMeasures[k] !== '';
         });
+    };
+
+    // Affiliate dashboard
+    $scope.affiliateData = null;
+    $scope.affiliateCopied = false;
+    $scope.canShare = !!(navigator.share);
+    var PUB_URL = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY;
+
+    function loadAffiliateData() {
+        var player = $rootScope.player;
+        if (!player || !player.extra || !player.extra.affiliate_code) return;
+        $http.post(PUB_URL + '/affiliate_stats', { playerId: userId })
+            .then(function(res) {
+                if (res.data && res.data.code) {
+                    $scope.affiliateData = res.data;
+                }
+            }).catch(function() {});
+    }
+
+    $scope.copyAffiliateCode = function() {
+        if (!$scope.affiliateData) return;
+        var text = 'Use meu cupom ' + $scope.affiliateData.code + ' no Orvya e ganhe ' + $scope.affiliateData.discount_pct + '% de desconto! 🔥 https://orvya.app';
+        navigator.clipboard.writeText(text).then(function() {
+            $scope.$applyAsync(function() {
+                $scope.affiliateCopied = true;
+                setTimeout(function() { $scope.$applyAsync(function() { $scope.affiliateCopied = false; }); }, 2000);
+            });
+        });
+    };
+
+    $scope.shareAffiliateCode = function() {
+        if (!$scope.affiliateData || !navigator.share) return;
+        navigator.share({
+            title: 'Orvya - Cupom de desconto',
+            text: 'Use meu cupom ' + $scope.affiliateData.code + ' no Orvya e ganhe ' + $scope.affiliateData.discount_pct + '% de desconto! 🔥',
+            url: 'https://orvya.app'
+        }).catch(function() {});
+    };
+
+    // Affiliate dashboard
+    $scope.affiliateData = null;
+    $scope.affiliateCopied = false;
+    var PUB_URL = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY;
+
+    function loadAffiliateData() {
+        if (!$rootScope.player || !$rootScope.player.extra || !$rootScope.player.extra.affiliate_code) return;
+        $http.post(PUB_URL + '/affiliate_stats', { playerId: userId }).then(function(res) {
+            if (res.data && res.data.code) {
+                $scope.affiliateData = res.data;
+            }
+        }).catch(function() {});
+    }
+    loadAffiliateData();
+
+    $scope.shareAffiliateLink = function() {
+        if (!$scope.affiliateData) return;
+        var text = 'Use meu cupom ' + $scope.affiliateData.code + ' no Orvya e ganhe ' + $scope.affiliateData.discount_pct + '% de desconto! 🔥 https://orvya.app';
+        if (navigator.share) {
+            navigator.share({ text: text }).catch(function() {});
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(function() {
+                $scope.affiliateCopied = true;
+                $scope.$applyAsync();
+                setTimeout(function() { $scope.affiliateCopied = false; $scope.$applyAsync(); }, 2000);
+            });
+        }
     };
 
     function loadProfileData() {

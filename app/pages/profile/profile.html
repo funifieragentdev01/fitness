@@ -121,6 +121,72 @@
             </div>
         </div>
 
+        <!-- Affiliate Dashboard -->
+        <div class="profile-data affiliate-card" ng-if="affiliateData" style="margin-top:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <h3 style="font-size:15px;margin:0"><i class="fas fa-handshake" style="color:var(--primary)"></i> Meu Programa de Afiliados</h3>
+                <span class="plan-status-badge status-active" style="font-size:11px">Ativo</span>
+            </div>
+            <div class="affiliate-code-row">
+                <span class="affiliate-code">{{affiliateData.code}}</span>
+                <button class="btn btn-sm" ng-click="copyAffiliateCode()" style="padding:6px 12px">
+                    <i class="fas" ng-class="affiliateCopied ? 'fa-check' : 'fa-copy'"></i>
+                </button>
+                <button class="btn btn-sm" ng-click="shareAffiliateCode()" style="padding:6px 12px" ng-if="canShare">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+            </div>
+            <div class="affiliate-stats-grid">
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">{{affiliateData.total_sales || 0}}</span>
+                    <span class="affiliate-stat-label">Indicados</span>
+                </div>
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">R$ {{(affiliateData.commission_earned || 0) | number:2}}</span>
+                    <span class="affiliate-stat-label">Comissão</span>
+                </div>
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">{{affiliateData.discount_pct}}%</span>
+                    <span class="affiliate-stat-label">Desconto</span>
+                </div>
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">{{affiliateData.commission_pct}}%</span>
+                    <span class="affiliate-stat-label">Comissão %</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Affiliate Dashboard -->
+        <div class="affiliate-card" ng-if="affiliateData">
+            <div class="affiliate-header">
+                <i class="fas fa-handshake affiliate-icon"></i>
+                <h3>Meu Programa de Afiliados</h3>
+            </div>
+            <div class="affiliate-code-row">
+                <span class="affiliate-code">{{affiliateData.code}}</span>
+                <button class="btn btn-sm affiliate-copy-btn" ng-click="shareAffiliateLink()">
+                    <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+            </div>
+            <div class="affiliate-stats">
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">{{affiliateData.total_sales}}</span>
+                    <span class="affiliate-stat-label">Indicados</span>
+                </div>
+                <div class="affiliate-stat">
+                    <span class="affiliate-stat-value">R$ {{affiliateData.commission_earned | number:2}}</span>
+                    <span class="affiliate-stat-label">Comissão acumulada</span>
+                </div>
+            </div>
+            <div class="affiliate-details">
+                <div class="data-row"><span>Desconto do cupom</span><span>{{affiliateData.discount_pct}}%</span></div>
+                <div class="data-row"><span>Sua comissão</span><span>{{affiliateData.commission_pct}}%</span></div>
+            </div>
+            <div class="affiliate-copied" ng-if="affiliateCopied">
+                <i class="fas fa-check"></i> Link copiado!
+            </div>
+        </div>
+
         <div class="profile-actions">
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('plans')"><i class="fas fa-crown profile-action-icon" style="color:#FFD700"></i> Gerenciar Plano</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('body-checkin')"><i class="fas fa-camera profile-action-icon"></i> Check-in Corporal</button>

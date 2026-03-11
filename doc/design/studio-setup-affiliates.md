@@ -291,7 +291,67 @@ public Object handle(Object payload) {
 
 ---
 
-## 4. Resumo das Mudanças
+## 4. Criar Endpoint Público: `affiliate_stats`
+
+**Studio:** `/studio/public` → Novo Endpoint
+
+| Campo | Valor |
+|-------|-------|
+| _id (slug) | `affiliate_stats` |
+| Título | Estatísticas do Afiliado |
+| Método | POST |
+| Active | true |
+
+**Script:**
+```java
+public Object handle(Object payload) {
+    Map<String, Object> response = new HashMap<>();
+    
+    String playerId = (String) payload.get("playerId");
+    if (playerId == null || playerId.trim().isEmpty()) {
+        response.put("error", "playerId é obrigatório");
+        return response;
+    }
+    
+    // Get player to find affiliate code
+    Player player = manager.getPlayerManager().findById(playerId);
+    if (player == null || player.extra == null || player.extra.get("affiliate_code") == null) {
+        response.put("error", "Jogador não é afiliado");
+        return response;
+    }
+    
+    String code = (String) player.extra.get("affiliate_code");
+    
+    // Get affiliate data
+    Object affiliate = manager.getJongoConnection().getCollection("affiliate__c")
+        .findOne("{_id: #, active: true}", code).as(Object.class);
+    
+    if (affiliate == null) {
+        response.put("error", "Afiliado não encontrado");
+        return response;
+    }
+    
+    Map<String, Object> affMap = (Map<String, Object>) affiliate;
+    
+    double totalRevenue = affMap.get("total_revenue") != null ? ((Number) affMap.get("total_revenue")).doubleValue() : 0;
+    double commissionPct = affMap.get("commission_pct") != null ? ((Number) affMap.get("commission_pct")).doubleValue() : 0;
+    
+    response.put("code", code);
+    response.put("name", affMap.get("name"));
+    response.put("discount_pct", affMap.get("discount_pct"));
+    response.put("commission_pct", commissionPct);
+    response.put("total_sales", affMap.get("total_sales"));
+    response.put("total_revenue", totalRevenue);
+    response.put("commission_earned", totalRevenue * commissionPct / 100.0);
+    return response;
+}
+```
+
+**URL pública:** `POST https://service2.funifier.com/v3/pub/699a6c64434ba0101760c2df/affiliate_stats`
+
+---
+
+## 5. Resumo das Mudanças
 
 ### `validate_coupon`
 - **Adicionado:** Fallback para `affiliate__c` quando cupom não encontrado em `coupon__c`
@@ -304,7 +364,12 @@ public Object handle(Object payload) {
 - **Adicionado:** Salva `affiliate_code` no `player.extra`
 
 ### Frontend
-- **Nenhuma alteração necessária.** O frontend já exibe `couponInfo.description`.
+- **profile.html**: Seção "Meu Programa de Afiliados" quando player tem `extra.affiliate_code`
+- **profile.js**: Carrega dados do afiliado via `affiliate_stats` endpoint, botões copiar/compartilhar
+- **style.css**: Estilos do card de afiliado (grid de stats, código em monospace)
+
+### Novo Endpoint
+- **`affiliate_stats`**: Retorna dados do afiliado para o dashboard no perfil
 
 ---
 
