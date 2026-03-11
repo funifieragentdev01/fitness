@@ -23,7 +23,7 @@
                 <input type="password" ng-model="reg.confirmPassword" placeholder="Repita a senha" required>
             </div>
             <div class="form-group checkbox-group">
-                <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="" ng-click="openTerms($event)">termos de uso</a></label>
+                <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="" ng-click="openTerms($event)">termos de uso</a> e <a href="" ng-click="openPrivacy($event)">política de privacidade</a></label>
             </div>
             <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
                 <span ng-if="!loading">Criar conta</span>

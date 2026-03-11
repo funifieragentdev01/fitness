@@ -1600,3 +1600,12 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .coach-banner .banner-overlay {
     background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.2));
 }
+
+/* Terms & Privacy Tabs */
+.terms-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin:0 16px 16px; }
+.terms-tab { flex:1; padding:10px 16px; background:none; border:none; color:var(--text-muted); font-size:14px; font-weight:600; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+.terms-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+.terms-body h3 { color:var(--primary); margin-top:20px; margin-bottom:8px; font-size:15px; }
+.terms-body h4 { color:var(--text); margin-top:16px; margin-bottom:6px; font-size:14px; }
+.terms-body p, .terms-body li { color:var(--text-muted); font-size:13px; line-height:1.6; }
+.terms-body ul { padding-left:20px; margin:8px 0; }

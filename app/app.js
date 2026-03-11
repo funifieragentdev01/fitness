@@ -110,6 +110,12 @@ app.run(function($rootScope, $location, $sce, AuthService) {
 
     $rootScope.openTerms = function($event) {
         if ($event) $event.preventDefault();
+        $rootScope.termsTab = 'terms';
+        $rootScope.showTerms = true;
+    };
+    $rootScope.openPrivacy = function($event) {
+        if ($event) $event.preventDefault();
+        $rootScope.termsTab = 'privacy';
         $rootScope.showTerms = true;
     };
     $rootScope.closeTerms = function() { $rootScope.showTerms = false; };

@@ -14,34 +14,188 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="style.css?v=3.11.2" rel="stylesheet">
+    <link href="style.css?v=3.12.0" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-    <!-- Terms Modal (global) -->
+    <!-- Terms & Privacy Modal (global) -->
     <div class="modal-overlay" ng-show="showTerms" ng-click="closeTerms()">
         <div class="modal-content" ng-click="$event.stopPropagation()">
             <div class="modal-header">
-                <h2>Termos de Uso</h2>
+                <h2>{{termsTab === 'privacy' ? 'Política de Privacidade' : 'Termos de Uso'}}</h2>
                 <button class="btn-close" ng-click="closeTerms()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body terms-body">
-                <h3>1. Aceitação dos Termos</h3>
-                <p>Ao utilizar o Orvya, você concorda com estes termos de uso. O aplicativo é destinado a maiores de 14 anos.</p>
-                <h3>2. Descrição do Serviço</h3>
-                <p>O Orvya é um aplicativo de acompanhamento nutricional e de treino que utiliza inteligência artificial para gerar planos personalizados. O serviço NÃO substitui acompanhamento médico ou nutricional profissional.</p>
-                <h3>3. Dados Pessoais</h3>
-                <p>Coletamos informações como peso, altura, idade, fotos corporais e hábitos alimentares para personalizar sua experiência. Seus dados são armazenados de forma segura e não são compartilhados com terceiros sem seu consentimento, conforme a LGPD.</p>
-                <h3>4. Fotos Corporais</h3>
-                <p>As fotos corporais enviadas são processadas por inteligência artificial para análise visual. As imagens são armazenadas localmente no seu dispositivo.</p>
-                <h3>5. Limitação de Responsabilidade</h3>
-                <p>Os planos alimentares e de treino gerados pelo Orvya são sugestões baseadas em IA e não constituem prescrição médica ou nutricional. Consulte um profissional de saúde antes de iniciar qualquer programa.</p>
-                <h3>6. Uso Adequado</h3>
-                <p>Você se compromete a fornecer informações verdadeiras e a utilizar o aplicativo de forma responsável.</p>
-                <h3>7. Alterações nos Termos</h3>
-                <p>Reservamo-nos o direito de alterar estes termos a qualquer momento.</p>
-                <p style="margin-top:20px;color:var(--text-muted);font-size:12px;">Última atualização: Fevereiro de 2026</p>
+            <div class="terms-tabs">
+                <button class="terms-tab" ng-class="{'active': termsTab === 'terms'}" ng-click="termsTab='terms'">Termos de Uso</button>
+                <button class="terms-tab" ng-class="{'active': termsTab === 'privacy'}" ng-click="termsTab='privacy'">Política de Privacidade</button>
+            </div>
+            <div class="modal-body terms-body" style="max-height:65vh;overflow-y:auto">
+
+                <!-- TERMOS DE USO -->
+                <div ng-show="termsTab === 'terms'">
+                    <h3>1. Aceitação dos Termos</h3>
+                    <p>Ao criar uma conta ou utilizar o aplicativo Orvya ("Aplicativo"), você declara que leu, compreendeu e concorda integralmente com estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize o Aplicativo.</p>
+
+                    <h3>2. Descrição do Serviço</h3>
+                    <p>O Orvya é um aplicativo de acompanhamento fitness e nutricional que utiliza inteligência artificial (IA) para gerar planos de treino, planos alimentares, análises corporais, coaching por voz/texto e gamificação motivacional. O serviço está disponível como Progressive Web App (PWA) em <strong>https://orvya.app</strong>.</p>
+
+                    <h3>3. Aviso Importante sobre Saúde e IA</h3>
+                    <p><strong>O Orvya NÃO substitui médico, nutricionista, personal trainer ou qualquer outro profissional de saúde.</strong></p>
+                    <p>Todos os planos alimentares, planos de treino, análises corporais e orientações gerados pelo Aplicativo são <strong>sugestões produzidas por inteligência artificial</strong>, e não constituem prescrição médica, nutricional ou de exercício físico.</p>
+                    <p>Antes de iniciar qualquer programa alimentar ou de exercícios, consulte um profissional de saúde qualificado. Se você possui condições médicas preexistentes, alergias alimentares, lesões ou restrições físicas, é indispensável orientação profissional.</p>
+                    <p>O uso das sugestões geradas pelo Aplicativo é de sua inteira responsabilidade.</p>
+
+                    <h3>4. Cadastro e Conta</h3>
+                    <p>Para utilizar o Orvya, é necessário criar uma conta fornecendo informações verdadeiras, completas e atualizadas. Você é responsável por manter a confidencialidade de suas credenciais de acesso e por todas as atividades realizadas em sua conta.</p>
+                    <p>O Orvya reserva-se o direito de suspender ou encerrar contas que contenham informações falsas ou que violem estes Termos.</p>
+
+                    <h3>5. Planos e Pagamento</h3>
+                    <p>O Orvya oferece os seguintes planos de assinatura:</p>
+                    <ul>
+                        <li><strong>Standard:</strong> R$ 29,90/mês — inclui planos de treino e alimentação com IA, acompanhamento de progresso e gamificação.</li>
+                        <li><strong>Premium:</strong> R$ 179,90/mês — inclui tudo do Standard, mais coaching por voz com IA, análise corporal por foto, análise de laudos médicos e funcionalidades exclusivas.</li>
+                    </ul>
+                    <p>Ambos os planos oferecem <strong>7 dias de teste gratuito</strong>. Após o período de teste, a cobrança será realizada automaticamente via plataforma de pagamento Asaas, de forma recorrente mensal.</p>
+
+                    <h3>6. Cancelamento e Reembolso</h3>
+                    <p>Você pode cancelar sua assinatura a qualquer momento pelo próprio Aplicativo ou por e-mail. Após o cancelamento, seu acesso permanece ativo até o final do período já pago.</p>
+                    <p>Nos primeiros <strong>7 dias</strong> após a primeira cobrança, você pode solicitar reembolso proporcional entrando em contato pelo e-mail suporte@orvya.app. Após esse prazo, não haverá reembolso por períodos parcialmente utilizados.</p>
+
+                    <h3>7. Fotos Corporais</h3>
+                    <p>O Orvya permite o envio voluntário de fotos corporais para fins de análise visual por IA. Ao enviar suas fotos, você:</p>
+                    <ul>
+                        <li>Consente que as imagens sejam processadas por inteligência artificial (OpenAI Vision) para gerar análises de composição corporal;</li>
+                        <li>Compreende que as fotos são armazenadas de forma segura em nossos servidores para manter seu histórico de evolução;</li>
+                        <li>Reconhece que fotos corporais são consideradas <strong>dados pessoais sensíveis</strong> nos termos da LGPD.</li>
+                    </ul>
+
+                    <h3>8. Coach IA</h3>
+                    <p>O recurso de coaching do Orvya é inteiramente operado por inteligência artificial. As interações por texto e voz são geradas automaticamente e <strong>não envolvem profissionais humanos</strong>. As orientações do Coach IA seguem as mesmas ressalvas do item 3 destes Termos.</p>
+
+                    <h3>9. Gamificação</h3>
+                    <p>O Orvya utiliza elementos de gamificação como XP (pontos de experiência), badges (conquistas), níveis e desafios para motivar o uso consistente do Aplicativo. Esses elementos são exclusivamente motivacionais e <strong>não possuem valor monetário</strong>, não podendo ser trocados, transferidos ou convertidos em dinheiro.</p>
+
+                    <h3>10. Propriedade Intelectual</h3>
+                    <p>Todo o conteúdo do Aplicativo — incluindo interface, design, textos, algoritmos, marcas e logotipos — é de propriedade da Funifier Ltda ou de seus licenciadores, protegido pela legislação brasileira de propriedade intelectual. É proibida a reprodução, distribuição ou modificação sem autorização prévia por escrito.</p>
+
+                    <h3>11. Limitação de Responsabilidade</h3>
+                    <p>O Orvya é fornecido "no estado em que se encontra" (as is). Na máxima extensão permitida pela legislação aplicável, a Funifier Ltda não se responsabiliza por:</p>
+                    <ul>
+                        <li>Resultados de saúde, estéticos ou de performance decorrentes do uso do Aplicativo;</li>
+                        <li>Danos diretos, indiretos, incidentais ou consequenciais relacionados ao uso ou impossibilidade de uso do serviço;</li>
+                        <li>Indisponibilidade temporária, erros ou imprecisões nos conteúdos gerados por IA;</li>
+                        <li>Ações de terceiros que possam comprometer a segurança de sua conta.</li>
+                    </ul>
+
+                    <h3>12. Modificações nos Termos</h3>
+                    <p>A Funifier Ltda reserva-se o direito de alterar estes Termos de Uso a qualquer momento. Alterações relevantes serão comunicadas por e-mail ou notificação no Aplicativo. O uso continuado após a notificação constitui aceitação dos novos termos.</p>
+
+                    <h3>13. Foro</h3>
+                    <p>Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o Foro da Comarca de <strong>Curitiba/PR</strong> para dirimir quaisquer controvérsias decorrentes destes Termos, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
+
+                    <h3>14. Contato</h3>
+                    <p>Para dúvidas, sugestões ou reclamações relacionadas a estes Termos, entre em contato pelo e-mail <strong>suporte@orvya.app</strong>.</p>
+
+                    <p style="margin-top:24px;color:var(--text-muted);font-size:12px;">Última atualização: Março de 2026</p>
+                </div>
+
+                <!-- POLÍTICA DE PRIVACIDADE -->
+                <div ng-show="termsTab === 'privacy'">
+                    <h3>1. Controlador dos Dados</h3>
+                    <p>O controlador dos dados pessoais coletados pelo Orvya é a <strong>Funifier Ltda</strong>, inscrita no CNPJ sob nº [a definir], com sede em Curitiba/PR, Brasil.</p>
+                    <p>E-mail de contato: <strong>contato@orvya.app</strong></p>
+
+                    <h3>2. Dados Coletados</h3>
+                    <p>Coletamos os seguintes dados pessoais, fornecidos diretamente por você durante o uso do Aplicativo:</p>
+                    <ul>
+                        <li><strong>Dados cadastrais:</strong> nome, e-mail, senha (armazenada em formato hash);</li>
+                        <li><strong>Dados físicos:</strong> peso, altura, idade, sexo biológico;</li>
+                        <li><strong>Dados de saúde:</strong> objetivos fitness, histórico alimentar, laudos médicos e de bioimpedância;</li>
+                        <li><strong>Imagens:</strong> fotos corporais enviadas voluntariamente;</li>
+                        <li><strong>Dados de uso:</strong> interações com o Coach IA, progresso de treinos e alimentação, dados de gamificação.</li>
+                    </ul>
+
+                    <h3>3. Finalidade do Tratamento</h3>
+                    <p>Seus dados pessoais são tratados para as seguintes finalidades:</p>
+                    <ul>
+                        <li>Personalização de planos de treino e alimentação com IA;</li>
+                        <li>Análise corporal por inteligência artificial (processamento de fotos);</li>
+                        <li>Funcionamento do Coach IA (interações por texto e voz);</li>
+                        <li>Sistema de gamificação (XP, níveis, badges, desafios);</li>
+                        <li>Comunicação sobre o serviço (notificações, atualizações, suporte);</li>
+                        <li>Processamento de pagamentos e gestão de assinaturas.</li>
+                    </ul>
+
+                    <h3>4. Base Legal</h3>
+                    <p>O tratamento dos seus dados pessoais é realizado com fundamento nas seguintes bases legais da Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD):</p>
+                    <ul>
+                        <li><strong>Consentimento do titular</strong> (Art. 7º, I) — para coleta de dados sensíveis, fotos corporais e comunicações;</li>
+                        <li><strong>Execução de contrato</strong> (Art. 7º, V) — para prestação do serviço contratado e gestão da assinatura.</li>
+                    </ul>
+
+                    <h3>5. Compartilhamento de Dados</h3>
+                    <p>Seus dados podem ser compartilhados com os seguintes parceiros, estritamente para viabilizar o funcionamento do serviço:</p>
+                    <ul>
+                        <li><strong>OpenAI:</strong> processamento de texto e imagens por IA (planos, coaching, análise corporal);</li>
+                        <li><strong>Asaas:</strong> processamento de pagamentos e cobranças recorrentes;</li>
+                        <li><strong>Google:</strong> autenticação via Google Sign-In (quando utilizado).</li>
+                    </ul>
+                    <p><strong>Não vendemos, alugamos ou comercializamos seus dados pessoais com terceiros para fins de marketing ou publicidade.</strong></p>
+
+                    <h3>6. Dados Pessoais Sensíveis</h3>
+                    <p>Nos termos do Art. 11 da LGPD, reconhecemos que fotos corporais, dados de saúde (peso, medidas, laudos médicos, composição corporal) e informações biométricas constituem <strong>dados pessoais sensíveis</strong>.</p>
+                    <p>O tratamento desses dados ocorre exclusivamente mediante <strong>consentimento específico e destacado</strong> do titular, concedido ao aceitar estes termos e ao enviar voluntariamente tais informações no Aplicativo.</p>
+                    <p>Você pode revogar esse consentimento a qualquer momento (veja seção 9).</p>
+
+                    <h3>7. Armazenamento e Segurança</h3>
+                    <p>Seus dados são armazenados em servidores seguros da infraestrutura Funifier Cloud. Adotamos as seguintes medidas de segurança:</p>
+                    <ul>
+                        <li>Comunicação criptografada via HTTPS/TLS;</li>
+                        <li>Senhas armazenadas com hash BCrypt (nunca em texto puro);</li>
+                        <li>Controle de acesso restrito aos dados;</li>
+                        <li>Monitoramento e auditorias periódicas de segurança.</li>
+                    </ul>
+
+                    <h3>8. Retenção de Dados</h3>
+                    <p>Seus dados pessoais são mantidos enquanto sua conta estiver ativa. Após a exclusão da conta:</p>
+                    <ul>
+                        <li>Seus dados serão removidos de nossos servidores em até <strong>30 dias</strong>;</li>
+                        <li>Dados necessários para cumprimento de obrigações legais, fiscais ou regulatórias poderão ser retidos pelo prazo exigido pela legislação aplicável.</li>
+                    </ul>
+
+                    <h3>9. Direitos do Titular (Art. 18 LGPD)</h3>
+                    <p>Você tem os seguintes direitos em relação aos seus dados pessoais:</p>
+                    <ul>
+                        <li><strong>Confirmação e acesso:</strong> saber se tratamos seus dados e obter cópia;</li>
+                        <li><strong>Correção:</strong> solicitar atualização de dados incompletos ou desatualizados;</li>
+                        <li><strong>Anonimização, bloqueio ou eliminação:</strong> de dados desnecessários ou tratados em desconformidade;</li>
+                        <li><strong>Portabilidade:</strong> solicitar transferência dos seus dados a outro fornecedor;</li>
+                        <li><strong>Eliminação:</strong> solicitar exclusão dos dados tratados com base no consentimento;</li>
+                        <li><strong>Revogação do consentimento:</strong> retirar seu consentimento a qualquer momento.</li>
+                    </ul>
+
+                    <h3>10. Como Exercer Seus Direitos</h3>
+                    <p>Para exercer qualquer dos direitos acima, envie um e-mail para <strong>contato@orvya.app</strong> com o assunto "Direitos LGPD" e uma descrição do que deseja. Responderemos em até 15 dias úteis.</p>
+                    <p>Você também pode excluir sua conta diretamente pelo Aplicativo, na tela de Perfil.</p>
+
+                    <h3>11. Cookies e Tecnologias de Rastreamento</h3>
+                    <p>O Orvya utiliza <strong>localStorage</strong> do navegador para manter sua sessão e preferências. Não utilizamos cookies de rastreamento ou de terceiros para fins publicitários.</p>
+                    <p>O Google Sign-In pode utilizar cookies próprios para autenticação, conforme a política de privacidade do Google.</p>
+
+                    <h3>12. Menores de Idade</h3>
+                    <p>O Orvya é destinado a pessoas com <strong>14 anos ou mais</strong>. Menores de 18 anos devem utilizar o Aplicativo com o consentimento e supervisão de pais ou responsáveis legais.</p>
+                    <p>Não coletamos intencionalmente dados de menores de 14 anos. Caso tomemos conhecimento de tal situação, os dados serão prontamente eliminados.</p>
+
+                    <h3>13. Alterações nesta Política</h3>
+                    <p>Esta Política de Privacidade pode ser atualizada periodicamente. Alterações relevantes serão comunicadas por e-mail ou notificação no Aplicativo. Recomendamos a revisão periódica deste documento.</p>
+
+                    <h3>14. Encarregado de Proteção de Dados (DPO)</h3>
+                    <p>O encarregado pelo tratamento de dados pessoais pode ser contatado pelo e-mail <strong>contato@orvya.app</strong>.</p>
+
+                    <p style="margin-top:24px;color:var(--text-muted);font-size:12px;">Última atualização: Março de 2026</p>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary btn-block" ng-click="closeTerms()">Entendi</button>
@@ -177,42 +331,42 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <!-- Config -->
-    <script src="config.js?v=3.11.2"></script>
+    <script src="config.js?v=3.12.0"></script>
 
     <!-- App Module -->
-    <script src="app.js?v=3.11.2"></script>
+    <script src="app.js?v=3.12.0"></script>
 
     <!-- Services -->
-    <script src="services/auth.js?v=3.11.2"></script>
-    <script src="services/api.js?v=3.11.2"></script>
-    <script src="services/ai.js?v=3.11.2"></script>
-    <script src="services/feedback.js?v=3.11.2"></script>
-    <script src="services/plan.js?v=3.11.2"></script>
-    <script src="services/data-sync.js?v=3.11.2"></script>
-    <script src="services/payment.js?v=3.11.2"></script>
-    <script src="services/notification.js?v=3.11.2"></script>
+    <script src="services/auth.js?v=3.12.0"></script>
+    <script src="services/api.js?v=3.12.0"></script>
+    <script src="services/ai.js?v=3.12.0"></script>
+    <script src="services/feedback.js?v=3.12.0"></script>
+    <script src="services/plan.js?v=3.12.0"></script>
+    <script src="services/data-sync.js?v=3.12.0"></script>
+    <script src="services/payment.js?v=3.12.0"></script>
+    <script src="services/notification.js?v=3.12.0"></script>
 
     <!-- Components -->
-    <script src="components/bottom-nav/bottom-nav.js?v=3.11.2"></script>
-    <script src="components/upgrade-modal/upgrade-modal.js?v=3.11.2"></script>
+    <script src="components/bottom-nav/bottom-nav.js?v=3.12.0"></script>
+    <script src="components/upgrade-modal/upgrade-modal.js?v=3.12.0"></script>
 
     <!-- Pages -->
-    <script src="pages/landing/landing.js?v=3.11.2"></script>
-    <script src="pages/login/login.js?v=3.11.2"></script>
-    <script src="pages/signup/signup.js?v=3.11.2"></script>
-    <script src="pages/onboarding/onboarding.js?v=3.11.2"></script>
-    <script src="pages/dashboard/dashboard.js?v=3.11.2"></script>
-    <script src="pages/meal-plan/meal-plan.js?v=3.11.2"></script>
-    <script src="pages/meal/meal.js?v=3.11.2"></script>
-    <script src="pages/workout-plan/workout-plan.js?v=3.11.2"></script>
-    <script src="pages/workout/workout.js?v=3.11.2"></script>
-    <script src="pages/water/water.js?v=3.11.2"></script>
-    <script src="pages/coach/coach.js?v=3.11.2"></script>
-    <script src="pages/progress/progress.js?v=3.11.2"></script>
-    <script src="pages/profile/profile.js?v=3.11.2"></script>
-    <script src="pages/body-checkin/body-checkin.js?v=3.11.2"></script>
-    <script src="pages/challenge90/challenge90.js?v=3.11.2"></script>
-    <script src="pages/contact/contact.js?v=3.11.2"></script>
-    <script src="pages/plans/plans.js?v=3.11.2"></script>
+    <script src="pages/landing/landing.js?v=3.12.0"></script>
+    <script src="pages/login/login.js?v=3.12.0"></script>
+    <script src="pages/signup/signup.js?v=3.12.0"></script>
+    <script src="pages/onboarding/onboarding.js?v=3.12.0"></script>
+    <script src="pages/dashboard/dashboard.js?v=3.12.0"></script>
+    <script src="pages/meal-plan/meal-plan.js?v=3.12.0"></script>
+    <script src="pages/meal/meal.js?v=3.12.0"></script>
+    <script src="pages/workout-plan/workout-plan.js?v=3.12.0"></script>
+    <script src="pages/workout/workout.js?v=3.12.0"></script>
+    <script src="pages/water/water.js?v=3.12.0"></script>
+    <script src="pages/coach/coach.js?v=3.12.0"></script>
+    <script src="pages/progress/progress.js?v=3.12.0"></script>
+    <script src="pages/profile/profile.js?v=3.12.0"></script>
+    <script src="pages/body-checkin/body-checkin.js?v=3.12.0"></script>
+    <script src="pages/challenge90/challenge90.js?v=3.12.0"></script>
+    <script src="pages/contact/contact.js?v=3.12.0"></script>
+    <script src="pages/plans/plans.js?v=3.12.0"></script>
 </body>
 </html>
