@@ -74,10 +74,12 @@ angular.module('fitness').factory('AiService', function($http) {
             }).then(function(res) {
                 var data = res.data;
                 var text = cleanJSON(data.choices[0].message.content.trim());
-                var plan = JSON.parse(text);
-                plan.date = new Date().toLocaleDateString('pt-BR');
-                plan.timestamp = new Date().toISOString();
-                return plan;
+                try {
+                    var plan = JSON.parse(text);
+                    plan.date = new Date().toLocaleDateString('pt-BR');
+                    plan.timestamp = new Date().toISOString();
+                    return plan;
+                } catch(e) { console.error('[AI] generateMealPlan parse error:', e, text); throw e; }
             });
         },
 
@@ -111,18 +113,20 @@ angular.module('fitness').factory('AiService', function($http) {
             }).then(function(res) {
                 var data = res.data;
                 var text = cleanJSON(data.choices[0].message.content.trim());
-                var plan = JSON.parse(text);
-                plan.date = new Date().toLocaleDateString('pt-BR');
-                plan.timestamp = new Date().toISOString();
-                var dayOrder = {'Segunda':0,'Terça':1,'Terca':1,'Quarta':2,'Quinta':3,'Sexta':4,'Sábado':5,'Sabado':5,'Domingo':6};
-                if (plan.days) {
-                    plan.days.sort(function(a, b) {
-                        var aKey = Object.keys(dayOrder).find(function(k) { return a.day_name && a.day_name.indexOf(k) === 0; });
-                        var bKey = Object.keys(dayOrder).find(function(k) { return b.day_name && b.day_name.indexOf(k) === 0; });
-                        return (dayOrder[aKey] || 99) - (dayOrder[bKey] || 99);
-                    });
-                }
-                return plan;
+                try {
+                    var plan = JSON.parse(text);
+                    plan.date = new Date().toLocaleDateString('pt-BR');
+                    plan.timestamp = new Date().toISOString();
+                    var dayOrder = {'Segunda':0,'Terça':1,'Terca':1,'Quarta':2,'Quinta':3,'Sexta':4,'Sábado':5,'Sabado':5,'Domingo':6};
+                    if (plan.days) {
+                        plan.days.sort(function(a, b) {
+                            var aKey = Object.keys(dayOrder).find(function(k) { return a.day_name && a.day_name.indexOf(k) === 0; });
+                            var bKey = Object.keys(dayOrder).find(function(k) { return b.day_name && b.day_name.indexOf(k) === 0; });
+                            return (dayOrder[aKey] || 99) - (dayOrder[bKey] || 99);
+                        });
+                    }
+                    return plan;
+                } catch(e) { console.error('[AI] generateWorkoutPlan parse error:', e, text); throw e; }
             });
         },
 
@@ -253,7 +257,7 @@ angular.module('fitness').factory('AiService', function($http) {
                 max_tokens: 3000
             }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
-                return JSON.parse(text);
+                try { return JSON.parse(text); } catch(e) { console.error('[AI] adjustMealPlan parse error:', e, text); return { feedback: text, meals: null }; }
             });
         },
 
@@ -288,7 +292,7 @@ angular.module('fitness').factory('AiService', function($http) {
                 max_tokens: 2500
             }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
-                return JSON.parse(text);
+                try { return JSON.parse(text); } catch(e) { console.error('[AI] adjustWorkoutPlan parse error:', e, text); return { feedback: text, days: null }; }
             });
         },
 

@@ -1,4 +1,4 @@
-angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, AuthService, ApiService, AiService, PlanService, DataSyncService) {
+angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootScope, $sce, $routeParams, $timeout, AuthService, ApiService, AiService, PlanService, DataSyncService) {
     $scope.checkin = {};
     $scope.checkinHistory = [];
     $scope.step = 1;
@@ -81,18 +81,23 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
         $scope.manualMeasures.peso = parseFloat($scope.checkin.weight);
 
         AiService.analyzeBodyPhotos($scope.checkin.photo_front, $scope.checkin.photo_side, p).then(function(parsed) {
-            $scope.analysisResult = parsed.feedback || JSON.stringify(parsed);
-            if (parsed.measures) {
-                Object.keys(parsed.measures).forEach(function(k) {
-                    if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
-                });
-            }
-            $scope.analyzing = false;
-            $scope.step = 2;
-        }).catch(function() {
-            $scope.analysisResult = 'Não consegui analisar as fotos agora. Você pode salvar o check-in mesmo assim.';
-            $scope.analyzing = false;
-            $scope.step = 2;
+            $timeout(function() {
+                $scope.analysisResult = parsed.feedback || JSON.stringify(parsed);
+                if (parsed.measures) {
+                    Object.keys(parsed.measures).forEach(function(k) {
+                        if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                    });
+                }
+                $scope.analyzing = false;
+                $scope.step = 2;
+            });
+        }).catch(function(err) {
+            console.error('[BodyCheckin] Photo analysis error:', err);
+            $timeout(function() {
+                $scope.analysisResult = 'Não consegui analisar as fotos agora. Você pode salvar o check-in mesmo assim.';
+                $scope.analyzing = false;
+                $scope.step = 2;
+            });
         });
     };
 
@@ -166,13 +171,12 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                 return ApiService.saveBodyCheckin(data);
             })
             .then(function() {
-                $scope.$apply(function() {
+                $timeout(function() {
                     PlanService.recordChange('bodyCheckin');
                     ApiService.logAction('body_checkin', { weight: parseFloat($scope.checkin.weight) });
                     ApiService.logAction('update_weight', { weight: parseFloat($scope.checkin.weight) });
                     if ($rootScope.profileData) {
                         $rootScope.profileData.weight = parseFloat($scope.checkin.weight);
-                        // Consolidate all measures into profile (accumulated across checkins)
                         if (!$rootScope.profileData.measures) $rootScope.profileData.measures = {};
                         var currentMeasures = $scope.manualMeasures || {};
                         Object.keys(currentMeasures).forEach(function(k) {
@@ -180,7 +184,6 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                                 $rootScope.profileData.measures[k] = currentMeasures[k];
                             }
                         });
-                        // Save latest feedbacks
                         if ($scope.analysisResult) $rootScope.profileData.body_analysis = $scope.analysisResult;
                         if ($scope.laudoResult) $rootScope.profileData.laudo_analysis = $scope.laudoResult;
                         var profileUpdate = angular.copy($rootScope.profileData);
@@ -188,7 +191,6 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                         ApiService.saveProfile(profileUpdate);
                     }
 
-                    // Update challenge90 checkpoints ONLY when initiated from challenge page
                     if ($scope.fromChallenge && $rootScope.challenge90 && $rootScope.challenge90.active) {
                         var ch = $rootScope.challenge90;
                         if (ch.checkpoints && $scope.challengeCheckpoint) {
@@ -210,8 +212,9 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
                     loadHistory();
                 });
             })
-            .catch(function() {
-                $scope.$apply(function() {
+            .catch(function(err) {
+                console.error('[BodyCheckin] Save error:', err);
+                $timeout(function() {
                     $scope.step = 'done';
                     $scope.loading = false;
                 });
@@ -229,17 +232,22 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
         $scope.laudoResult = null;
 
         AiService.analyzeBioReport($scope.bioReportPhoto).then(function(parsed) {
-            PlanService.recordChange('bioReport');
-            $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
-            if (parsed.measures) {
-                Object.keys(parsed.measures).forEach(function(k) {
-                    if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
-                });
-            }
-            $scope.analyzingLaudo = false;
-        }).catch(function() {
-            $scope.laudoResult = 'Não consegui ler o laudo. Tente com foto mais nítida.';
-            $scope.analyzingLaudo = false;
+            $timeout(function() {
+                PlanService.recordChange('bioReport');
+                $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
+                if (parsed.measures) {
+                    Object.keys(parsed.measures).forEach(function(k) {
+                        if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                    });
+                }
+                $scope.analyzingLaudo = false;
+            });
+        }).catch(function(err) {
+            console.error('[BodyCheckin] Bio report error:', err);
+            $timeout(function() {
+                $scope.laudoResult = 'Não consegui ler o laudo. Tente com foto mais nítida.';
+                $scope.analyzingLaudo = false;
+            });
         });
     };
 
