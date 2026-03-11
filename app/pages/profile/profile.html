@@ -156,37 +156,6 @@
             </div>
         </div>
 
-        <!-- Affiliate Dashboard -->
-        <div class="affiliate-card" ng-if="affiliateData">
-            <div class="affiliate-header">
-                <i class="fas fa-handshake affiliate-icon"></i>
-                <h3>Meu Programa de Afiliados</h3>
-            </div>
-            <div class="affiliate-code-row">
-                <span class="affiliate-code">{{affiliateData.code}}</span>
-                <button class="btn btn-sm affiliate-copy-btn" ng-click="shareAffiliateLink()">
-                    <i class="fas fa-share-alt"></i> Compartilhar
-                </button>
-            </div>
-            <div class="affiliate-stats">
-                <div class="affiliate-stat">
-                    <span class="affiliate-stat-value">{{affiliateData.total_sales}}</span>
-                    <span class="affiliate-stat-label">Indicados</span>
-                </div>
-                <div class="affiliate-stat">
-                    <span class="affiliate-stat-value">R$ {{affiliateData.commission_earned | number:2}}</span>
-                    <span class="affiliate-stat-label">Comissão acumulada</span>
-                </div>
-            </div>
-            <div class="affiliate-details">
-                <div class="data-row"><span>Desconto do cupom</span><span>{{affiliateData.discount_pct}}%</span></div>
-                <div class="data-row"><span>Sua comissão</span><span>{{affiliateData.commission_pct}}%</span></div>
-            </div>
-            <div class="affiliate-copied" ng-if="affiliateCopied">
-                <i class="fas fa-check"></i> Link copiado!
-            </div>
-        </div>
-
         <div class="profile-actions">
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('plans')"><i class="fas fa-crown profile-action-icon" style="color:#FFD700"></i> Gerenciar Plano</button>
             <button class="btn btn-outline btn-block profile-action-btn" ng-click="goTo('body-checkin')"><i class="fas fa-camera profile-action-icon"></i> Check-in Corporal</button>

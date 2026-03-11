@@ -373,16 +373,18 @@ public Object handle(Object payload) {
 
 ---
 
-## 5. Como Deployar
+## 6. Como Deployar
 
 1. No Studio, abrir endpoint `validate_coupon` → substituir script pelo da seção 2
 2. No Studio, abrir endpoint `create_subscription` → substituir script pelo da seção 3
-3. Criar documento(s) de teste em `affiliate__c` (seção 1)
-4. Testar no app
+3. No Studio, criar endpoint `affiliate_stats` (seção 4)
+4. Criar documento(s) de teste em `affiliate__c` (seção 1)
+5. Deploy frontend v3.13.0 no Netlify (profile.html, profile.js, style.css atualizados)
+6. Testar no app
 
 ---
 
-## 6. Checklist de Teste
+## 7. Checklist de Teste
 
 - [ ] Cupom normal (`FITEVOLVE20`) continua funcionando
 - [ ] Cupom de afiliado (`TESTE20`) valida corretamente
@@ -390,3 +392,6 @@ public Object handle(Object payload) {
 - [ ] `total_sales` incrementado no `affiliate__c`
 - [ ] `affiliate_code` salvo no `player.extra`
 - [ ] Cupom de afiliado inativo (`active: false`) é rejeitado
+- [ ] Dashboard de afiliado aparece no perfil quando player tem `extra.affiliate_code`
+- [ ] Botão compartilhar gera texto correto com código e desconto
+- [ ] Dashboard NÃO aparece para players sem `extra.affiliate_code`
