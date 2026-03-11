@@ -3,8 +3,8 @@ var CONFIG = {
     API: 'https://service2.funifier.com',
     API_KEY: 'YOUR_FUNIFIER_API_KEY',
     BASIC_TOKEN: 'Basic ' + btoa('YOUR_FUNIFIER_API_KEY:'),
-    OPENAI_API: 'https://api.openai.com/v1',
-    OPENAI_KEY: 'YOUR_OPENAI_KEY',
+    // OPENAI_KEY removed — all AI calls go through Funifier proxy endpoints
+    // (ai_chat, ai_vision, coach_ephemeral) which keep the API key server-side
     APP_NAME: 'Orvya',
     APP_TAGLINE: 'Evolua no seu ritmo.',
     VERSION: '0.1.0',

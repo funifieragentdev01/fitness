@@ -1,10 +1,13 @@
-// AiService — OpenAI API calls
+// AiService — AI calls via Funifier proxy (API key stays server-side)
 angular.module('fitness').factory('AiService', function($http) {
-    var OPENAI_API = CONFIG.OPENAI_API;
-    var OPENAI_KEY = CONFIG.OPENAI_KEY;
+    var PUB_URL = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY;
 
-    function aiHeaders() {
-        return { headers: { 'Authorization': 'Bearer ' + OPENAI_KEY } };
+    function proxyChat(body) {
+        return $http.post(PUB_URL + '/ai_chat', body);
+    }
+
+    function proxyVision(body) {
+        return $http.post(PUB_URL + '/ai_vision', body);
     }
 
     function cleanJSON(text) {
@@ -61,15 +64,16 @@ angular.module('fitness').factory('AiService', function($http) {
                 'Responda SOMENTE em JSON válido, sem markdown, neste formato: ' +
                 '{"meals":[{"time":"07:00","name":"Café da manhã","description":"descrição breve","foods":[{"food":"Ovos mexidos","quantity":"2 unidades","calories":140}],"total_calories":350}],"total_calories":1800}';
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyChat({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista brasileiro profissional. Responda SOMENTE JSON válido, sem blocos de código.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: 2000
-            }, aiHeaders()).then(function(res) {
-                var text = cleanJSON(res.data.choices[0].message.content.trim());
+            }).then(function(res) {
+                var data = res.data;
+                var text = cleanJSON(data.choices[0].message.content.trim());
                 var plan = JSON.parse(text);
                 plan.date = new Date().toLocaleDateString('pt-BR');
                 plan.timestamp = new Date().toISOString();
@@ -97,15 +101,16 @@ angular.module('fitness').factory('AiService', function($http) {
                 '{"days":[{"day_name":"Segunda","muscle_group":"Peito e Tríceps","exercises":[{"name":"Supino reto","sets":3,"reps":"12","weight_suggestion":"8kg"}],"duration_minutes":45,"warmup":"5 min caminhada","cooldown":"5 min alongamento"}]}' +
                 ' Inclua TODOS os 7 dias (Segunda a Domingo). Dias de descanso: day_name + muscle_group null + exercises vazio.';
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyChat({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um personal trainer brasileiro. Responda SOMENTE JSON válido, sem blocos de código.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: 2000
-            }, aiHeaders()).then(function(res) {
-                var text = cleanJSON(res.data.choices[0].message.content.trim());
+            }).then(function(res) {
+                var data = res.data;
+                var text = cleanJSON(data.choices[0].message.content.trim());
                 var plan = JSON.parse(text);
                 plan.date = new Date().toLocaleDateString('pt-BR');
                 plan.timestamp = new Date().toISOString();
@@ -132,7 +137,7 @@ angular.module('fitness').factory('AiService', function($http) {
                     'Se estiver dentro da faixa planejada (+/- 20%), parabenize o usuário.';
             }
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyVision({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista brasileiro profissional analisando a foto de um prato. Responda de forma breve e amigável: 1) Identifique os alimentos e quantidades. 2) Estime calorias totais. 3) Compare com o planejado se disponível. 4) Dê feedback profissional sobre porção. Use linguagem simples e emojis. Máximo 150 palavras.' },
@@ -142,17 +147,17 @@ angular.module('fitness').factory('AiService', function($http) {
                     ]}
                 ],
                 max_tokens: 400
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 return res.data.choices[0].message.content;
             });
         },
 
         sendChat: function(messages) {
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyChat({
                 model: 'gpt-4o-mini',
                 messages: messages,
                 max_tokens: 400
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 return res.data.choices[0].message.content;
             });
         },
@@ -173,14 +178,14 @@ angular.module('fitness').factory('AiService', function($http) {
                 '- daily_calories: calorias diárias recomendadas (número)\n\n' +
                 'Retorne APENAS o JSON, sem markdown code block.';
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyChat({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista e personal trainer. Responda apenas em JSON válido.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: 500
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 try { return JSON.parse(text); } catch(e) { return { summary: text, tip: '' }; }
             });
@@ -196,14 +201,14 @@ angular.module('fitness').factory('AiService', function($http) {
                 'Responda em JSON com os mesmos campos: summary (inclua o feedback sobre a solicitação do paciente), target_weight, target_bf, timeline, tip, daily_calories.\n' +
                 'Retorne APENAS o JSON, sem markdown code block.';
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyChat({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista e personal trainer. Responda apenas em JSON válido.' },
                     { role: 'user', content: prompt }
                 ],
                 max_tokens: 600
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 try { return JSON.parse(text); } catch(e) { return { summary: text, tip: '' }; }
             });
@@ -238,14 +243,15 @@ angular.module('fitness').factory('AiService', function($http) {
                 userContent = prompt;
             }
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            var proxyFn = dietPhoto ? proxyVision : proxyChat;
+            return proxyFn({
                 model: dietPhoto ? 'gpt-4o' : 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista brasileiro. Responda SOMENTE JSON válido.' },
                     { role: 'user', content: userContent }
                 ],
                 max_tokens: 3000
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 return JSON.parse(text);
             });
@@ -275,11 +281,12 @@ angular.module('fitness').factory('AiService', function($http) {
                 { role: 'user', content: userContent.length === 1 ? userContent[0].text : userContent }
             ];
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            var proxyFn = photo ? proxyVision : proxyChat;
+            return proxyFn({
                 model: 'gpt-4o-mini',
                 messages: messages,
                 max_tokens: 2500
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 return JSON.parse(text);
             });
@@ -302,14 +309,14 @@ angular.module('fitness').factory('AiService', function($http) {
             if (frontPhoto) userContent.push({ type: 'image_url', image_url: { url: frontPhoto } });
             if (sidePhoto) userContent.push({ type: 'image_url', image_url: { url: sidePhoto } });
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyVision({
                 model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: 'Você é um personal trainer certificado trabalhando em um aplicativo de acompanhamento fitness. O usuário consentiu com esta avaliação visual para fins de acompanhamento de progresso (não diagnóstico médico). Forneça estimativas visuais aproximadas como um profissional de educação física faria presencialmente. Sempre indique que são estimativas. Responda APENAS em JSON válido com texto em português.' },
                     { role: 'user', content: userContent }
                 ],
                 max_tokens: 1000
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 try { return JSON.parse(text); } catch(e) { return { feedback: text, measures: {} }; }
             });
@@ -318,7 +325,7 @@ angular.module('fitness').factory('AiService', function($http) {
         analyzeBioReport: function(photo) {
             var measureFields = 'peso, altura, imc, gordura_pct, peso_gordo, peso_magro, massa_muscular, massa_ossea, agua_corporal_pct, taxa_metabolica_basal, idade_metabolica, gordura_visceral, cintura, quadril, abdomen, coxas, panturrilhas, braco_relaxado, braco_contraido, deltoides, torax, antebraco, pescoco, dobra_subescapular, dobra_tricipital, dobra_toracica, dobra_axilar, dobra_suprailiaca, dobra_abdominal, dobra_coxas, dobra_panturrilhas, testosterona, colesterol_total, hdl, ldl, triglicerides, glicemia, hemoglobina';
 
-            return $http.post(OPENAI_API + '/chat/completions', {
+            return proxyVision({
                 model: 'gpt-4o',
                 messages: [
                     { role: 'system', content: 'Você é um nutricionista brasileiro. Extraia dados de laudos de bioimpedância. Responda APENAS em JSON válido.' },
@@ -328,7 +335,7 @@ angular.module('fitness').factory('AiService', function($http) {
                     ]}
                 ],
                 max_tokens: 1000
-            }, aiHeaders()).then(function(res) {
+            }).then(function(res) {
                 var text = cleanJSON(res.data.choices[0].message.content.trim());
                 try { return JSON.parse(text); } catch(e) { return { feedback: text, measures: {} }; }
             });

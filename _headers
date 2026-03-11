@@ -1,0 +1,29 @@
+# Netlify Security & Cache Headers — Orvya
+
+# Security headers for all pages
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(self), geolocation=(), payment=()
+  X-XSS-Protection: 1; mode=block
+
+# Cache-busting for JS and CSS (force revalidation on every load)
+/app/*.js
+  Cache-Control: no-cache, must-revalidate
+/app/*.css
+  Cache-Control: no-cache, must-revalidate
+/app/services/*.js
+  Cache-Control: no-cache, must-revalidate
+/app/pages/*/*.js
+  Cache-Control: no-cache, must-revalidate
+/app/pages/*/*.html
+  Cache-Control: no-cache, must-revalidate
+/app/components/*/*.js
+  Cache-Control: no-cache, must-revalidate
+
+# Static assets can be cached longer
+/app/sounds/*
+  Cache-Control: public, max-age=86400
+/app/img/*
+  Cache-Control: public, max-age=86400

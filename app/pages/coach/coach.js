@@ -243,17 +243,16 @@ angular.module('fitness').controller('CoachCtrl', function($scope, $rootScope, $
                 try { $scope.$apply(function() { $scope.debugPrompt = fullInstructions; }); } catch(e) { $scope.debugPrompt = fullInstructions; }
             }
 
-            return fetch('https://api.openai.com/v1/realtime/client_secrets', {
+            // Generate ephemeral key via server-side proxy (API key stays on server)
+            var ephemeralUrl = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY + '/coach_ephemeral';
+            return fetch(ephemeralUrl, {
                 method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + data.api_key, 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    session: {
-                        type: 'realtime',
-                        model: data.model || 'gpt-realtime-mini',
-                        instructions: fullInstructions,
-                        tools: voiceTools,
-                        audio: { output: { voice: data.voice || 'coral' } }
-                    }
+                    model: data.model || 'gpt-realtime-mini',
+                    instructions: fullInstructions,
+                    tools: voiceTools,
+                    voice: data.voice || 'coral'
                 })
             });
         })
