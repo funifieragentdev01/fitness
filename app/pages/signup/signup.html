@@ -22,8 +22,10 @@
                 <label>Confirmar senha</label>
                 <input type="password" ng-model="reg.confirmPassword" placeholder="Repita a senha" required>
             </div>
-            <div class="form-group checkbox-group">
-                <label><input type="checkbox" ng-model="reg.terms" required> Aceito os <a href="" ng-click="openTerms($event)">termos de uso</a> e <a href="" ng-click="openPrivacy($event)">política de privacidade</a></label>
+            <div class="form-group checkbox-group terms-stack">
+                <label class="terms-accept"><input type="checkbox" ng-model="reg.terms" required> Aceito os termos abaixo</label>
+                <a href="" class="terms-link" ng-click="openTerms($event)"><i class="fas fa-file-contract"></i> Termos de Uso</a>
+                <a href="" class="terms-link" ng-click="openPrivacy($event)"><i class="fas fa-shield-alt"></i> Política de Privacidade</a>
             </div>
             <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading || !reg.terms">
                 <span ng-if="!loading">Criar conta</span>
