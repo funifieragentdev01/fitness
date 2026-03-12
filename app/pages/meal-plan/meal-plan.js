@@ -97,17 +97,20 @@ angular.module('fitness').controller('MealPlanCtrl', function($scope, $rootScope
         $rootScope.loading = true;
         $scope.mealAdjustFeedback = null;
         AiService.adjustMealPlan($rootScope.mealPlan, $scope.mealForm.adjustText, $rootScope.profileData, $scope.dietPhoto).then(function(result) {
-            $scope.mealAdjustFeedback = result.feedback;
-            if (result.meals) {
-                $rootScope.mealPlan.meals = result.meals;
-                if (result.total_calories) $rootScope.mealPlan.total_calories = result.total_calories;
-                $rootScope.mealPlan.date = new Date().toLocaleDateString('pt-BR');
-                localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
-                DataSyncService.syncField('fitness_mealplan');
-                PlanService.recordChange('mealPlan');
-            }
+            try {
+                $scope.mealAdjustFeedback = result.feedback;
+                if (result.meals) {
+                    $rootScope.mealPlan.meals = result.meals;
+                    if (result.total_calories) $rootScope.mealPlan.total_calories = result.total_calories;
+                    $rootScope.mealPlan.date = new Date().toLocaleDateString('pt-BR');
+                    localStorage.setItem('fitness_mealplan', JSON.stringify($rootScope.mealPlan));
+                    DataSyncService.syncField('fitness_mealplan');
+                    PlanService.recordChange('mealPlan');
+                }
+            } catch(e) { console.error('[MealPlan] Error in success handler:', e); }
             $rootScope.loading = false;
-        }).catch(function() {
+        }).catch(function(err) {
+            console.error('[MealPlan] adjustMealPlan error:', err);
             $scope.mealAdjustFeedback = 'Não consegui ajustar agora. Tente novamente! 😊';
             $rootScope.loading = false;
         });

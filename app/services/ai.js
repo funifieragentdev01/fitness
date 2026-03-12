@@ -2,12 +2,20 @@
 angular.module('fitness').factory('AiService', function($http) {
     var PUB_URL = CONFIG.API + '/v3/pub/' + CONFIG.API_KEY;
 
+    function ensureParsed(res) {
+        // Funifier proxy may return string instead of parsed JSON in some cases
+        if (typeof res.data === 'string') {
+            try { res.data = JSON.parse(res.data); } catch(e) { /* keep as string */ }
+        }
+        return res;
+    }
+
     function proxyChat(body) {
-        return $http.post(PUB_URL + '/ai_chat', body);
+        return $http.post(PUB_URL + '/ai_chat', body).then(ensureParsed);
     }
 
     function proxyVision(body) {
-        return $http.post(PUB_URL + '/ai_vision', body);
+        return $http.post(PUB_URL + '/ai_vision', body).then(ensureParsed);
     }
 
     function cleanJSON(text) {

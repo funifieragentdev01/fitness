@@ -82,12 +82,14 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
 
         AiService.analyzeBodyPhotos($scope.checkin.photo_front, $scope.checkin.photo_side, p).then(function(parsed) {
             $timeout(function() {
-                $scope.analysisResult = parsed.feedback || JSON.stringify(parsed);
-                if (parsed.measures) {
-                    Object.keys(parsed.measures).forEach(function(k) {
-                        if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
-                    });
-                }
+                try {
+                    $scope.analysisResult = parsed.feedback || JSON.stringify(parsed);
+                    if (parsed.measures) {
+                        Object.keys(parsed.measures).forEach(function(k) {
+                            if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                        });
+                    }
+                } catch(e) { console.error('[BodyCheckin] Error processing analysis:', e); }
                 $scope.analyzing = false;
                 $scope.step = 2;
             });
@@ -172,40 +174,42 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
             })
             .then(function() {
                 $timeout(function() {
-                    PlanService.recordChange('bodyCheckin');
-                    ApiService.logAction('body_checkin', { weight: parseFloat($scope.checkin.weight) });
-                    ApiService.logAction('update_weight', { weight: parseFloat($scope.checkin.weight) });
-                    if ($rootScope.profileData) {
-                        $rootScope.profileData.weight = parseFloat($scope.checkin.weight);
-                        if (!$rootScope.profileData.measures) $rootScope.profileData.measures = {};
-                        var currentMeasures = $scope.manualMeasures || {};
-                        Object.keys(currentMeasures).forEach(function(k) {
-                            if (currentMeasures[k] != null && currentMeasures[k] !== '') {
-                                $rootScope.profileData.measures[k] = currentMeasures[k];
-                            }
-                        });
-                        if ($scope.analysisResult) $rootScope.profileData.body_analysis = $scope.analysisResult;
-                        if ($scope.laudoResult) $rootScope.profileData.laudo_analysis = $scope.laudoResult;
-                        var profileUpdate = angular.copy($rootScope.profileData);
-                        profileUpdate._id = userId;
-                        ApiService.saveProfile(profileUpdate);
-                    }
+                    try {
+                        PlanService.recordChange('bodyCheckin');
+                        ApiService.logAction('body_checkin', { weight: parseFloat($scope.checkin.weight) });
+                        ApiService.logAction('update_weight', { weight: parseFloat($scope.checkin.weight) });
+                        if ($rootScope.profileData) {
+                            $rootScope.profileData.weight = parseFloat($scope.checkin.weight);
+                            if (!$rootScope.profileData.measures) $rootScope.profileData.measures = {};
+                            var currentMeasures = $scope.manualMeasures || {};
+                            Object.keys(currentMeasures).forEach(function(k) {
+                                if (currentMeasures[k] != null && currentMeasures[k] !== '') {
+                                    $rootScope.profileData.measures[k] = currentMeasures[k];
+                                }
+                            });
+                            if ($scope.analysisResult) $rootScope.profileData.body_analysis = $scope.analysisResult;
+                            if ($scope.laudoResult) $rootScope.profileData.laudo_analysis = $scope.laudoResult;
+                            var profileUpdate = angular.copy($rootScope.profileData);
+                            profileUpdate._id = userId;
+                            ApiService.saveProfile(profileUpdate);
+                        }
 
-                    if ($scope.fromChallenge && $rootScope.challenge90 && $rootScope.challenge90.active) {
-                        var ch = $rootScope.challenge90;
-                        if (ch.checkpoints && $scope.challengeCheckpoint) {
-                            for (var i = 0; i < ch.checkpoints.length; i++) {
-                                if (ch.checkpoints[i].day === $scope.challengeCheckpoint && !ch.checkpoints[i].done) {
-                                    ch.checkpoints[i].done = true;
-                                    ch.checkpoints[i].photos = { front: photoUrls.front, side: photoUrls.side };
-                                    ch.checkpoints[i].current = false;
-                                    if (i + 1 < ch.checkpoints.length) ch.checkpoints[i + 1].current = true;
-                                    break;
+                        if ($scope.fromChallenge && $rootScope.challenge90 && $rootScope.challenge90.active) {
+                            var ch = $rootScope.challenge90;
+                            if (ch.checkpoints && $scope.challengeCheckpoint) {
+                                for (var i = 0; i < ch.checkpoints.length; i++) {
+                                    if (ch.checkpoints[i].day === $scope.challengeCheckpoint && !ch.checkpoints[i].done) {
+                                        ch.checkpoints[i].done = true;
+                                        ch.checkpoints[i].photos = { front: photoUrls.front, side: photoUrls.side };
+                                        ch.checkpoints[i].current = false;
+                                        if (i + 1 < ch.checkpoints.length) ch.checkpoints[i + 1].current = true;
+                                        break;
+                                    }
                                 }
                             }
+                            localStorage.setItem('fitness_challenge90', JSON.stringify(ch));
                         }
-                        localStorage.setItem('fitness_challenge90', JSON.stringify(ch));
-                    }
+                    } catch(e) { console.error('[BodyCheckin] Error in save success handler:', e); }
 
                     $scope.step = 'done';
                     $scope.loading = false;
@@ -233,13 +237,15 @@ angular.module('fitness').controller('BodyCheckinCtrl', function($scope, $rootSc
 
         AiService.analyzeBioReport($scope.bioReportPhoto).then(function(parsed) {
             $timeout(function() {
-                PlanService.recordChange('bioReport');
-                $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
-                if (parsed.measures) {
-                    Object.keys(parsed.measures).forEach(function(k) {
-                        if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
-                    });
-                }
+                try {
+                    PlanService.recordChange('bioReport');
+                    $scope.laudoResult = parsed.feedback || JSON.stringify(parsed);
+                    if (parsed.measures) {
+                        Object.keys(parsed.measures).forEach(function(k) {
+                            if (parsed.measures[k] != null) $scope.manualMeasures[k] = parsed.measures[k];
+                        });
+                    }
+                } catch(e) { console.error('[BodyCheckin] Error processing bio report:', e); }
                 $scope.analyzingLaudo = false;
             });
         }).catch(function(err) {

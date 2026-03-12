@@ -120,16 +120,19 @@ angular.module('fitness').controller('WorkoutPlanCtrl', function($scope, $rootSc
         $rootScope.loading = true;
         $scope.workoutAdjustFeedback = null;
         AiService.adjustWorkoutPlan($rootScope.workoutPlan, $scope.workoutForm.adjustText, $rootScope.profileData, $scope.workoutAdjustPhoto).then(function(result) {
-            $scope.workoutAdjustFeedback = result.feedback;
-            if (result.days) {
-                $rootScope.workoutPlan.days = result.days;
-                $rootScope.workoutPlan.date = new Date().toLocaleDateString('pt-BR');
-                localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
-                DataSyncService.syncField('fitness_workoutplan');
-                PlanService.recordChange('workoutPlan');
-            }
+            try {
+                $scope.workoutAdjustFeedback = result.feedback;
+                if (result.days) {
+                    $rootScope.workoutPlan.days = result.days;
+                    $rootScope.workoutPlan.date = new Date().toLocaleDateString('pt-BR');
+                    localStorage.setItem('fitness_workoutplan', JSON.stringify($rootScope.workoutPlan));
+                    DataSyncService.syncField('fitness_workoutplan');
+                    PlanService.recordChange('workoutPlan');
+                }
+            } catch(e) { console.error('[WorkoutPlan] Error in success handler:', e); }
             $rootScope.loading = false;
-        }).catch(function() {
+        }).catch(function(err) {
+            console.error('[WorkoutPlan] adjustWorkoutPlan error:', err);
             $scope.workoutAdjustFeedback = 'Não consegui ajustar agora. Tenta de novo! 😊';
             $rootScope.loading = false;
         });
