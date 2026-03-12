@@ -101,7 +101,7 @@ Substituir o script inteiro por:
 ```java
 public Object handle(Object payload) {
     Map<String, Object> response = new HashMap<>();
-    String ASAAS_KEY = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OmY0MjRhYjkwLWE3ZjgtNGE0OS04MTQzLTg4MWQ2NTE4Mzc3NTo6JGFhY2hfMmNlYTI4M2QtYmNkYS00OTEyLTkyY2EtNjk3ZTVjNDAwMTQ0";
+    String ASAAS_KEY = "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjFlNmMxMzIzLWRiN2UtNDRhNC05YzMzLWY5N2VkZWYzMzQzMjo6JGFhY2hfODFiNmE5ZmUtMzYwNi00YzdjLWEzZjEtOTc0MjM4YTMxYmEw";
     String ASAAS_URL = "https://api-sandbox.asaas.com";
     String APP_URL = "https://fitness-funifier.netlify.app/app";
     
