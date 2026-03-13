@@ -6,7 +6,7 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
 
     $scope.register = function() {
         if (!$scope.reg.terms) { $scope.error = 'Aceite os termos de uso.'; return; }
-        if ($scope.reg.password.length < 6) { $scope.error = 'Senha deve ter no mínimo 6 caracteres.'; return; }
+        if (!$scope.reg.password || $scope.reg.password.length < 8) { $scope.error = 'Senha deve ter no mínimo 8 caracteres.'; return; }
         if ($scope.reg.password !== $scope.reg.confirmPassword) { $scope.error = 'As senhas não coincidem.'; return; }
         $scope.loading = true;
         $scope.error = '';
@@ -38,6 +38,12 @@ angular.module('fitness').controller('SignupCtrl', function($scope, $location, $
             console.error('[Google Signup] No credential in response');
             $scope.$applyAsync(function() {
                 $scope.error = 'Google nao retornou credenciais. Tente novamente.';
+            });
+            return;
+        }
+        if (!$scope.reg.terms) {
+            $scope.$applyAsync(function() {
+                $scope.error = 'Aceite os termos de uso antes de continuar.';
             });
             return;
         }

@@ -1,0 +1,63 @@
+<div id="forgot" class="screen login-screen">
+    <div class="login-content">
+        <div class="login-header">
+            <img src="img/logo-hero.png" alt="Orvya" class="login-logo-img">
+            <h1 style="font-family:'Futura',sans-serif;letter-spacing:2px;font-size:24px">Recuperar Senha</h1>
+        </div>
+
+        <!-- Step 1: Request code -->
+        <form ng-submit="requestCode()" class="login-form" ng-if="step === 1">
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;text-align:center">
+                Digite seu email e enviaremos um código para redefinir sua senha.
+            </p>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" ng-model="email" placeholder="seu@email.com" required autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading">
+                <span ng-if="!loading">Enviar código</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Enviando...</span>
+            </button>
+        </form>
+
+        <!-- Step 2: Enter code + new password -->
+        <form ng-submit="resetPassword()" class="login-form" ng-if="step === 2">
+            <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;text-align:center">
+                Enviamos um código para <strong>{{email}}</strong>. Verifique seu email (inclusive a pasta de spam).
+            </p>
+            <div class="form-group">
+                <label>Código recebido</label>
+                <input type="text" ng-model="code" placeholder="Cole o código aqui" required autofocus>
+            </div>
+            <div class="form-group">
+                <label>Nova senha</label>
+                <input type="password" ng-model="newPassword" placeholder="Mínimo 8 caracteres" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label>Confirmar nova senha</label>
+                <input type="password" ng-model="confirmPassword" placeholder="Repita a nova senha" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" ng-disabled="loading">
+                <span ng-if="!loading">Redefinir senha</span>
+                <span ng-if="loading"><i class="fas fa-spinner fa-spin"></i> Salvando...</span>
+            </button>
+            <p style="margin-top:12px;text-align:center">
+                <a href="" ng-click="step=1" style="color:var(--accent);font-size:13px">← Enviar novo código</a>
+            </p>
+        </form>
+
+        <!-- Step 3: Success -->
+        <div ng-if="step === 3" style="text-align:center;padding:20px 0">
+            <i class="fas fa-check-circle" style="font-size:48px;color:var(--accent);margin-bottom:16px"></i>
+            <h3 style="color:var(--text-primary);margin-bottom:8px">Senha redefinida!</h3>
+            <p style="color:var(--text-muted);font-size:14px">Agora você pode fazer login com sua nova senha.</p>
+            <button class="btn btn-primary btn-block" style="margin-top:20px" ng-click="goTo('login')">Fazer login</button>
+        </div>
+
+        <div class="login-footer" ng-if="step !== 3">
+            <p style="margin-top:8px"><a href="" ng-click="goTo('login')" style="color:var(--text-muted);font-size:13px">← Voltar para login</a></p>
+        </div>
+        <div class="alert alert-error" ng-if="error">{{error}}</div>
+        <div class="alert alert-success" ng-if="success">{{success}}</div>
+    </div>
+</div>

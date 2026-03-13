@@ -23,6 +23,7 @@ app.config(function($routeProvider, $locationProvider) {
         .when('/landing', { templateUrl: 'pages/landing/landing.html', controller: 'LandingCtrl' })
         .when('/login', { templateUrl: 'pages/login/login.html', controller: 'LoginCtrl' })
         .when('/signup', { templateUrl: 'pages/signup/signup.html', controller: 'SignupCtrl' })
+        .when('/forgot', { templateUrl: 'pages/forgot/forgot.html', controller: 'ForgotCtrl' })
         .when('/onboarding', { templateUrl: 'pages/onboarding/onboarding.html', controller: 'OnboardingCtrl' })
         .when('/dashboard', { templateUrl: 'pages/dashboard/dashboard.html', controller: 'DashboardCtrl' })
         .when('/meal-plan', { templateUrl: 'pages/meal-plan/meal-plan.html', controller: 'MealPlanCtrl' })
