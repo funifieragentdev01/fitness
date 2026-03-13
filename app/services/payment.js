@@ -89,7 +89,7 @@ angular.module('fitness').factory('PaymentService', function($http, $rootScope, 
          * Calculate price with discount
          */
         calculatePrice: function(planType, discountType, discountValue) {
-            var basePrice = planType === 'premium' ? 179.90 : 29.90;
+            var basePrice = planType === 'premium' ? 179.90 : 39.90;
             if (!discountType || !discountValue) return basePrice;
             if (discountType === 'PERCENTAGE') {
                 return Math.max(0, basePrice - (basePrice * discountValue / 100));

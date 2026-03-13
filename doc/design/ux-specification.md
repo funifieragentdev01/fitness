@@ -216,7 +216,7 @@ Presente em todas as telas pós-login:
   - 🏔️ "Evolua no seu ritmo"
 
 **Preços Section**
-- 2 cards: Mensal (R$29,90) | Anual (R$19,90/mês)
+- 2 cards: Mensal (R$39,90) | Anual (R$19,90/mês)
 - Destaque visual no plano anual (borda laranja #F39C12)
 - Badge "Mais popular"
 
@@ -816,7 +816,7 @@ O plano alimentar é DIÁRIO — o mesmo cardápio todos os dias, como uma ficha
 - Subtexto: "7 dias grátis para experimentar"
 
 **Cards de Plano (2 colunas ou stack)**
-- **Mensal:** R$ 29,90/mês — "Flexibilidade total"
+- **Mensal:** R$ 39,90/mês — "Flexibilidade total"
 - **Anual:** R$ 19,90/mês (R$ 238,80/ano) — "Melhor valor" + badge "Mais popular" (laranja)
 - Cada card: lista de features incluídas (checkmarks)
 
@@ -897,7 +897,7 @@ SOCIAL PROOF: White background. 3 horizontal scroll cards with user photos, name
 
 FEATURES: 4 vertical cards with icons: plate icon "Plano alimentar do seu jeito", dumbbell icon "Treino adaptado ao seu espaço", camera icon "Fotografe e a IA analisa", mountain icon "Evolua no seu ritmo". Each card has navy icon, bold title, short description.
 
-PRICING: 2 cards side by side. Left: "Mensal R$ 29,90/mês" with feature list. Right: "Anual R$ 19,90/mês" with orange (#F39C12) "Mais popular" badge and feature list. Right card has slight elevation/border highlight.
+PRICING: 2 cards side by side. Left: "Mensal R$ 39,90/mês" with feature list. Right: "Anual R$ 19,90/mês" with orange (#F39C12) "Mais popular" badge and feature list. Right card has slight elevation/border highlight.
 
 FOOTER: Green CTA button repeated. Small gray links for terms and privacy. Disclaimer text.
 

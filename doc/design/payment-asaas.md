@@ -21,7 +21,7 @@
 ### Planos
 | Plano | Valor | Cycle | billingType |
 |-------|-------|-------|-------------|
-| Standard | R$29,90/mês | MONTHLY | UNDEFINED |
+| Standard | R$39,90/mês | MONTHLY | UNDEFINED |
 | Premium | R$179,90/mês | MONTHLY | UNDEFINED |
 
 ### billingType: UNDEFINED

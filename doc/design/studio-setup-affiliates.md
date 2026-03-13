@@ -115,7 +115,7 @@ public Object handle(Object payload) {
     }
     
     // Get plan value
-    double value = "premium".equals(planType) ? 179.90 : 29.90;
+    double value = "premium".equals(planType) ? 179.90 : 39.90;
     String planName = "premium".equals(planType) ? "FitEvolve Premium" : "FitEvolve Standard";
     
     // Apply coupon discount
@@ -273,7 +273,7 @@ public Object handle(Object payload) {
     
     // Update affiliate stats
     if (affiliateCode != null) {
-        double originalValue = "premium".equals(planType) ? 179.90 : 29.90;
+        double originalValue = "premium".equals(planType) ? 179.90 : 39.90;
         manager.getJongoConnection().getCollection("affiliate__c")
             .update("{_id: #}", affiliateCode)
             .with("{$inc: {total_sales: 1, total_revenue: #}}", originalValue);

@@ -10,7 +10,7 @@
 
 | Aspecto | 🆓 Free (Limitado) | 🔥 Premium Mensal | 💎 Premium Anual |
 |---|---|---|---|
-| **Preço** | R$ 0 | R$ 29,90/mês | R$ 249,90/ano (~R$ 20,83/mês) |
+| **Preço** | R$ 0 | R$ 39,90/mês | R$ 249,90/ano (~R$ 20,83/mês) |
 | **Trial Premium** | 7 dias incluídos | — | — |
 | Onboarding completo | ✅ | ✅ | ✅ |
 | Plano alimentar IA | 1 geração (sem ajustes) | ✅ Ilimitado + ajustes | ✅ Ilimitado + ajustes |
@@ -39,7 +39,7 @@
 | BetterMe | ~R$ 75/mês | ~R$ 290/ano | **2.5x mais barato**, com IA superior |
 | Fitbod | ~R$ 75/mês | ~R$ 460/ano | **2.5x mais barato**, com nutrição inclusa |
 | MyFitnessPal | ~R$ 115/mês | ~R$ 460/ano | **4x mais barato**, com planos gerados por IA |
-| **Nosso App** | **R$ 29,90** | **R$ 249,90** | Sweet spot BR: acessível + alto valor |
+| **Nosso App** | **R$ 39,90** | **R$ 249,90** | Sweet spot BR: acessível + alto valor |
 
 *Conversão estimada: US$1 = R$5,75
 
@@ -120,7 +120,7 @@ Usuário Free (limitado): ~R$ 3,00/mês (menos fotos, sem regeneração)
 | 1.000 ativos | R$ 12,50 | R$ 6,00 | R$ 0,05 | **R$ 18,55** |
 | 3.000 ativos | R$ 8,83 | R$ 6,00 | R$ 0,02 | **R$ 14,85** |
 
-> **Conclusão:** Com 100 usuários ativos, o custo por usuário (R$ 31,50) **supera** a receita mensal (R$ 29,90). O modelo só é viável a partir de ~200+ usuários ativos com boa conversão pago/free. Escala é essencial.
+> **Conclusão:** Com 100 usuários ativos, o custo por usuário (R$ 31,50) **supera** a receita mensal (R$ 39,90). O modelo só é viável a partir de ~200+ usuários ativos com boa conversão pago/free. Escala é essencial.
 
 ---
 
@@ -137,7 +137,7 @@ Usuário Free (limitado): ~R$ 3,00/mês (menos fotos, sem regeneração)
 | ARPU (receita média/pagante/mês) | R$ 27,00 | R$ 27,50 | R$ 28,00 |
 | Ratio free:pago (ativos) | 70:30 | 60:40 | 50:50 |
 
-> ARPU considera mix de mensal (R$ 29,90) e anual (R$ 20,83/mês)
+> ARPU considera mix de mensal (R$ 39,90) e anual (R$ 20,83/mês)
 
 ### 3.1 Cenário Moderado — Mês a Mês
 
@@ -201,7 +201,7 @@ O desafio central é que **Funifier cobra por todos os ativos** (free + pago), m
 | Métrica | Valor Estimado | Justificativa |
 |---|---|---|
 | **CAC (Custo de Aquisição)** | R$ 15–25 | Marketing orgânico + social ads Brasil (Instagram/TikTok); baixo no início (orgânico), sobe com escala |
-| **ARPU** | R$ 27,50/mês | Mix 70% mensal (R$ 29,90) + 30% anual (R$ 20,83/mês) |
+| **ARPU** | R$ 27,50/mês | Mix 70% mensal (R$ 39,90) + 30% anual (R$ 20,83/mês) |
 | **Churn mensal** | 8-12% | Mercado fitness tem churn alto; gamificação pode reduzir para 6-8% |
 | **Vida média do cliente** | 8-12 meses | 1/churn: com 8% churn → 12,5 meses |
 | **LTV** | R$ 275–344 | ARPU × vida média: R$ 27,50 × 10-12,5 meses |
@@ -316,7 +316,7 @@ Convide um amigo → Ele ganha 14 dias de trial (em vez de 7)
 
 | Métrica | Valor |
 |---|---|
-| **Preço** | R$ 29,90/mês ou R$ 249,90/ano |
+| **Preço** | R$ 39,90/mês ou R$ 249,90/ano |
 | **Trial** | 7 dias (com cartão) |
 | **Custo/usuário ativo (500 ativos)** | ~R$ 24,30 |
 | **Margem bruta (1.000 ativos, 40% pagantes)** | ~33% |

@@ -112,11 +112,11 @@ angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $
         if ($scope.couponValid && $scope.couponInfo) {
             return PaymentService.calculatePrice(planType, $scope.couponInfo.discountType, $scope.couponInfo.discountValue);
         }
-        return planType === 'premium' ? 179.90 : 29.90;
+        return planType === 'premium' ? 179.90 : 39.90;
     };
 
     $scope.getOriginalPrice = function(planType) {
-        return planType === 'premium' ? 179.90 : 29.90;
+        return planType === 'premium' ? 179.90 : 39.90;
     };
 
     $scope.hasDiscount = function(planType) {
