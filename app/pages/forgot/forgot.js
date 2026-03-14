@@ -32,7 +32,7 @@ angular.module('fitness').controller('ForgotCtrl', function($scope, $location, $
 
     $scope.resetPassword = function() {
         if (!$scope.code) { $scope.error = 'Digite o código recebido.'; return; }
-        if (!$scope.newPassword || $scope.newPassword.length < 8) {
+        if (!$scope.newPassword || $scope.newPassword.length < 6) {
             $scope.error = 'Senha deve ter no mínimo 8 caracteres.'; return;
         }
         if ($scope.newPassword !== $scope.confirmPassword) {
