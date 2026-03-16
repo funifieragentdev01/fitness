@@ -116,14 +116,14 @@
                 </div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> Plano alimentar personalizado por IA</li>
-                    <li><i class="fas fa-check"></i> Plano de treino personalizado por IA</li>
-                    <li><i class="fas fa-check"></i> 1 alteração de plano por mês</li>
-                    <li><i class="fas fa-check"></i> 1 check-in corporal por mês</li>
-                    <li><i class="fas fa-check"></i> 1 análise de laudo por mês</li>
-                    <li><i class="fas fa-check"></i> Controle de água e refeições</li>
+                    <li><i class="fas fa-check"></i> Plano de treino adaptado</li>
+                    <li><i class="fas fa-check"></i> Análise de foto do prato ilimitada</li>
+                    <li><i class="fas fa-check"></i> Controle de hidratação</li>
+                    <li><i class="fas fa-check"></i> Gamificação completa</li>
+                    <li><i class="fas fa-check"></i> 1 alteração de plano/mês</li>
+                    <li><i class="fas fa-check"></i> 1 check-in corporal/mês</li>
+                    <li><i class="fas fa-check"></i> 1 análise de laudo/mês</li>
                     <li><i class="fas fa-check"></i> Desafio 90 Dias</li>
-                    <li class="feature-disabled"><i class="fas fa-times"></i> Coach IA 24/7</li>
-                    <li class="feature-disabled"><i class="fas fa-times"></i> Suporte prioritário</li>
                 </ul>
                 <button class="btn btn-block btn-primary" ng-click="selectPlan('standard')" ng-disabled="loading">
                     {{loading ? 'Processando...' : 'Assinar Standard ⭐'}}
@@ -143,11 +143,13 @@
                     </div>
                 </div>
                 <ul class="plan-features">
-                    <li><i class="fas fa-check"></i> Tudo do Standard, mais:</li>
-                    <li><i class="fas fa-check"></i> Alterações <strong>ilimitadas</strong> de planos</li>
-                    <li><i class="fas fa-check"></i> Check-ins corporais <strong>ilimitados</strong></li>
-                    <li><i class="fas fa-check"></i> Análises de laudos <strong>ilimitadas</strong></li>
-                    <li><i class="fas fa-check"></i> Coach IA personalizado 24/7</li>
+                    <li><i class="fas fa-check"></i> Tudo do Standard</li>
+                    <li><i class="fas fa-check"></i> Ajuste de meta ilimitado</li>
+                    <li><i class="fas fa-check"></i> Alterações ilimitadas de planos</li>
+                    <li><i class="fas fa-check"></i> Check-ins corporais ilimitados</li>
+                    <li><i class="fas fa-check"></i> Análises de laudos ilimitadas</li>
+                    <li><i class="fas fa-check"></i> Chat de texto com Coach IA</li>
+                    <li><i class="fas fa-check"></i> Ligação por voz com Coach IA</li>
                     <li><i class="fas fa-check"></i> Suporte prioritário</li>
                 </ul>
                 <button class="btn btn-block btn-primary btn-premium" ng-click="selectPlan('premium')" ng-disabled="isPremium || loading">
