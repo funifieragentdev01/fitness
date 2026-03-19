@@ -72,45 +72,41 @@ angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $
         return dateStr;
     };
 
-    // Coupon
-    $scope.couponCode = '';
-    $scope.couponValid = null;
-    $scope.couponInfo = null;
-    $scope.couponError = '';
-    $scope.checkingCoupon = false;
+    // Coupon (use dot notation to survive ng-if child scope)
+    $scope.coupon = { code: '', valid: null, info: null, error: '', checking: false };
 
     $scope.validateCoupon = function() {
-        if (!$scope.couponCode || $scope.couponCode.trim().length < 3) return;
-        $scope.checkingCoupon = true;
-        $scope.couponError = '';
-        $scope.couponValid = null;
+        if (!$scope.coupon.code || $scope.coupon.code.trim().length < 3) return;
+        $scope.coupon.checking = true;
+        $scope.coupon.error = '';
+        $scope.coupon.valid = null;
 
-        PaymentService.validateCoupon($scope.couponCode).then(function(result) {
-            $scope.checkingCoupon = false;
+        PaymentService.validateCoupon($scope.coupon.code).then(function(result) {
+            $scope.coupon.checking = false;
             if (result.valid) {
-                $scope.couponValid = true;
-                $scope.couponInfo = result;
+                $scope.coupon.valid = true;
+                $scope.coupon.info = result;
             } else {
-                $scope.couponValid = false;
-                $scope.couponError = result.error || 'Cupom inválido';
+                $scope.coupon.valid = false;
+                $scope.coupon.error = result.error || 'Cupom inválido';
             }
         }).catch(function() {
-            $scope.checkingCoupon = false;
-            $scope.couponValid = false;
-            $scope.couponError = 'Erro ao validar cupom';
+            $scope.coupon.checking = false;
+            $scope.coupon.valid = false;
+            $scope.coupon.error = 'Erro ao validar cupom';
         });
     };
 
     $scope.clearCoupon = function() {
-        $scope.couponCode = '';
-        $scope.couponValid = null;
-        $scope.couponInfo = null;
-        $scope.couponError = '';
+        $scope.coupon.code = '';
+        $scope.coupon.valid = null;
+        $scope.coupon.info = null;
+        $scope.coupon.error = '';
     };
 
     $scope.getPrice = function(planType) {
-        if ($scope.couponValid && $scope.couponInfo) {
-            return PaymentService.calculatePrice(planType, $scope.couponInfo.discountType, $scope.couponInfo.discountValue);
+        if ($scope.coupon.valid && $scope.coupon.info) {
+            return PaymentService.calculatePrice(planType, $scope.coupon.info.discountType, $scope.coupon.info.discountValue);
         }
         return planType === 'premium' ? 179.90 : 39.90;
     };
@@ -120,11 +116,11 @@ angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $
     };
 
     $scope.hasDiscount = function(planType) {
-        return $scope.couponValid && $scope.getPrice(planType) < $scope.getOriginalPrice(planType);
+        return $scope.coupon.valid && $scope.getPrice(planType) < $scope.getOriginalPrice(planType);
     };
 
     $scope.selectPlan = function(type) {
-        var coupon = $scope.couponValid ? $scope.couponCode : null;
+        var coupon = $scope.coupon.valid ? $scope.coupon.code : null;
         PaymentService.checkout(type, coupon);
     };
 
@@ -181,7 +177,7 @@ angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $
         $scope.actionLoading = true;
         $scope.error = '';
         $scope.success = '';
-        var coupon = $scope.couponValid ? $scope.couponCode : null;
+        var coupon = $scope.coupon.valid ? $scope.coupon.code : null;
 
         PaymentService.reactivateSubscription(planType, coupon).then(function(result) {
             $scope.actionLoading = false;

@@ -81,23 +81,23 @@
         <!-- Coupon Section -->
         <div class="coupon-section" ng-if="!hasSubscription || showReactivate">
             <div class="coupon-input-row">
-                <input type="text" class="coupon-input" ng-model="couponCode"
+                <input type="text" class="coupon-input" ng-model="coupon.code"
                        placeholder="Tem um cupom? Digite aqui"
-                       ng-disabled="couponValid"
+                       ng-disabled="coupon.valid"
                        ng-keyup="$event.keyCode === 13 && validateCoupon()">
                 <button class="btn btn-sm coupon-btn" ng-click="validateCoupon()"
-                        ng-if="!couponValid" ng-disabled="checkingCoupon || !couponCode">
-                    {{checkingCoupon ? '...' : 'Aplicar'}}
+                        ng-if="!coupon.valid" ng-disabled="coupon.checking || !coupon.code">
+                    {{coupon.checking ? '...' : 'Aplicar'}}
                 </button>
-                <button class="btn btn-sm coupon-btn-clear" ng-click="clearCoupon()" ng-if="couponValid">
+                <button class="btn btn-sm coupon-btn-clear" ng-click="clearCoupon()" ng-if="coupon.valid">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="coupon-result coupon-success" ng-if="couponValid">
-                <i class="fas fa-check-circle"></i> {{couponInfo.description}}
+            <div class="coupon-result coupon-success" ng-if="coupon.valid">
+                <i class="fas fa-check-circle"></i> {{coupon.info.description}}
             </div>
-            <div class="coupon-result coupon-error" ng-if="couponValid === false">
-                <i class="fas fa-times-circle"></i> {{couponError}}
+            <div class="coupon-result coupon-error" ng-if="coupon.valid === false">
+                <i class="fas fa-times-circle"></i> {{coupon.error}}
             </div>
         </div>
 
