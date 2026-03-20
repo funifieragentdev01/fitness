@@ -119,6 +119,11 @@ angular.module('fitness').controller('PlansCtrl', function($scope, $rootScope, $
         return $scope.coupon.valid && $scope.getPrice(planType) < $scope.getOriginalPrice(planType);
     };
 
+    // Returns true if the coupon discount applies only to the first payment
+    $scope.isFirstOnly = function() {
+        return $scope.coupon.valid && $scope.coupon.info && $scope.coupon.info.discountDuration === 'FIRST_ONLY';
+    };
+
     $scope.selectPlan = function(type) {
         var coupon = $scope.coupon.valid ? $scope.coupon.code : null;
         PaymentService.checkout(type, coupon);

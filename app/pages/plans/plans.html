@@ -95,6 +95,7 @@
             </div>
             <div class="coupon-result coupon-success" ng-if="coupon.valid">
                 <i class="fas fa-check-circle"></i> {{coupon.info.description}}
+                <span ng-if="isFirstOnly()" class="coupon-duration-note"> (apenas 1ª parcela)</span>
             </div>
             <div class="coupon-result coupon-error" ng-if="coupon.valid === false">
                 <i class="fas fa-times-circle"></i> {{coupon.error}}
@@ -111,7 +112,11 @@
                     <div class="plan-price">
                         <span class="price-old" ng-if="hasDiscount('standard')">R$ {{getOriginalPrice('standard') | number:2}}</span>
                         <span class="price-value">R$ {{getPrice('standard') | number:2}}</span>
-                        <span class="price-period">/mês</span>
+                        <span class="price-period" ng-if="!isFirstOnly()">/mês</span>
+                        <span class="price-period" ng-if="isFirstOnly()">na 1ª parcela</span>
+                    </div>
+                    <div class="price-after" ng-if="hasDiscount('standard') && isFirstOnly()">
+                        Depois R$ {{getOriginalPrice('standard') | number:2}}/mês
                     </div>
                 </div>
                 <ul class="plan-features">
@@ -139,7 +144,11 @@
                     <div class="plan-price">
                         <span class="price-old" ng-if="hasDiscount('premium')">R$ {{getOriginalPrice('premium') | number:2}}</span>
                         <span class="price-value premium-price">R$ {{getPrice('premium') | number:2}}</span>
-                        <span class="price-period">/mês</span>
+                        <span class="price-period" ng-if="!isFirstOnly()">/mês</span>
+                        <span class="price-period" ng-if="isFirstOnly()">na 1ª parcela</span>
+                    </div>
+                    <div class="price-after" ng-if="hasDiscount('premium') && isFirstOnly()">
+                        Depois R$ {{getOriginalPrice('premium') | number:2}}/mês
                     </div>
                 </div>
                 <ul class="plan-features">
